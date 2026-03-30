@@ -13,3 +13,13 @@ DIAGRAMA https://drive.google.com/file/d/1OfqwCS4RUwtU5fbeIk9GIqeO6L0xpjtV/view?
 CONEXION A LA BASES DE DATOS https://docs.google.com/document/d/1AE00ClpscH9iMDRs8t36MpSUsDx8rnw8nVWZDbpD3e4/edit?usp=sharing
 
 PROGRAMA: https://github.com/PapiFran00/TiendaDeRopa.git
+
+[documentación del proyecto](https://docs.google.com/document/d/1Hg90QJY8MIWQN4GuAqqQPCtX6AdywDkUDn_oyyYh8wM/edit?usp=sharing)
+
+[Mockups](https://www.figma.com/design/3lo8xvdMKEt96XcnObwNzj/F-R?node-id=72-866&t=aRVZnNKx6dlAImhs-0)
+
+[Diagrama de Clases](https://app.diagrams.net/?splash=0#G1R6Ce9crivHCQzwNS7HZIpege1CisbcTd#%7B%22pageId%22%3A%22xZMBi8gwqBBRkt4viOOO%22%7D)
+
+[Caso de uso Carrito](https://docs.google.com/document/d/1l3y7ztHxBA2SKEsYM5Xys4hGtPr9Vh9hjDoVxyneNWg/edit?tab=t.0#heading=h.e9xbr04ggw3i)
+
+[codigo](https://github.com/roci0milanese/Filnal-Practica---F-R)
