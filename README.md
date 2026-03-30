@@ -14,7 +14,7 @@ Funcionalidades previstas Alta, baja y modificación de productos (por ejemplo: 
 
 [Programa](https://github.com/PapiFran00/TiendaDeRopa.git)
 
-[documentación del proyecto](https://docs.google.com/document/d/1Hg90QJY8MIWQN4GuAqqQPCtX6AdywDkUDn_oyyYh8wM/edit?usp=sharing)
+[Documentación del proyecto](https://docs.google.com/document/d/1Hg90QJY8MIWQN4GuAqqQPCtX6AdywDkUDn_oyyYh8wM/edit?usp=sharing)
 
 [Mockups](https://www.figma.com/design/3lo8xvdMKEt96XcnObwNzj/F-R?node-id=72-866&t=aRVZnNKx6dlAImhs-0)
 
