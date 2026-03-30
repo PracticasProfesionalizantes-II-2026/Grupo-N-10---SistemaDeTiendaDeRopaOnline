@@ -8,9 +8,9 @@ Objetivos principales Mantener un registro actualizado de los productos que vend
 
 Funcionalidades previstas Alta, baja y modificación de productos (por ejemplo: remeras, pantalones, buzos, etc.) Alta, baja y modificación de clientes Registrar ventas, seleccionando cliente y productos. Reportes: Listado de productos con stock bajo y listado de ventas realizadas en un período de tiempo.
 
-[Documentación del proyecto V1 2025](https://docs.google.com/document/d/1Hg90QJY8MIWQN4GuAqqQPCtX6AdywDkUDn_oyyYh8wM/edit?usp=sharing)
+2025
 
-[Documentación del proyecto V2 2026](https://docs.google.com/document/d/1gM1ckHxdNSC8jofqKXz1tZGkT7COpJOQTTfVo8uFKac/edit?tab=t.0#heading=h.xqy6ly3vslw4)
+[Documentación del proyecto V1 2025](https://docs.google.com/document/d/1Hg90QJY8MIWQN4GuAqqQPCtX6AdywDkUDn_oyyYh8wM/edit?usp=sharing)
 
 [Diagrama](https://drive.google.com/file/d/1OfqwCS4RUwtU5fbeIk9GIqeO6L0xpjtV/view?usp=sharing)
 
@@ -25,3 +25,8 @@ Funcionalidades previstas Alta, baja y modificación de productos (por ejemplo: 
 [Caso de uso Carrito](https://docs.google.com/document/d/1l3y7ztHxBA2SKEsYM5Xys4hGtPr9Vh9hjDoVxyneNWg/edit?tab=t.0#heading=h.e9xbr04ggw3i)
 
 [Codigo](https://github.com/roci0milanese/Filnal-Practica---F-R)
+
+---------------------------------------------------------------------------------------------------------------------------------------
+2026
+
+[Documentación del proyecto V2 2026](https://docs.google.com/document/d/1gM1ckHxdNSC8jofqKXz1tZGkT7COpJOQTTfVo8uFKac/edit?tab=t.0#heading=h.xqy6ly3vslw4)
