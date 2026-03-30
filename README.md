@@ -8,11 +8,11 @@ Objetivos principales Mantener un registro actualizado de los productos que vend
 
 Funcionalidades previstas Alta, baja y modificación de productos (por ejemplo: remeras, pantalones, buzos, etc.) Alta, baja y modificación de clientes Registrar ventas, seleccionando cliente y productos. Reportes: Listado de productos con stock bajo y listado de ventas realizadas en un período de tiempo.
 
-DIAGRAMA https://drive.google.com/file/d/1OfqwCS4RUwtU5fbeIk9GIqeO6L0xpjtV/view?usp=sharing
+[Diagrama](https://drive.google.com/file/d/1OfqwCS4RUwtU5fbeIk9GIqeO6L0xpjtV/view?usp=sharing)
 
-CONEXION A LA BASES DE DATOS https://docs.google.com/document/d/1AE00ClpscH9iMDRs8t36MpSUsDx8rnw8nVWZDbpD3e4/edit?usp=sharing
+[Conexión a la base de datos](https://docs.google.com/document/d/1AE00ClpscH9iMDRs8t36MpSUsDx8rnw8nVWZDbpD3e4/edit?usp=sharing)
 
-PROGRAMA: https://github.com/PapiFran00/TiendaDeRopa.git
+[Programa](https://github.com/PapiFran00/TiendaDeRopa.git)
 
 [documentación del proyecto](https://docs.google.com/document/d/1Hg90QJY8MIWQN4GuAqqQPCtX6AdywDkUDn_oyyYh8wM/edit?usp=sharing)
 
