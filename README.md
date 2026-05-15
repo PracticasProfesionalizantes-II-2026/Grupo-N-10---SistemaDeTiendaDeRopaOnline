@@ -32,3 +32,4 @@ Funcionalidades previstas Alta, baja y modificación de productos (por ejemplo: 
 [Documentación del proyecto V2 2026](https://docs.google.com/document/d/1gM1ckHxdNSC8jofqKXz1tZGkT7COpJOQTTfVo8uFKac/edit?tab=t.0#heading=h.xqy6ly3vslw4)
 
 [Documentación de Endpoints de API](https://docs.google.com/document/d/1nY_3ClcNVSr5X0UoFQVAcXR8z_F3VfA1OR9ROWO5bpo/edit?usp=sharing)
+[Codigo 2026 (APIS) Visual Code](https://github.com/roci0milanese/F-R-2026/tree/main/FYR-API)
