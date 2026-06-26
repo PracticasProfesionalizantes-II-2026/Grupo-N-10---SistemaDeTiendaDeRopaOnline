@@ -16,6 +16,9 @@ public class Envio
 
     public string? NumeroSeguimiento { get; set; }
 
+    // NUEVO
+    public EstadoEnvio Estado { get; set; }
+
     // FK Pedido
     public int PedidoId { get; set; }
 
