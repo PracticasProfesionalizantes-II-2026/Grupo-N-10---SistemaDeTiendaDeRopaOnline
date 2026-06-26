@@ -9,6 +9,8 @@ public class Notificacion
 
     [Required]
     public string Mensaje { get; set; } = string.Empty;
+    public ICollection<Notificacion> Notificaciones { get; set; }
+    = new List<Notificacion>();
 
     public DateTime FechaEnvio { get; set; } = DateTime.UtcNow;
 
