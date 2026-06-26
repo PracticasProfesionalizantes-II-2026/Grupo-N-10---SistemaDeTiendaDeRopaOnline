@@ -8,8 +8,7 @@ using Logica.Services;
 using Logica.Interfaces;
 
 using Endpoints;
-using Logica.Interfaces;
-using Logica.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
