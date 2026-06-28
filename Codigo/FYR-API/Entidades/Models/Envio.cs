@@ -6,7 +6,7 @@ namespace Entidades.Models;
 public class Envio
 {
     [Key]
-    public int Id { get; set; }
+    public int IdEnvio { get; set; }
 
     public TipoEnvio TipoEnvio { get; set; }
 

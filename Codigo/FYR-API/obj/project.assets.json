@@ -1,9 +1,5 @@
 {
-<<<<<<< HEAD
   "version": 3,
-=======
-  "version": 4,
->>>>>>> Rama-Roci
   "targets": {
     "net10.0": {
       "Azure.Core/1.47.1": {
@@ -3190,10 +3186,6 @@
       },
       "frameworks": {
         "net10.0": {
-<<<<<<< HEAD
-=======
-          "framework": "net10.0",
->>>>>>> Rama-Roci
           "targetAlias": "net10.0",
           "projectReferences": {}
         }
@@ -3208,18 +3200,10 @@
         "auditLevel": "low",
         "auditMode": "all"
       },
-<<<<<<< HEAD
       "SdkAnalysisLevel": "10.0.200"
     },
     "frameworks": {
       "net10.0": {
-=======
-      "SdkAnalysisLevel": "10.0.300"
-    },
-    "frameworks": {
-      "net10.0": {
-        "framework": "net10.0",
->>>>>>> Rama-Roci
         "targetAlias": "net10.0",
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": {
@@ -3260,11 +3244,7 @@
             "privateAssets": "all"
           }
         },
-<<<<<<< HEAD
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.203/PortableRuntimeIdentifierGraph.json",
-=======
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300/PortableRuntimeIdentifierGraph.json",
->>>>>>> Rama-Roci
         "packagesToPrune": {
           "Microsoft.AspNetCore": "(,10.0.32767]",
           "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
@@ -3681,5 +3661,13 @@
         }
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "Undefined",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Problema al leer el archivo de caché C:\\Users\\Usuario\\Documents\\GitHub\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\obj\\project.nuget.cache : '<' is an invalid start of a property name. Expected a '\"'. Path: $ | LineNumber: 2 | BytePositionInLine: 0."
+    }
+  ]
 }

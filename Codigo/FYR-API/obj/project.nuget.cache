@@ -1,10 +1,6 @@
 {
   "version": 2,
-<<<<<<< HEAD
   "dgSpecHash": "W90FamYLzyA=",
-=======
-  "dgSpecHash": "rsrdUp1EhDs=",
->>>>>>> Rama-Roci
   "success": true,
   "projectFilePath": "C:\\Users\\Usuario\\Documents\\GitHub\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\FYR-API.csproj",
   "expectedPackageFiles": [
@@ -58,5 +54,15 @@
     "C:\\Users\\Usuario\\.nuget\\packages\\system.security.cryptography.pkcs\\9.0.4\\system.security.cryptography.pkcs.9.0.4.nupkg.sha512",
     "C:\\Users\\Usuario\\.nuget\\packages\\system.security.cryptography.protecteddata\\9.0.4\\system.security.cryptography.protecteddata.9.0.4.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "Undefined",
+      "level": "Warning",
+      "message": "Problema al leer el archivo de caché C:\\Users\\Usuario\\Documents\\GitHub\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\obj\\project.nuget.cache : '<' is an invalid start of a property name. Expected a '\"'. Path: $ | LineNumber: 2 | BytePositionInLine: 0.",
+      "projectPath": "C:\\Users\\Usuario\\Documents\\GitHub\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\FYR-API.csproj",
+      "warningLevel": 1,
+      "filePath": "C:\\Users\\Usuario\\Documents\\GitHub\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\FYR-API.csproj",
+      "targetGraphs": []
+    }
+  ]
 }

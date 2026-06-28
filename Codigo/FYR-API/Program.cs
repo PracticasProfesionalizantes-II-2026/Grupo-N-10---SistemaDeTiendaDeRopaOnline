@@ -27,6 +27,14 @@ builder.Services.AddScoped<ISubcategoriaService, SubcategoriaService>();
 builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
 builder.Services.AddScoped<IEmpresaService, EmpresaService>();
 
+builder.Services.AddScoped<IEnvioRepository, EnvioRepository>();
+builder.Services.AddScoped<IEnvioService, EnvioService>();
+
+builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
+builder.Services.AddScoped<IPedidoService, PedidoService>();
+
+builder.Services.AddScoped<IDetallePedidoRepository, DetallePedidoRepository>();
+builder.Services.AddScoped<IDetallePedidoService, DetallePedidoService>();
  
 
 // Swagger
@@ -43,6 +51,9 @@ app.MapScalarApiReference();
 app.MapCategoriaEndpoints();
 app.MapSubcategoriaEndpoints();
 app.MapEmpresaEndpoints();
+app.MapEnvioEndpoints();
+app.MapPedidoEndpoints();
+app.MapDetallePedidoEndpoints();
 
 app.Run();
 
