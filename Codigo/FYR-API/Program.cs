@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Repository;
 using Repository.Interfaces;
 
+
 using Logica.Services;
 using Logica.Interfaces;
 
@@ -36,6 +37,23 @@ builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IDetallePedidoRepository, DetallePedidoRepository>();
 builder.Services.AddScoped<IDetallePedidoService, DetallePedidoService>();
  
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+builder.Services.AddScoped<IClienteService, ClienteService>();
+
+builder.Services.AddScoped<IReporteRepository, ReporteRepository>();
+builder.Services.AddScoped<IReporteService, ReporteService>();
+
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+
+builder.Services.AddScoped<IPagoRepository, PagoRepository>();
+builder.Services.AddScoped<IPagoService, PagoService>();
+
+builder.Services.AddScoped<INotificacionRepository, NotificacionRepository>();
+builder.Services.AddScoped<INotificacionService, NotificacionService>();
+
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Swagger
 builder.Services.AddOpenApi();
@@ -54,6 +72,12 @@ app.MapEmpresaEndpoints();
 app.MapEnvioEndpoints();
 app.MapPedidoEndpoints();
 app.MapDetallePedidoEndpoints();
+app.MapClienteEndpoints();
+app.MapReporteEndpoints();
+app.MapUsuarioEndpoints();
+app.MapPagoEndpoints();
+app.MapNotificacionEndpoints();
+app.MapAuthEndpoints();
 
 app.Run();
 

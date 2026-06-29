@@ -1,11 +1,13 @@
+using Entidades.Enums;
 using Entidades.Models;
-using Microsoft.EntityFrameworkCore;
 using Datos;
-public class UsuarioRepository : IUsuarioRepository
+using Microsoft.EntityFrameworkCore;
+
+public class ClienteRepository : IClienteRepository
 {
     private readonly AppDbContext _context;
 
-    public UsuarioRepository(AppDbContext context)
+    public ClienteRepository(AppDbContext context)
     {
         _context = context;
     }
@@ -14,13 +16,20 @@ public class UsuarioRepository : IUsuarioRepository
     {
         return await _context.Usuarios
             .AsNoTracking()
+            .Where(u => u.Rol == Rol.Cliente)
             .ToListAsync();
     }
 
     public async Task<Usuario?> GetByIdAsync(int id)
     {
         return await _context.Usuarios
-            .FirstOrDefaultAsync(u => u.Id == id);
+            .FirstOrDefaultAsync(u => u.Id == id && u.Rol == Rol.Cliente);
+    }
+
+    public async Task AddAsync(Usuario usuario)
+    {
+        await _context.Usuarios.AddAsync(usuario);
+        await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Usuario usuario)
