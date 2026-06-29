@@ -2,8 +2,8 @@ using Entidades.Models;
 using Logica.DTO.Empresa.Request;
 using Logica.DTO.Empresa.Response;
 using Logica.Interfaces;
-using Repository.Interfaces;
-using Logica.Interfaces;
+using Repositorios.Interfaces;
+
 
 namespace Logica.Services;
 

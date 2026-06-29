@@ -1,13 +1,15 @@
 using Scalar.AspNetCore;
 using Datos;
 using Microsoft.EntityFrameworkCore;
-using Repository;
-using Repository.Interfaces;
-
+using Repositorios;
 using Logica.Services;
+using Repositorios.Interfaces;
+using Repositorios.Implementaciones;
 using Logica.Interfaces;
 
+
 using Endpoints;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,8 +28,13 @@ builder.Services.AddScoped<ISubcategoriaRepository, SubcategoriaRepository>();
 builder.Services.AddScoped<ISubcategoriaService, SubcategoriaService>();
 builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
 builder.Services.AddScoped<IEmpresaService, EmpresaService>();
+builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
+builder.Services.AddScoped<IStockRepository, StockRepository>();
+builder.Services.AddScoped<IProveedorRepository, ProveedorRepository>();
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IPagoRepository, PagoRepository>();
+builder.Services.AddScoped<IFacturaRepository, FacturaRepository>();
 
- 
 
 // Swagger
 builder.Services.AddOpenApi();
@@ -43,5 +50,17 @@ app.MapScalarApiReference();
 app.MapCategoriaEndpoints();
 app.MapSubcategoriaEndpoints();
 app.MapEmpresaEndpoints();
+app.MapProductoEndpoints();
+app.MapStockEndpoints();
+app.MapGroup("/api/proveedores")
+    .MapProveedorEndpoints();
+
+app.MapGroup("/api/usuarios")
+    .MapUsuarioEndpoints();
+
+app.MapGroup("/api/pagos")
+    .MapPagoEndpoints();
+app.MapGroup("/api/facturas")
+    .MapFacturaEndpoints();
 
 app.Run();

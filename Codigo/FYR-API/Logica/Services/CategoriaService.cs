@@ -2,7 +2,7 @@ using Entidades.Models;
 using Logica.DTO.Categoria.Requests;
 using Logica.DTO.Categoria.Responses;
 using Logica.Interfaces;
-using Repository.Interfaces;
+using Repositorios.Interfaces;
 
 namespace Logica.Services;
 

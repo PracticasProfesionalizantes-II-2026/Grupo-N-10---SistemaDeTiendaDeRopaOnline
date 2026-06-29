@@ -1,9 +1,9 @@
 using Datos;
 using Entidades.Models;
 using Microsoft.EntityFrameworkCore;
-using Repository.Interfaces;
+using Repositorios.Interfaces;
 
-namespace Repository;
+namespace Repositorios.Implementaciones;
 
 public class SubcategoriaRepository : ISubcategoriaRepository
 {

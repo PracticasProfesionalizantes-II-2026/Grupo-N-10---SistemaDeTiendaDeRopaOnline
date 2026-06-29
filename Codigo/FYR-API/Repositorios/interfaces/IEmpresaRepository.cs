@@ -1,6 +1,6 @@
 using Entidades.Models;
 
-namespace Repository.Interfaces;
+namespace Repositorios.Interfaces;
 
 public interface IEmpresaRepository
 {
