@@ -5,6 +5,7 @@ using Repositorios;
 using Repositorios.Interfaces;
 using Logica.Services;
 using Logica.Interfaces;
+using DTO;
 
 
 using Endpoints;
@@ -54,6 +55,16 @@ builder.Services.AddScoped<INotificacionService, NotificacionService>();
 
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IProveedorRepository, ProveedorRepository>();
+builder.Services.AddScoped<IProveedorService, ProveedorService>();
+builder.Services.AddScoped<ISucursalRepository, SucursalRepository>();
+builder.Services.AddScoped<ISucursalService, SucursalService>();
+builder.Services.AddScoped<IFacturaRepository, FacturaRepository>();
+builder.Services.AddScoped<IFacturaService, FacturaService>();
+builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
+builder.Services.AddScoped<IProductoService, ProductoService>();
+builder.Services.AddScoped<IMedioContactoRepository, MedioContactoRepository>();
+builder.Services.AddScoped<IMedioContactoService, MedioContactoService>();
 
 // Swagger
 builder.Services.AddOpenApi();
@@ -78,6 +89,13 @@ app.MapUsuarioEndpoints();
 app.MapPagoEndpoints();
 app.MapNotificacionEndpoints();
 app.MapAuthEndpoints();
+app.MapProveedorEndpoints();
+app.MapSucursalEndpoints();
+app.MapFacturaEndpoints();
+app.MapProductoEndpoints();
+app.MapMedioContactoEndpoints();
+app.MapStockEndpoints();
+app.MapGet("/", () => "Bienvenido a la API de FYR");
 
 app.Run();
 
