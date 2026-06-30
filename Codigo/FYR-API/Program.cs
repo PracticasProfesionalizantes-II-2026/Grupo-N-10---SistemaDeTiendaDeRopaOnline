@@ -1,17 +1,14 @@
 using Scalar.AspNetCore;
 using Datos;
 using Microsoft.EntityFrameworkCore;
-using Repositorios;
+using Repository;
+using Repository.Interfaces;
+
+
 using Logica.Services;
-using Repositorios.Interfaces;
-using Repositorios.Implementaciones;
 using Logica.Interfaces;
 
-
-
-
 using Endpoints;
-
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,15 +27,33 @@ builder.Services.AddScoped<ISubcategoriaRepository, SubcategoriaRepository>();
 builder.Services.AddScoped<ISubcategoriaService, SubcategoriaService>();
 builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
 builder.Services.AddScoped<IEmpresaService, EmpresaService>();
-builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
-builder.Services.AddScoped<IStockRepository, StockRepository>();
-builder.Services.AddScoped<IProveedorRepository, ProveedorRepository>();
+
+builder.Services.AddScoped<IEnvioRepository, EnvioRepository>();
+builder.Services.AddScoped<IEnvioService, EnvioService>();
+
+builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
+builder.Services.AddScoped<IPedidoService, PedidoService>();
+
+builder.Services.AddScoped<IDetallePedidoRepository, DetallePedidoRepository>();
+builder.Services.AddScoped<IDetallePedidoService, DetallePedidoService>();
+ 
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+builder.Services.AddScoped<IClienteService, ClienteService>();
+
+builder.Services.AddScoped<IReporteRepository, ReporteRepository>();
+builder.Services.AddScoped<IReporteService, ReporteService>();
+
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+
 builder.Services.AddScoped<IPagoRepository, PagoRepository>();
-builder.Services.AddScoped<IFacturaRepository, FacturaRepository>();
-builder.Services.AddScoped<ISucursalRepository, SucursalRepository>();
-builder.Services.AddScoped<IFacturaRepository, FacturaRepository>();
-builder.Services.AddScoped<IMedioContactoRepository, MedioContactoRepository>();
+builder.Services.AddScoped<IPagoService, PagoService>();
+
+builder.Services.AddScoped<INotificacionRepository, NotificacionRepository>();
+builder.Services.AddScoped<INotificacionService, NotificacionService>();
+
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Swagger
 builder.Services.AddOpenApi();
@@ -54,22 +69,16 @@ app.MapScalarApiReference();
 app.MapCategoriaEndpoints();
 app.MapSubcategoriaEndpoints();
 app.MapEmpresaEndpoints();
-app.MapProductoEndpoints();
-app.MapStockEndpoints();
-app.MapGroup("/api/proveedores")
-    .MapProveedorEndpoints();
+app.MapEnvioEndpoints();
+app.MapPedidoEndpoints();
+app.MapDetallePedidoEndpoints();
+app.MapClienteEndpoints();
+app.MapReporteEndpoints();
+app.MapUsuarioEndpoints();
+app.MapPagoEndpoints();
+app.MapNotificacionEndpoints();
+app.MapAuthEndpoints();
 
-app.MapGroup("/api/usuarios")
-    .MapUsuarioEndpoints();
-
-app.MapGroup("/api/pagos")
-    .MapPagoEndpoints();
-app.MapGroup("/api/facturas")
-    .MapFacturaEndpoints();
-app.MapGroup("/api/sucursales")
-    .MapSucursalEndpoints();
-app.MapGroup("/api/facturas")
-    .MapFacturaEndpoints();
-app.MapGroup("/api/medioscontacto")
-    .MapMedioContactoEndpoints();
 app.Run();
+
+//Hola Mundo

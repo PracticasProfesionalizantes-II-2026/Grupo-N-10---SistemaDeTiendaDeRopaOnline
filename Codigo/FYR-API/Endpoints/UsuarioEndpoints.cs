@@ -1,47 +1,28 @@
-using DTO.Usuario.Request;
-using Repositorios.Interfaces;
-
-namespace Endpoints;
-
 public static class UsuarioEndpoints
 {
-    public static RouteGroupBuilder MapUsuarioEndpoints(this RouteGroupBuilder group)
+    public static void MapUsuarioEndpoints(this WebApplication app)
     {
-        group.MapGet("/", async (IUsuarioRepository repo) =>
+        var group = app.MapGroup("/usuarios");
+
+        group.MapGet("/", async (IUsuarioService service) =>
+            Results.Ok(await service.GetAllAsync()));
+
+        group.MapGet("/{id}", async (int id, IUsuarioService service) =>
         {
-            return Results.Ok(await repo.GetAllAsync());
+            var usuario = await service.GetByIdAsync(id);
+            return usuario is null ? Results.NotFound() : Results.Ok(usuario);
         });
 
-        group.MapGet("/{id:int}", async (int id, IUsuarioRepository repo) =>
+        group.MapPut("/{id}", async (int id, UpdateUsuarioRequest request, IUsuarioService service) =>
         {
-            var usuario = await repo.GetByIdAsync(id);
-
-            return usuario is null
-                ? Results.NotFound()
-                : Results.Ok(usuario);
+            var usuario = await service.UpdateAsync(id, request);
+            return usuario is null ? Results.NotFound() : Results.Ok(usuario);
         });
 
-        group.MapPost("/", async (CreateUsuarioRequest request, IUsuarioRepository repo) =>
+        group.MapDelete("/{id}", async (int id, IUsuarioService service) =>
         {
-            var usuario = await repo.CreateAsync(request);
-
-            return Results.Created($"/api/usuarios/{usuario.Id}", usuario);
+            var deleted = await service.DeleteAsync(id);
+            return deleted ? Results.NoContent() : Results.NotFound();
         });
-
-        group.MapPut("/{id:int}", async (int id, UpdateUsuarioRequest request, IUsuarioRepository repo) =>
-        {
-            return await repo.UpdateAsync(id, request)
-                ? Results.NoContent()
-                : Results.NotFound();
-        });
-
-        group.MapDelete("/{id:int}", async (int id, IUsuarioRepository repo) =>
-        {
-            return await repo.DeleteAsync(id)
-                ? Results.NoContent()
-                : Results.NotFound();
-        });
-
-        return group;
     }
 }

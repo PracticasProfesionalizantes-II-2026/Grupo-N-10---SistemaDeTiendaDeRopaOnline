@@ -1,47 +1,34 @@
-using DTO.Pago.Request;
-using Repositorios.Interfaces;
-
-namespace Endpoints;
-
 public static class PagoEndpoints
 {
-    public static RouteGroupBuilder MapPagoEndpoints(this RouteGroupBuilder group)
+    public static void MapPagoEndpoints(this WebApplication app)
     {
-        group.MapGet("/", async (IPagoRepository repo) =>
+        var group = app.MapGroup("/pedidos/{pedidoId}/pagos");
+
+        group.MapGet("/", async (int pedidoId, IPagoService service) =>
+            Results.Ok(await service.GetByPedidoAsync(pedidoId)));
+
+        group.MapGet("/{pagoId}", async (int pedidoId, int pagoId, IPagoService service) =>
         {
-            return Results.Ok(await repo.GetAllAsync());
+            var pago = await service.GetByIdAsync(pedidoId, pagoId);
+            return pago is null ? Results.NotFound() : Results.Ok(pago);
         });
 
-        group.MapGet("/{id:int}", async (int id, IPagoRepository repo) =>
+        group.MapPost("/", async (int pedidoId, CreatePagoRequest request, IPagoService service) =>
         {
-            var pago = await repo.GetByIdAsync(id);
-
-            return pago is null
-                ? Results.NotFound()
-                : Results.Ok(pago);
+            var pago = await service.CreateAsync(pedidoId, request);
+            return Results.Created($"/pedidos/{pedidoId}/pagos/{pago.IdPago}", pago);
         });
 
-        group.MapPost("/", async (CreatePagoRequest request, IPagoRepository repo) =>
+        group.MapPut("/{pagoId}", async (int pedidoId, int pagoId, UpdatePagoRequest request, IPagoService service) =>
         {
-            var pago = await repo.CreateAsync(request);
-
-            return Results.Created($"/api/pagos/{pago.Id}", pago);
+            var pago = await service.UpdateAsync(pedidoId, pagoId, request);
+            return pago is null ? Results.NotFound() : Results.Ok(pago);
         });
 
-        group.MapPut("/{id:int}", async (int id, UpdatePagoRequest request, IPagoRepository repo) =>
+        group.MapDelete("/{pagoId}", async (int pedidoId, int pagoId, IPagoService service) =>
         {
-            return await repo.UpdateAsync(id, request)
-                ? Results.NoContent()
-                : Results.NotFound();
+            var deleted = await service.DeleteAsync(pedidoId, pagoId);
+            return deleted ? Results.NoContent() : Results.NotFound();
         });
-
-        group.MapDelete("/{id:int}", async (int id, IPagoRepository repo) =>
-        {
-            return await repo.DeleteAsync(id)
-                ? Results.NoContent()
-                : Results.NotFound();
-        });
-
-        return group;
     }
 }
