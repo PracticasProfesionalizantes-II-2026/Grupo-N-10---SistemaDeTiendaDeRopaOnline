@@ -5,8 +5,12 @@ namespace Endpoints;
 
 public static class SucursalEndpoints
 {
-    public static RouteGroupBuilder MapSucursalEndpoints(this RouteGroupBuilder group)
+    public static RouteGroupBuilder MapSucursalEndpoints(this WebApplication app)
     {
+        var group = app.MapGroup("/sucursales")
+            .WithTags("Sucursales")
+            .WithGroupName("Sucursales");
+
         group.MapGet("/", async (ISucursalRepository repo) =>
         {
             return Results.Ok(await repo.GetAllAsync());

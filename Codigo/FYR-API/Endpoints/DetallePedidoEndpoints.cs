@@ -2,7 +2,9 @@ public static class DetallePedidoEndpoints
 {
     public static void MapDetallePedidoEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/pedidos/{pedidoId}/detalles");
+        var group = app.MapGroup("/pedidos/{pedidoId}/detalles")
+        .WithTags("Detalles de Pedido")
+        .WithGroupName("Detalles de Pedido");
 
         group.MapGet("/", async (int pedidoId, IDetallePedidoService service) =>
             Results.Ok(await service.GetByPedidoAsync(pedidoId)));

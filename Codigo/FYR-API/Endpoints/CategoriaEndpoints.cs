@@ -8,7 +8,8 @@ public static class CategoriaEndpoints
     public static void MapCategoriaEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/categorias")
-            .WithTags("Categorias");
+            .WithTags("Categorias")
+            .WithGroupName("Categorias");
 
         group.MapGet("/", async (ICategoriaService service) =>
         {
@@ -35,14 +36,18 @@ public static class CategoriaEndpoints
         {
             var ok = await service.UpdateAsync(id, request);
 
-            return ok ? Results.NoContent() : Results.NotFound();
+            return ok
+                ? Results.NoContent()
+                : Results.NotFound();
         });
 
         group.MapDelete("/{id:int}", async (int id, ICategoriaService service) =>
         {
             var ok = await service.DeleteAsync(id);
 
-            return ok ? Results.NoContent() : Results.NotFound();
+            return ok
+                ? Results.NoContent()
+                : Results.NotFound();
         });
     }
 }

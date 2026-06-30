@@ -5,8 +5,12 @@ namespace Endpoints;
 
 public static class MedioContactoEndpoints
 {
-    public static RouteGroupBuilder MapMedioContactoEndpoints(this RouteGroupBuilder group)
+    public static RouteGroupBuilder MapMedioContactoEndpoints(this WebApplication app)
     {
+        var group = app.MapGroup("/api/medioscontacto")
+            .WithTags("Medios de Contacto")
+            .WithGroupName("Medios de Contacto");
+
         group.MapGet("/", async (IMedioContactoRepository repo) =>
         {
             return Results.Ok(await repo.GetAllAsync());

@@ -6,8 +6,12 @@ namespace Endpoints;
 
 public static class ProveedorEndpoints
 {
-    public static RouteGroupBuilder MapProveedorEndpoints(this RouteGroupBuilder group)
+    public static RouteGroupBuilder MapProovedorEndpoints(this WebApplication app)
     {
+        var group = app.MapGroup("/proveedores")
+            .WithTags("Proveedores")
+            .WithGroupName("Proveedores");
+
         group.MapGet("/", async (IProveedorRepository repo) =>
         {
             return Results.Ok(await repo.GetAllAsync());

@@ -1,8 +1,10 @@
 public static class PedidoEndpoints
 {
-    public static void MapPedidoEndpoints(this WebApplication app)
+    public static RouteGroupBuilder MapPedidoEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/pedidos");
+        var group = app.MapGroup("/pedidos")
+        .WithTags("Pedidos")
+        .WithGroupName("Pedidos");
 
         group.MapGet("/", async (IPedidoService service) =>
             Results.Ok(await service.GetAllAsync()));
@@ -45,5 +47,6 @@ public static class PedidoEndpoints
 
         app.MapGet("/usuarios/{usuarioId}/pedidos", async (int usuarioId, IPedidoService service) =>
             Results.Ok(await service.GetByUsuarioAsync(usuarioId)));
+        return group;
     }
 }

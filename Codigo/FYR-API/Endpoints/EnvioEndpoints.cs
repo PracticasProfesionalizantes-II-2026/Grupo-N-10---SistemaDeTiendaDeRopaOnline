@@ -2,7 +2,9 @@ public static class EnvioEndpoints
 {
     public static void MapEnvioEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/pedidos/{pedidoId}/envios");
+        var group = app.MapGroup("/pedidos/{pedidoId}/envios")
+        .WithTags("Envios")
+        .WithGroupName("Envios");
 
         group.MapGet("/", async (int pedidoId, IEnvioService service) =>
             Results.Ok(await service.GetByPedidoAsync(pedidoId)));

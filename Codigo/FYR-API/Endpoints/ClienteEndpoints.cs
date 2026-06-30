@@ -2,7 +2,10 @@ public static class ClienteEndpoints
 {
     public static void MapClienteEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/clientes");
+        var group = app.MapGroup("/clientes")
+        .WithTags("Clientes")
+        .WithGroupName("Clientes");
+        
 
         group.MapGet("/", async (IClienteService service) =>
         {

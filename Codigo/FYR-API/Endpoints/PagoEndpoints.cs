@@ -1,8 +1,10 @@
 public static class PagoEndpoints
 {
-    public static void MapPagoEndpoints(this WebApplication app)
+    public static RouteGroupBuilder MapPagoEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/pedidos/{pedidoId}/pagos");
+        var group = app.MapGroup("/pedidos/{pedidoId}/pagos")
+        .WithTags("Pagos")
+        .WithGroupName("Pagos");
 
         group.MapGet("/", async (int pedidoId, IPagoService service) =>
             Results.Ok(await service.GetByPedidoAsync(pedidoId)));
@@ -30,5 +32,6 @@ public static class PagoEndpoints
             var deleted = await service.DeleteAsync(pedidoId, pagoId);
             return deleted ? Results.NoContent() : Results.NotFound();
         });
+         return group;
     }
 }

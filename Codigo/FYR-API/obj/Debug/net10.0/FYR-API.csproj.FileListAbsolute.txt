@@ -8,7 +8,9 @@ C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codig
 C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FYR-API\bin\Debug\net10.0\FYR-API.pdb
 C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FYR-API\bin\Debug\net10.0\Azure.Core.dll
 C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FYR-API\bin\Debug\net10.0\Azure.Identity.dll
+C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FYR-API\bin\Debug\net10.0\BCrypt-Net-Next.dll
 C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FYR-API\bin\Debug\net10.0\Humanizer.dll
+C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FYR-API\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FYR-API\bin\Debug\net10.0\Microsoft.AspNetCore.OpenApi.dll
 C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FYR-API\bin\Debug\net10.0\Microsoft.Bcl.AsyncInterfaces.dll
 C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FYR-API\bin\Debug\net10.0\Microsoft.Bcl.Cryptography.dll

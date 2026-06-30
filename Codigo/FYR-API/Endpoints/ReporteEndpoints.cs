@@ -36,5 +36,6 @@ public static class ReporteEndpoints
         {
             return Results.Ok(await service.FilterByFechaAsync(fechaInicio, fechaFin));
         });
+        
     }
 }

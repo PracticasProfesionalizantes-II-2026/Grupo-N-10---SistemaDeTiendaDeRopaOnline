@@ -1,8 +1,10 @@
 public static class UsuarioEndpoints
 {
-    public static void MapUsuarioEndpoints(this WebApplication app)
+    public static RouteGroupBuilder MapUsuarioEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/usuarios");
+        var group = app.MapGroup("/usuarios")
+          .WithTags("Usuarios")
+          .WithGroupName("Usuarios");
 
         group.MapGet("/", async (IUsuarioService service) =>
             Results.Ok(await service.GetAllAsync()));
@@ -24,5 +26,6 @@ public static class UsuarioEndpoints
             var deleted = await service.DeleteAsync(id);
             return deleted ? Results.NoContent() : Results.NotFound();
         });
+        return group;
     }
 }

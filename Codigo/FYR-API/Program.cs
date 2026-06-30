@@ -1,14 +1,14 @@
 using Scalar.AspNetCore;
 using Datos;
 using Microsoft.EntityFrameworkCore;
-using Repository;
-using Repository.Interfaces;
-
-
+using Repositorios;
+using Repositorios.Interfaces;
 using Logica.Services;
 using Logica.Interfaces;
 
+
 using Endpoints;
+using Repositorios.Implementaciones;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -81,4 +81,3 @@ app.MapAuthEndpoints();
 
 app.Run();
 
-//Hola Mundo

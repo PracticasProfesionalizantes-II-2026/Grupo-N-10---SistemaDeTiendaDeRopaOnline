@@ -1,8 +1,10 @@
 public static class NotificacionEndpoints
 {
-    public static void MapNotificacionEndpoints(this WebApplication app)
+    public static RouteGroupBuilder MapNotificacionEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/notificaciones");
+        var group = app.MapGroup("/notificaciones")
+        .WithTags("Notificaciones")
+        .WithGroupName("Notificaciones");
 
         group.MapGet("/", async (INotificacionService service) =>
             Results.Ok(await service.GetAllAsync()));
@@ -30,5 +32,6 @@ public static class NotificacionEndpoints
             var deleted = await service.DeleteAsync(id);
             return deleted ? Results.NoContent() : Results.NotFound();
         });
+         return group;
     }
 }
