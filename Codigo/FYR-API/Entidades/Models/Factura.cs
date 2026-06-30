@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Entidades.Models;
 
 public class Factura
@@ -16,6 +18,7 @@ public class Factura
 
     public string FormaPago { get; set; } = string.Empty;
 
+    // FK Pedido
     public int PedidoId { get; set; }
 
     public Pedido Pedido { get; set; } = null!;

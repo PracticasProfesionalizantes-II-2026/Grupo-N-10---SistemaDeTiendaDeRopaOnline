@@ -9,6 +9,7 @@ public class Stock
     public int Id { get; set; }
 
     public int CantidadDisponible { get; set; }
+    public int StockMinimo { get; set; } = 5;
 
     public DateTime FechaActualizacion { get; set; } = DateTime.UtcNow;
 

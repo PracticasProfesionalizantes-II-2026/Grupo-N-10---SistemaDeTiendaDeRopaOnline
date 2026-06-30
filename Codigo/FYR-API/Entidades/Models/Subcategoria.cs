@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+
 namespace Entidades.Models;
 
 public class Subcategoria
@@ -14,5 +15,6 @@ public class Subcategoria
 
     public Categoria Categoria { get; set; } = null!;
 
+    // Relaciones
     public ICollection<Producto> Productos { get; set; } = new List<Producto>();
 }

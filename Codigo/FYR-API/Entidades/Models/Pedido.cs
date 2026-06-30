@@ -20,11 +20,17 @@ public class Pedido
 
     public string? NumeroSeguimiento { get; set; }
 
+    // FK Usuario
     public int UsuarioId { get; set; }
 
     public Usuario Usuario { get; set; } = null!;
 
+    // Relaciones
     public ICollection<DetallePedido> DetallesPedido { get; set; } = new List<DetallePedido>();
 
     public ICollection<Pago> Pagos { get; set; } = new List<Pago>();
+
+    public Factura? Factura { get; set; }
+
+    public Envio? Envio { get; set; }
 }
