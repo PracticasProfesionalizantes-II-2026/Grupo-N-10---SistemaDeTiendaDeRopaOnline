@@ -1,17 +1,10 @@
-using DTO.Pago.Request;
-using DTO.Pago.Response;
-
-namespace Repositorios.Interfaces;
+using Entidades.Models;
 
 public interface IPagoRepository
 {
-    Task<List<PagoResponse>> GetAllAsync();
-
-    Task<PagoResponse?> GetByIdAsync(int id);
-
-    Task<PagoResponse> CreateAsync(CreatePagoRequest request);
-
-    Task<bool> UpdateAsync(int id, UpdatePagoRequest request);
-
-    Task<bool> DeleteAsync(int id);
+    Task<List<Pago>> GetByPedidoIdAsync(int pedidoId);
+    Task<Pago?> GetByIdAsync(int pedidoId, int pagoId);
+    Task AddAsync(Pago pago);
+    Task UpdateAsync(Pago pago);
+    Task DeleteAsync(Pago pago);
 }

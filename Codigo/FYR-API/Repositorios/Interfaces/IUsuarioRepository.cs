@@ -1,17 +1,9 @@
-using DTO.Usuario.Request;
-using DTO.Usuario.Response;
-
-namespace Repositorios.Interfaces;
+using Entidades.Models;
 
 public interface IUsuarioRepository
 {
-    Task<List<UsuarioResponse>> GetAllAsync();
-
-    Task<UsuarioResponse?> GetByIdAsync(int id);
-
-    Task<UsuarioResponse> CreateAsync(CreateUsuarioRequest request);
-
-    Task<bool> UpdateAsync(int id, UpdateUsuarioRequest request);
-
-    Task<bool> DeleteAsync(int id);
+    Task<List<Usuario>> GetAllAsync();
+    Task<Usuario?> GetByIdAsync(int id);
+    Task UpdateAsync(Usuario usuario);
+    Task DeleteAsync(Usuario usuario);
 }
