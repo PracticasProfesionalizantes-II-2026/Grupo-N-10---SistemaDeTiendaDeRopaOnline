@@ -8,6 +8,8 @@ using Repositorios.Implementaciones;
 using Logica.Interfaces;
 
 
+
+
 using Endpoints;
 
 
@@ -34,7 +36,9 @@ builder.Services.AddScoped<IProveedorRepository, ProveedorRepository>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IPagoRepository, PagoRepository>();
 builder.Services.AddScoped<IFacturaRepository, FacturaRepository>();
-
+builder.Services.AddScoped<ISucursalRepository, SucursalRepository>();
+builder.Services.AddScoped<IFacturaRepository, FacturaRepository>();
+builder.Services.AddScoped<IMedioContactoRepository, MedioContactoRepository>();
 
 // Swagger
 builder.Services.AddOpenApi();
@@ -62,5 +66,10 @@ app.MapGroup("/api/pagos")
     .MapPagoEndpoints();
 app.MapGroup("/api/facturas")
     .MapFacturaEndpoints();
-
+app.MapGroup("/api/sucursales")
+    .MapSucursalEndpoints();
+app.MapGroup("/api/facturas")
+    .MapFacturaEndpoints();
+app.MapGroup("/api/medioscontacto")
+    .MapMedioContactoEndpoints();
 app.Run();

@@ -108,19 +108,4 @@ public class FacturaRepository : IFacturaRepository
 
         return true;
     }
-
-    Task<IEnumerable<Factura>> IFacturaRepository.GetAllAsync()
-    {
-        throw new NotImplementedException();
-    }
-
-    Task<Factura?> IFacturaRepository.GetByIdAsync(int id)
-    {
-        throw new NotImplementedException();
-    }
-
-    Task<Factura> IFacturaRepository.CreateAsync(CreateFacturaRequest request)
-    {
-        throw new NotImplementedException();
-    }
 }
