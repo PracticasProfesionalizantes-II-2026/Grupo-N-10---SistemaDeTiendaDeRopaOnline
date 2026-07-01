@@ -1,4 +1,3 @@
-using Entidades.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace DTO.Usuario.Request;
@@ -28,4 +27,5 @@ public class CreateUsuarioRequest
     public string? FotoPerfil { get; set; }
 
     public int? EmpresaId { get; set; }
+    public bool Activo { get; set; } = true;
 }

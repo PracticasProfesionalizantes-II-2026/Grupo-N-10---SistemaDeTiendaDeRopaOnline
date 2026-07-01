@@ -8,8 +8,7 @@ public static class MedioContactoEndpoints
     public static RouteGroupBuilder MapMedioContactoEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/medioscontacto")
-            .WithTags("Medios de Contacto")
-            .WithGroupName("Medios de Contacto");
+            .WithTags("Medios de Contacto");
 
         group.MapGet("/", async (IMedioContactoRepository repo) =>
         {

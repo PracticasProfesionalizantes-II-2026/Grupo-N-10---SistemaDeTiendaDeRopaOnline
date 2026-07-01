@@ -1,10 +1,15 @@
+using DTO.Usuario.Request;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Entidades.Models;
+
 public static class UsuarioEndpoints
 {
     public static RouteGroupBuilder MapUsuarioEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/usuarios")
-          .WithTags("Usuarios")
-          .WithGroupName("Usuarios");
+        var group = app.MapGroup("/api/usuarios")
+            .WithTags("Usuarios");
+            
 
         group.MapGet("/", async (IUsuarioService service) =>
             Results.Ok(await service.GetAllAsync()));
@@ -26,6 +31,12 @@ public static class UsuarioEndpoints
             var deleted = await service.DeleteAsync(id);
             return deleted ? Results.NoContent() : Results.NotFound();
         });
+        group.MapPost("/", async (CreateUsuarioRequest request, IUsuarioService service) =>
+        {
+            var usuario = await service.AddAsync(request);
+            return Results.Created($"/api/usuarios/{usuario}", usuario);
+        });
+    
         return group;
     }
 }

@@ -2,9 +2,8 @@ public static class EnvioEndpoints
 {
     public static void MapEnvioEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/pedidos/{pedidoId}/envios")
-        .WithTags("Envios")
-        .WithGroupName("Envios");
+        var group = app.MapGroup("/api/pedidos/{pedidoId}/envios")
+            .WithTags("Envios");
 
         group.MapGet("/", async (int pedidoId, IEnvioService service) =>
             Results.Ok(await service.GetByPedidoAsync(pedidoId)));
@@ -18,7 +17,7 @@ public static class EnvioEndpoints
         group.MapPost("/", async (int pedidoId, CreateEnvioRequest request, IEnvioService service) =>
         {
             var envio = await service.CreateAsync(pedidoId, request);
-            return Results.Created($"/pedidos/{pedidoId}/envios/{envio.IdEnvio}", envio);
+            return Results.Created($"/api/pedidos/{pedidoId}/envios/{envio.IdEnvio}", envio);
         });
 
         group.MapPut("/{envioId}", async (int pedidoId, int envioId, UpdateEnvioRequest request, IEnvioService service) =>
@@ -39,13 +38,17 @@ public static class EnvioEndpoints
             return deleted ? Results.NoContent() : Results.NotFound();
         });
 
-        app.MapPost("/envios/calcular", async (CalcularEnvioRequest request, IEnvioService service) =>
-            Results.Ok(await service.CalcularAsync(request)));
+        app.MapPost("/api/envios/calcular", async (CalcularEnvioRequest request, IEnvioService service) =>
+            Results.Ok(await service.CalcularAsync(request)))
+            .WithTags("Envios")
+            .WithGroupName("Envios");
 
-        app.MapGet("/envios/{envioId}", async (int envioId, IEnvioService service) =>
+        app.MapGet("/api/envios/{envioId}", async (int envioId, IEnvioService service) =>
         {
             var envio = await service.GetTrackingAsync(envioId);
             return envio is null ? Results.NotFound() : Results.Ok(envio);
-        });
+        })
+        .WithTags("Envios")
+        .WithGroupName("Envios");
     }
 }

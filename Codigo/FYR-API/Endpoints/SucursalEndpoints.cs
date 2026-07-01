@@ -7,9 +7,8 @@ public static class SucursalEndpoints
 {
     public static RouteGroupBuilder MapSucursalEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/sucursales")
-            .WithTags("Sucursales")
-            .WithGroupName("Sucursales");
+        var group = app.MapGroup("/api/sucursales")
+            .WithTags("Sucursales");
 
         group.MapGet("/", async (ISucursalRepository repo) =>
         {

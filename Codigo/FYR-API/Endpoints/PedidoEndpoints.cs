@@ -2,9 +2,8 @@ public static class PedidoEndpoints
 {
     public static RouteGroupBuilder MapPedidoEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/pedidos")
-        .WithTags("Pedidos")
-        .WithGroupName("Pedidos");
+        var group = app.MapGroup("/api/pedidos")
+            .WithTags("Pedidos");
 
         group.MapGet("/", async (IPedidoService service) =>
             Results.Ok(await service.GetAllAsync()));
@@ -18,7 +17,7 @@ public static class PedidoEndpoints
         group.MapPost("/", async (CreatePedidoRequest request, IPedidoService service) =>
         {
             var pedido = await service.CreateAsync(request);
-            return Results.Created($"/pedidos/{pedido.IdPedido}", pedido);
+            return Results.Created($"/api/pedidos/{pedido.IdPedido}", pedido);
         });
 
         group.MapPut("/{id}", async (int id, UpdatePedidoRequest request, IPedidoService service) =>
@@ -45,8 +44,11 @@ public static class PedidoEndpoints
             return deleted ? Results.NoContent() : Results.NotFound();
         });
 
-        app.MapGet("/usuarios/{usuarioId}/pedidos", async (int usuarioId, IPedidoService service) =>
-            Results.Ok(await service.GetByUsuarioAsync(usuarioId)));
+        app.MapGet("/api/usuarios/{usuarioId}/pedidos", async (int usuarioId, IPedidoService service) =>
+            Results.Ok(await service.GetByUsuarioAsync(usuarioId)))
+            .WithTags("Pedidos")
+            .WithGroupName("Pedidos");
+
         return group;
     }
 }

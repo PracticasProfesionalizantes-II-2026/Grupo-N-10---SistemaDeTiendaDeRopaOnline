@@ -1,5 +1,3 @@
-using Entidades.Enums;
-
 public class RegisterRequest
 {
     public string Nombre { get; set; } = string.Empty;

@@ -1,4 +1,3 @@
-using Entidades.Enums;
 using Entidades.Models;
 
 public class ClienteService : IClienteService

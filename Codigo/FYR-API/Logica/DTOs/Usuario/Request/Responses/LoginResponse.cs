@@ -1,5 +1,3 @@
-using DTO.Usuario.Request;
-using DTO.Usuario.Response;
 namespace DTO.Usuario.Responses;
 
 public class LoginResponse

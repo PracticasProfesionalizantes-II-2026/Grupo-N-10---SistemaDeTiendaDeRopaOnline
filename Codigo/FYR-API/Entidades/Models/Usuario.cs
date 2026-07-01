@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using Entidades.Enums;
 
 namespace Entidades.Models;
 

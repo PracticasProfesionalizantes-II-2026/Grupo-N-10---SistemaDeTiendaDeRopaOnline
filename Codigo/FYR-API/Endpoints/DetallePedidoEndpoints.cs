@@ -1,36 +1,78 @@
+using Logica.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Endpoints;
+
 public static class DetallePedidoEndpoints
 {
     public static void MapDetallePedidoEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/pedidos/{pedidoId}/detalles")
-        .WithTags("Detalles de Pedido")
-        .WithGroupName("Detalles de Pedido");
+        var group = app.MapGroup("/api/pedidos/{pedidoId:int}/detalles")
+            .WithTags("DetallePedido");
 
-        group.MapGet("/", async (int pedidoId, IDetallePedidoService service) =>
-            Results.Ok(await service.GetByPedidoAsync(pedidoId)));
+        // Obtener todos los detalles de un pedido
+        group.MapGet("/", async (
+            int pedidoId,
+            [FromServices] IDetallePedidoService service) =>
+        {
+            var detalles = await service.GetByPedidoAsync(pedidoId);
+            return Results.Ok(detalles);
+        });
 
-        group.MapGet("/{detalleId}", async (int pedidoId, int detalleId, IDetallePedidoService service) =>
+        // Obtener un detalle por Id
+        group.MapGet("/{detalleId:int}", async (
+            int pedidoId,
+            int detalleId,
+            [FromServices] IDetallePedidoService service) =>
         {
             var detalle = await service.GetByIdAsync(pedidoId, detalleId);
-            return detalle is null ? Results.NotFound() : Results.Ok(detalle);
+
+            if (detalle == null)
+                return Results.NotFound();
+
+            return Results.Ok(detalle);
         });
 
-        group.MapPost("/", async (int pedidoId, CreateDetallePedidoRequest request, IDetallePedidoService service) =>
+        // Crear un detalle
+        group.MapPost("/", async (
+            int pedidoId,
+            [FromBody] CreateDetallePedidoRequest request,
+            [FromServices] IDetallePedidoService service) =>
         {
             var detalle = await service.CreateAsync(pedidoId, request);
-            return Results.Created($"/pedidos/{pedidoId}/detalles/{detalle.IdPedidoDetalle}", detalle);
+
+            return Results.Created(
+                $"/api/pedidos/{pedidoId}/detalles/{detalle.IdPedidoDetalle}",
+                detalle);
         });
 
-        group.MapPut("/{detalleId}", async (int pedidoId, int detalleId, UpdateDetallePedidoRequest request, IDetallePedidoService service) =>
+        // Modificar un detalle
+        group.MapPut("/{detalleId:int}", async (
+            int pedidoId,
+            int detalleId,
+            [FromBody] UpdateDetallePedidoRequest request,
+            [FromServices] IDetallePedidoService service) =>
         {
             var detalle = await service.UpdateAsync(pedidoId, detalleId, request);
-            return detalle is null ? Results.NotFound() : Results.Ok(detalle);
+
+            if (detalle == null)
+                return Results.NotFound();
+
+            return Results.Ok(detalle);
         });
 
-        group.MapDelete("/{detalleId}", async (int pedidoId, int detalleId, IDetallePedidoService service) =>
+        // Eliminar un detalle
+        group.MapDelete("/{detalleId:int}", async (
+            int pedidoId,
+            int detalleId,
+            [FromServices] IDetallePedidoService service) =>
         {
-            var deleted = await service.DeleteAsync(pedidoId, detalleId);
-            return deleted ? Results.NoContent() : Results.NotFound();
+            var eliminado = await service.DeleteAsync(pedidoId, detalleId);
+
+            if (!eliminado)
+                return Results.NotFound();
+
+            return Results.NoContent();
         });
     }
 }

@@ -2,9 +2,8 @@ public static class PagoEndpoints
 {
     public static RouteGroupBuilder MapPagoEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/pedidos/{pedidoId}/pagos")
-        .WithTags("Pagos")
-        .WithGroupName("Pagos");
+        var group = app.MapGroup("/api/pedidos/{pedidoId}/pagos")
+            .WithTags("Pagos");
 
         group.MapGet("/", async (int pedidoId, IPagoService service) =>
             Results.Ok(await service.GetByPedidoAsync(pedidoId)));
@@ -18,7 +17,7 @@ public static class PagoEndpoints
         group.MapPost("/", async (int pedidoId, CreatePagoRequest request, IPagoService service) =>
         {
             var pago = await service.CreateAsync(pedidoId, request);
-            return Results.Created($"/pedidos/{pedidoId}/pagos/{pago.IdPago}", pago);
+            return Results.Created($"/api/pedidos/{pedidoId}/pagos/{pago.IdPago}", pago);
         });
 
         group.MapPut("/{pagoId}", async (int pedidoId, int pagoId, UpdatePagoRequest request, IPagoService service) =>
@@ -32,6 +31,7 @@ public static class PagoEndpoints
             var deleted = await service.DeleteAsync(pedidoId, pagoId);
             return deleted ? Results.NoContent() : Results.NotFound();
         });
-         return group;
+
+        return group;
     }
 }

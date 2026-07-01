@@ -2,8 +2,11 @@ public static class ReporteEndpoints
 {
     public static void MapReporteEndpoints(this WebApplication app)
     {
-        var userGroup = app.MapGroup("/usuarios/{usuarioId}/reportes");
-        var globalGroup = app.MapGroup("/reportes");
+        var userGroup = app.MapGroup("/api/usuarios/{usuarioId}/reportes")
+            .WithTags("Reportes");
+
+        var globalGroup = app.MapGroup("/api/reportes")
+            .WithTags("Reportes");
 
         userGroup.MapGet("/", async (int usuarioId, IReporteService service) =>
             Results.Ok(await service.GetByUsuarioAsync(usuarioId)));
@@ -17,7 +20,7 @@ public static class ReporteEndpoints
         userGroup.MapPost("/", async (int usuarioId, CreateReporteRequest request, IReporteService service) =>
         {
             var reporte = await service.CreateAsync(usuarioId, request);
-            return Results.Created($"/usuarios/{usuarioId}/reportes/{reporte.IdReporte}", reporte);
+            return Results.Created($"/api/usuarios/{usuarioId}/reportes/{reporte.IdReporte}", reporte);
         });
 
         userGroup.MapDelete("/{reporteId}", async (int usuarioId, int reporteId, IReporteService service) =>
@@ -36,6 +39,5 @@ public static class ReporteEndpoints
         {
             return Results.Ok(await service.FilterByFechaAsync(fechaInicio, fechaFin));
         });
-        
     }
 }

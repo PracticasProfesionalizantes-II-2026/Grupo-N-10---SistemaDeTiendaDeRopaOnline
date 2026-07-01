@@ -1,53 +1,52 @@
+//crear con la estructura de subcategoriaendpoints
 using Logica.DTO.Categoria.Requests;
 using Logica.Interfaces;
-
+using Microsoft.AspNetCore.Mvc;
 namespace Endpoints;
 
 public static class CategoriaEndpoints
 {
-    public static void MapCategoriaEndpoints(this WebApplication app)
+    public static RouteGroupBuilder MapCategoriaEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/categorias")
-            .WithTags("Categorias")
-            .WithGroupName("Categorias");
+            .WithTags("Categorias");
 
-        group.MapGet("/", async (ICategoriaService service) =>
+        group.MapGet("/", async ([FromServices] ICategoriaService service) =>
         {
-            return Results.Ok(await service.GetAllAsync());
+            var categorias = await service.GetAllAsync();
+            return Results.Ok(categorias);
         });
 
-        group.MapGet("/{id:int}", async (int id, ICategoriaService service) =>
+        group.MapGet("/{id:int}", async (int id, [FromServices] ICategoriaService service) =>
         {
             var categoria = await service.GetByIdAsync(id);
-
-            return categoria is null
-                ? Results.NotFound()
-                : Results.Ok(categoria);
+            if (categoria == null)
+                return Results.NotFound();
+            return Results.Ok(categoria);
         });
 
-        group.MapPost("/", async (CreateCategoriaRequest request, ICategoriaService service) =>
+        group.MapPost("/", async ([FromBody] CreateCategoriaRequest request, [FromServices] ICategoriaService service) =>
         {
             var categoria = await service.CreateAsync(request);
-
             return Results.Created($"/api/categorias/{categoria.Id}", categoria);
         });
 
-        group.MapPut("/{id:int}", async (int id, UpdateCategoriaRequest request, ICategoriaService service) =>
+        group.MapPut("/{id:int}", async (int id, [FromBody] UpdateCategoriaRequest request, [FromServices] ICategoriaService service) =>
         {
-            var ok = await service.UpdateAsync(id, request);
-
-            return ok
-                ? Results.NoContent()
-                : Results.NotFound();
+            var updated = await service.UpdateAsync(id, request);
+            if (!updated)
+                return Results.NotFound();
+            return Results.NoContent();
         });
 
-        group.MapDelete("/{id:int}", async (int id, ICategoriaService service) =>
+        group.MapDelete("/{id:int}", async (int id, [FromServices] ICategoriaService service) =>
         {
-            var ok = await service.DeleteAsync(id);
-
-            return ok
-                ? Results.NoContent()
-                : Results.NotFound();
+            var deleted = await service.DeleteAsync(id);
+            if (!deleted)
+                return Results.NotFound();
+            return Results.NoContent();
         });
+
+        return group;
     }
 }

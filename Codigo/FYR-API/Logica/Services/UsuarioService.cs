@@ -1,4 +1,5 @@
 using Entidades.Models;
+using DTO.Usuario.Request;
 
 public class UsuarioService : IUsuarioService
 {
@@ -60,6 +61,26 @@ public class UsuarioService : IUsuarioService
 
         await _repository.DeleteAsync(usuario);
 
+
         return true;
+    }
+    public async Task<UsuarioResponse> AddAsync(CreateUsuarioRequest request)
+    {
+        var usuario = new Usuario
+        {
+            Nombre = request.Nombre,
+            Apellido = request.Apellido,
+            Email = request.Email,
+            Rol = request.Rol,
+            Telefono = request.Telefono,
+            IdiomaPreferido = request.IdiomaPreferido,
+            FotoPerfil = request.FotoPerfil,
+            Activo = request.Activo,
+            EmpresaId = request.EmpresaId
+        };
+
+        await _repository.AddAsync(usuario);
+
+        return Map(usuario);
     }
 }

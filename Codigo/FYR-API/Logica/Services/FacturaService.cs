@@ -1,7 +1,6 @@
 using Repositorios.Interfaces;
 using DTO.Factura.Request;
 using DTO.Factura.Response;
-using Logica.Interfaces;
 namespace Logica.Services;
 public class FacturaService
 {

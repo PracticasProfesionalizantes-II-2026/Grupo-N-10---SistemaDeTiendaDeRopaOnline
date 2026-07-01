@@ -1,8 +1,6 @@
 using Scalar.AspNetCore;
 using Datos;
 using Microsoft.EntityFrameworkCore;
-
-using Repositorios;
 using Repositorios.Interfaces;
 using Repositorios.Implementaciones;
 
@@ -83,6 +81,7 @@ builder.Services.AddScoped<ISucursalRepository, SucursalRepository>();
 builder.Services.AddScoped<IFacturaRepository, FacturaRepository>();
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<IMedioContactoRepository, MedioContactoRepository>();
+builder.Services.AddScoped<IStockRepository, StockRepository>();
 
 //======================================
 // OpenAPI
@@ -92,20 +91,16 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-//======================================
-// OpenAPI + Scalar
-//======================================
-
 app.MapOpenApi();
 app.MapScalarApiReference();
 
+app.UseHttpsRedirection();
 //======================================
 // Endpoints
 //======================================
 
 app.MapCategoriaEndpoints();
 app.MapSubcategoriaEndpoints();
-app.MapEmpresaEndpoints();
 app.MapEnvioEndpoints();
 app.MapPedidoEndpoints();
 app.MapDetallePedidoEndpoints();
@@ -124,5 +119,4 @@ app.MapMedioContactoEndpoints();
 app.MapStockEndpoints();
 
 app.MapGet("/", () => "Bienvenido a la API de FYR");
-
 app.Run();

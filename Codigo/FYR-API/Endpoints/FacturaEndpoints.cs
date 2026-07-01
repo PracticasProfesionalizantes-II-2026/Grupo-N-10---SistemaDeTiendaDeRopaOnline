@@ -1,6 +1,5 @@
 using DTO.Factura.Request;
 using Repositorios.Interfaces;
-using Microsoft.AspNetCore.Builder;
 
 
 namespace Endpoints;
@@ -10,9 +9,7 @@ public static class FacturaEndpoints
     public static void MapFacturaEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/facturas")
-            .WithTags("Facturas")
-            .WithGroupName("Facturas");
-
+            .WithTags("Facturas");
         group.MapGet("/", async (IFacturaRepository repo) =>
         {
             return Results.Ok(await repo.GetAllAsync());
