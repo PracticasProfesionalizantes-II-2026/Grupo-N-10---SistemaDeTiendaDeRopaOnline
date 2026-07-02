@@ -1,5 +1,6 @@
-using Entidades.Models;
 using DTO.Usuario.Request;
+using DTO.Usuario.Response;
+using Entidades.Models;
 
 public class UsuarioService : IUsuarioService
 {
@@ -34,14 +35,44 @@ public class UsuarioService : IUsuarioService
     {
         var usuario = await _repository.GetByIdAsync(id);
 
-        return usuario == null ? null : Map(usuario);
+        if (usuario == null)
+            return null;
+
+        return Map(usuario);
+    }
+
+    public async Task<UsuarioResponse> AddAsync(CreateUsuarioRequest request)
+    {
+        var usuario = new Usuario
+        {
+            Nombre = request.Nombre,
+            Apellido = request.Apellido,
+            Email = request.Email,
+
+            // Después pueden reemplazar esto por un hash real
+            PasswordHash = request.Password,
+
+            Rol = request.Rol,
+            Telefono = request.Telefono,
+            IdiomaPreferido = request.IdiomaPreferido,
+            FotoPerfil = request.FotoPerfil,
+            Activo = request.Activo,
+            EmpresaId = request.EmpresaId,
+
+            FechaRegistro = DateTime.UtcNow
+        };
+
+        await _repository.AddAsync(usuario);
+
+        return Map(usuario);
     }
 
     public async Task<UsuarioResponse?> UpdateAsync(int id, UpdateUsuarioRequest request)
     {
         var usuario = await _repository.GetByIdAsync(id);
 
-        if (usuario == null) return null;
+        if (usuario == null)
+            return null;
 
         usuario.Nombre = request.Nombre;
         usuario.Apellido = request.Apellido;
@@ -57,30 +88,11 @@ public class UsuarioService : IUsuarioService
     {
         var usuario = await _repository.GetByIdAsync(id);
 
-        if (usuario == null) return false;
+        if (usuario == null)
+            return false;
 
         await _repository.DeleteAsync(usuario);
 
-
         return true;
-    }
-    public async Task<UsuarioResponse> AddAsync(CreateUsuarioRequest request)
-    {
-        var usuario = new Usuario
-        {
-            Nombre = request.Nombre,
-            Apellido = request.Apellido,
-            Email = request.Email,
-            Rol = request.Rol,
-            Telefono = request.Telefono,
-            IdiomaPreferido = request.IdiomaPreferido,
-            FotoPerfil = request.FotoPerfil,
-            Activo = request.Activo,
-            EmpresaId = request.EmpresaId
-        };
-
-        await _repository.AddAsync(usuario);
-
-        return Map(usuario);
     }
 }

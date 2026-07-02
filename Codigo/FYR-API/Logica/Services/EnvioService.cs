@@ -19,7 +19,7 @@ public class EnvioService : IEnvioService
             IdEnvio = e.IdEnvio,
             TipoEnvio = e.TipoEnvio.ToString(),
             Costo = e.Costo,
-            FechaEstimada = e.FechaEstimada,
+            FechaEnvio = DateTime.UtcNow,
             NumeroSeguimiento = e.NumeroSeguimiento,
             Estado = e.Estado.ToString()
         }).ToList();
@@ -29,14 +29,15 @@ public class EnvioService : IEnvioService
     {
         var envio = await _repository.GetByIdAsync(pedidoId, envioId);
 
-        if (envio == null) return null;
+        if (envio == null)
+            return null;
 
         return new EnvioResponse
         {
             IdEnvio = envio.IdEnvio,
             TipoEnvio = envio.TipoEnvio.ToString(),
             Costo = envio.Costo,
-            FechaEstimada = envio.FechaEstimada,
+            FechaEnvio = DateTime.UtcNow,
             NumeroSeguimiento = envio.NumeroSeguimiento,
             Estado = envio.Estado.ToString()
         };
@@ -49,25 +50,27 @@ public class EnvioService : IEnvioService
             PedidoId = pedidoId,
             TipoEnvio = Enum.Parse<TipoEnvio>(request.TipoEnvio, true),
             Costo = request.Costo,
-            FechaEstimada = request.FechaEstimada,
+            FechaEnvio = DateTime.UtcNow,
             NumeroSeguimiento = request.NumeroSeguimiento,
             Estado = Enum.Parse<EstadoEnvio>(request.Estado, true)
         };
 
         await _repository.AddAsync(envio);
 
-        return await GetByIdAsync(pedidoId, envio.IdEnvio) ?? throw new Exception();
+        return await GetByIdAsync(pedidoId, envio.IdEnvio)
+            ?? throw new InvalidOperationException("No se pudo recuperar el envío creado.");
     }
 
     public async Task<EnvioResponse?> UpdateAsync(int pedidoId, int envioId, UpdateEnvioRequest request)
     {
         var envio = await _repository.GetByIdAsync(pedidoId, envioId);
 
-        if (envio == null) return null;
+        if (envio == null)
+            return null;
 
         envio.TipoEnvio = Enum.Parse<TipoEnvio>(request.TipoEnvio, true);
         envio.Costo = request.Costo;
-        envio.FechaEstimada = request.FechaEstimada;
+        envio.FechaEnvio = DateTime.UtcNow;
         envio.NumeroSeguimiento = request.NumeroSeguimiento;
         envio.Estado = Enum.Parse<EstadoEnvio>(request.Estado, true);
 
@@ -80,7 +83,8 @@ public class EnvioService : IEnvioService
     {
         var envio = await _repository.GetByIdAsync(pedidoId, envioId);
 
-        if (envio == null) return null;
+        if (envio == null)
+            return null;
 
         envio.Estado = Enum.Parse<EstadoEnvio>(request.Estado, true);
 
@@ -93,7 +97,8 @@ public class EnvioService : IEnvioService
     {
         var envio = await _repository.GetByIdAsync(pedidoId, envioId);
 
-        if (envio == null) return false;
+        if (envio == null)
+            return false;
 
         await _repository.DeleteAsync(envio);
 
@@ -113,14 +118,15 @@ public class EnvioService : IEnvioService
     {
         var envio = await _repository.GetTrackingAsync(envioId);
 
-        if (envio == null) return null;
+        if (envio == null)
+            return null;
 
         return new EnvioResponse
         {
             IdEnvio = envio.IdEnvio,
             TipoEnvio = envio.TipoEnvio.ToString(),
             Costo = envio.Costo,
-            FechaEstimada = envio.FechaEstimada,
+            FechaEnvio = envio.FechaEnvio,
             NumeroSeguimiento = envio.NumeroSeguimiento,
             Estado = envio.Estado.ToString()
         };

@@ -43,21 +43,21 @@ public class PedidoService : IPedidoService
         return pedidos.Select(Map).ToList();
     }
 
-    public async Task<PedidoResponse> CreateAsync(CreatePedidoRequest request)
+   public async Task<PedidoResponse> CreateAsync(CreatePedidoRequest request)
+{
+    var pedido = new Pedido
     {
-        var pedido = new Pedido
-        {
-            FechaPedido = request.FechaPedido,
-            DireccionEntrega = request.DireccionEntrega,
-            MetodoPago = request.MetodoPago,
-            UsuarioId = request.UsuarioId,
-            Estado = Enum.Parse<EstadoPedido>(request.Estado, true)
-        };
+        FechaPedido = DateTime.UtcNow,
+        DireccionEntrega = request.DireccionEntrega,
+        MetodoPago = request.MetodoPago,
+        UsuarioId = request.UsuarioId,
+        Estado = Enum.Parse<EstadoPedido>(request.Estado, true)
+    };
 
-        await _repository.AddAsync(pedido);
+    await _repository.AddAsync(pedido);
 
-        return Map(pedido);
-    }
+    return Map(pedido);
+}
 
     public async Task<PedidoResponse?> UpdateAsync(int id, UpdatePedidoRequest request)
     {

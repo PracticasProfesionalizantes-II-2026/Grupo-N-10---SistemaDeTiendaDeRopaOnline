@@ -35,21 +35,21 @@ public class PagoService : IPagoService
         return pago == null ? null : Map(pago);
     }
 
-    public async Task<PagoResponse> CreateAsync(int pedidoId, CreatePagoRequest request)
+public async Task<PagoResponse> CreateAsync(int pedidoId, CreatePagoRequest request)
+{
+    var pago = new Pago
     {
-        var pago = new Pago
-        {
-            Monto = request.Monto,
-            MetodoPago = request.MetodoPago,
-            FechaPago = request.FechaPago,
-            Estado = request.Estado,
-            PedidoId = pedidoId
-        };
+        Monto = request.Monto,
+        MetodoPago = request.MetodoPago,
+        FechaPago = DateTime.UtcNow,
+        Estado = request.Estado,
+        PedidoId = pedidoId
+    };
 
-        await _repository.AddAsync(pago);
+    await _repository.AddAsync(pago);
 
-        return Map(pago);
-    }
+    return Map(pago);
+}
 
     public async Task<PagoResponse?> UpdateAsync(int pedidoId, int pagoId, UpdatePagoRequest request)
     {

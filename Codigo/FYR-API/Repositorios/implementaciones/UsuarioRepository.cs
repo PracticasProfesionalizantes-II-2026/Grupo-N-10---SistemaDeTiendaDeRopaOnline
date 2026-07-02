@@ -4,7 +4,7 @@ using Datos;
 public class UsuarioRepository : IUsuarioRepository
 {
     private readonly AppDbContext _context;
-
+ 
     public UsuarioRepository(AppDbContext context)
     {
         _context = context;
@@ -40,4 +40,5 @@ public class UsuarioRepository : IUsuarioRepository
         await _context.SaveChangesAsync();
         return usuario;
     }
+    
 }

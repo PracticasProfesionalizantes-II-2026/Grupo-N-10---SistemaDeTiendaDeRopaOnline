@@ -53,12 +53,12 @@ public class FacturaRepository : IFacturaRepository
     {
         var factura = new Factura
         {
-            Fecha = request.Fecha,
             Tipo = request.Tipo,
             Numero = request.Numero,
             Total = request.Total,
             FormaPago = request.FormaPago,
-            PedidoId = request.PedidoId
+            PedidoId = request.PedidoId,
+            FechaFactura = DateTime.UtcNow,
         };
 
         _context.Facturas.Add(factura);
