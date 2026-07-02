@@ -40,8 +40,8 @@ public class ReporteService : IReporteService
         var reporte = new Reporte
         {
             TipoReporte = request.TipoReporte,
-            FechaInicio = request.FechaInicio,
-            FechaFin = request.FechaFin,
+            FechaInicio = DateTime.UtcNow.AddDays(-30),
+            FechaFin = DateTime.UtcNow,
             UsuarioId = usuarioId
         };
 

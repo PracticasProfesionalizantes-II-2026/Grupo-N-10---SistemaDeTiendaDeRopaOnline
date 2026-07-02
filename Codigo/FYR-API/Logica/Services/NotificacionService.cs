@@ -39,7 +39,7 @@ public class NotificacionService : INotificacionService
         {
             UsuarioId = request.UsuarioId,
             Mensaje = request.Mensaje,
-            FechaEnvio = request.FechaEnvio
+            FechaEnvio = DateTime.UtcNow,
         };
 
         await _repository.AddAsync(notificacion);
