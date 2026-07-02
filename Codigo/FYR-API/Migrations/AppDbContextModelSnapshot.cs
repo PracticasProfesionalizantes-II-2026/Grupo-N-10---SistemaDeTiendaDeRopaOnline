@@ -35,11 +35,12 @@ namespace FYR_API.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EmpresaId");
+                    b.HasIndex("EmpresaId", "Nombre")
+                        .IsUnique();
 
                     b.ToTable("Categorias");
                 });
@@ -102,7 +103,7 @@ namespace FYR_API.Migrations
 
                     b.Property<string>("Cuit")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Direccion")
                         .IsRequired()
@@ -126,22 +127,28 @@ namespace FYR_API.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Cuit")
+                        .IsUnique();
+
                     b.ToTable("Empresas");
                 });
 
             modelBuilder.Entity("Entidades.Models.Envio", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("IdEnvio")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdEnvio"));
 
                     b.Property<decimal>("Costo")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("FechaEstimada")
+                    b.Property<int>("Estado")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaEnvio")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("NumeroSeguimiento")
@@ -153,9 +160,10 @@ namespace FYR_API.Migrations
                     b.Property<int>("TipoEnvio")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.HasKey("IdEnvio");
 
-                    b.HasIndex("PedidoId");
+                    b.HasIndex("PedidoId")
+                        .IsUnique();
 
                     b.ToTable("Envios");
                 });
@@ -169,6 +177,9 @@ namespace FYR_API.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaFactura")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("FormaPago")
@@ -191,7 +202,8 @@ namespace FYR_API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PedidoId");
+                    b.HasIndex("PedidoId")
+                        .IsUnique();
 
                     b.ToTable("Facturas");
                 });
@@ -240,10 +252,15 @@ namespace FYR_API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("NotificacionId")
+                        .HasColumnType("int");
+
                     b.Property<int>("UsuarioId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("NotificacionId");
 
                     b.HasIndex("UsuarioId");
 
@@ -329,6 +346,9 @@ namespace FYR_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
                     b.Property<int>("CategoriaId")
                         .HasColumnType("int");
 
@@ -410,7 +430,7 @@ namespace FYR_API.Migrations
                     b.Property<string>("Correo")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("EmpresaId")
+                    b.Property<int>("EmpresaId")
                         .HasColumnType("int");
 
                     b.Property<string>("Nombre")
@@ -478,6 +498,9 @@ namespace FYR_API.Migrations
                     b.Property<int>("ProductoId")
                         .HasColumnType("int");
 
+                    b.Property<int>("StockMinimo")
+                        .HasColumnType("int");
+
                     b.Property<int>("SucursalId")
                         .HasColumnType("int");
 
@@ -503,11 +526,12 @@ namespace FYR_API.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoriaId");
+                    b.HasIndex("CategoriaId", "Nombre")
+                        .IsUnique();
 
                     b.ToTable("Subcategorias");
                 });
@@ -532,14 +556,15 @@ namespace FYR_API.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Telefono")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EmpresaId");
+                    b.HasIndex("EmpresaId", "Nombre")
+                        .IsUnique();
 
                     b.ToTable("Sucursales");
                 });
@@ -557,11 +582,13 @@ namespace FYR_API.Migrations
 
                     b.Property<string>("Apellido")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<int?>("EmpresaId")
                         .HasColumnType("int");
@@ -569,12 +596,17 @@ namespace FYR_API.Migrations
                     b.Property<DateTime>("FechaRegistro")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("IdiomaPreferido")
+                    b.Property<string>("FotoPerfil")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IdiomaPreferido")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -584,9 +616,13 @@ namespace FYR_API.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Telefono")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
 
                     b.HasIndex("EmpresaId");
 
@@ -615,7 +651,7 @@ namespace FYR_API.Migrations
                     b.HasOne("Entidades.Models.Producto", "Producto")
                         .WithMany("DetallesPedido")
                         .HasForeignKey("ProductoId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Pedido");
@@ -626,8 +662,8 @@ namespace FYR_API.Migrations
             modelBuilder.Entity("Entidades.Models.Envio", b =>
                 {
                     b.HasOne("Entidades.Models.Pedido", "Pedido")
-                        .WithMany()
-                        .HasForeignKey("PedidoId")
+                        .WithOne("Envio")
+                        .HasForeignKey("Entidades.Models.Envio", "PedidoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -637,8 +673,8 @@ namespace FYR_API.Migrations
             modelBuilder.Entity("Entidades.Models.Factura", b =>
                 {
                     b.HasOne("Entidades.Models.Pedido", "Pedido")
-                        .WithMany()
-                        .HasForeignKey("PedidoId")
+                        .WithOne("Factura")
+                        .HasForeignKey("Entidades.Models.Factura", "PedidoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -658,8 +694,12 @@ namespace FYR_API.Migrations
 
             modelBuilder.Entity("Entidades.Models.Notificacion", b =>
                 {
+                    b.HasOne("Entidades.Models.Notificacion", null)
+                        .WithMany("Notificaciones")
+                        .HasForeignKey("NotificacionId");
+
                     b.HasOne("Entidades.Models.Usuario", "Usuario")
-                        .WithMany()
+                        .WithMany("Notificaciones")
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -703,19 +743,22 @@ namespace FYR_API.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Entidades.Models.Subcategoria", null)
+                    b.HasOne("Entidades.Models.Subcategoria", "Subcategoria")
                         .WithMany("Productos")
-                        .HasForeignKey("SubcategoriaId");
+                        .HasForeignKey("SubcategoriaId")
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Categoria");
 
                     b.Navigation("Empresa");
+
+                    b.Navigation("Subcategoria");
                 });
 
             modelBuilder.Entity("Entidades.Models.ProductoProveedor", b =>
                 {
                     b.HasOne("Entidades.Models.Producto", "Producto")
-                        .WithMany()
+                        .WithMany("ProductosProveedor")
                         .HasForeignKey("ProductoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -733,9 +776,13 @@ namespace FYR_API.Migrations
 
             modelBuilder.Entity("Entidades.Models.Proveedor", b =>
                 {
-                    b.HasOne("Entidades.Models.Empresa", null)
+                    b.HasOne("Entidades.Models.Empresa", "Empresa")
                         .WithMany("Proveedores")
-                        .HasForeignKey("EmpresaId");
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Empresa");
                 });
 
             modelBuilder.Entity("Entidades.Models.Reporte", b =>
@@ -794,7 +841,8 @@ namespace FYR_API.Migrations
                 {
                     b.HasOne("Entidades.Models.Empresa", "Empresa")
                         .WithMany("Usuarios")
-                        .HasForeignKey("EmpresaId");
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Empresa");
                 });
@@ -821,9 +869,18 @@ namespace FYR_API.Migrations
                     b.Navigation("Usuarios");
                 });
 
+            modelBuilder.Entity("Entidades.Models.Notificacion", b =>
+                {
+                    b.Navigation("Notificaciones");
+                });
+
             modelBuilder.Entity("Entidades.Models.Pedido", b =>
                 {
                     b.Navigation("DetallesPedido");
+
+                    b.Navigation("Envio");
+
+                    b.Navigation("Factura");
 
                     b.Navigation("Pagos");
                 });
@@ -831,6 +888,8 @@ namespace FYR_API.Migrations
             modelBuilder.Entity("Entidades.Models.Producto", b =>
                 {
                     b.Navigation("DetallesPedido");
+
+                    b.Navigation("ProductosProveedor");
 
                     b.Navigation("Stocks");
                 });
@@ -852,6 +911,8 @@ namespace FYR_API.Migrations
 
             modelBuilder.Entity("Entidades.Models.Usuario", b =>
                 {
+                    b.Navigation("Notificaciones");
+
                     b.Navigation("Pedidos");
 
                     b.Navigation("Reportes");
