@@ -100,6 +100,7 @@ app.UseHttpsRedirection();
 //======================================
 
 app.MapCategoriaEndpoints();
+app.MapEmpresaEndpoints();
 app.MapSubcategoriaEndpoints();
 app.MapEnvioEndpoints();
 app.MapPedidoEndpoints();
