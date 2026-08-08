@@ -4,7 +4,6 @@ public class RegisterRequest
     public string Apellido { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
-    public Rol Rol { get; set; }
     public string? Telefono { get; set; }
     public string? IdiomaPreferido { get; set; }
 }
