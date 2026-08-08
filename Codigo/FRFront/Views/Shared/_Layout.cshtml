@@ -1,0 +1,484 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - F&R</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- CSS propio de F&R -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    @await RenderSectionAsync("Styles", required: false)
+
+</head>
+
+
+<body>
+
+    <!-- ===================================================== -->
+    <!-- NAVBAR F&R -->
+    <!-- ===================================================== -->
+
+    <header>
+
+        <nav class="navbar navbar-expand-lg navbar-fyr">
+
+            <div class="container-fluid px-4">
+
+               <!-- ================================================= -->
+               <!-- LOGO -->
+               <!-- ================================================= -->
+
+               <a class="navbar-brand logo-fyr"
+               asp-controller="Home"
+               asp-action="Index">
+
+               <img src="~/images/logo-fr.png"
+                alt="F&R"
+               class="logo-fyr-img" />
+
+               </a>
+
+                <!-- ================================================= -->
+                <!-- BOTÓN RESPONSIVE -->
+                <!-- ================================================= -->
+
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#menuPrincipal"
+                        aria-controls="menuPrincipal"
+                        aria-expanded="false"
+                        aria-label="Abrir menú">
+
+                    <span class="navbar-toggler-icon"></span>
+
+                </button>
+
+
+                <!-- ================================================= -->
+                <!-- MENÚ -->
+                <!-- ================================================= -->
+
+                <div class="collapse navbar-collapse" id="menuPrincipal">
+
+                    <ul class="navbar-nav mx-auto menu-fyr">
+
+
+                        <!-- MIS COMPRAS -->
+
+                        <li class="nav-item">
+
+                            <a class="nav-link"
+                               asp-controller="Home"
+                               asp-action="Index">
+
+                                MIS COMPRAS
+
+                            </a>
+
+                        </li>
+
+
+                        <!-- LANZAMIENTOS -->
+
+                        <li class="nav-item">
+
+                            <a class="nav-link" href="#">
+
+                                LANZAMIENTOS
+
+                            </a>
+
+                        </li>
+
+
+                        <!-- HOMBRE -->
+
+                        <li class="nav-item">
+
+                            <a class="nav-link" href="#">
+
+                                HOMBRE
+
+                            </a>
+
+                        </li>
+
+
+                        <!-- MUJER -->
+
+                        <li class="nav-item">
+
+                            <a class="nav-link" href="#">
+
+                                MUJER
+
+                            </a>
+
+                        </li>
+
+
+                        <!-- OFERTAS -->
+
+                        <li class="nav-item">
+
+                            <a class="nav-link" href="#">
+
+                                OFERTAS
+
+                            </a>
+
+                        </li>
+
+
+                        <!-- PRODUCTOS -->
+
+                        <li class="nav-item">
+
+                            <a class="nav-link" href="#">
+
+                                PRODUCTOS
+
+                            </a>
+
+                        </li>
+
+                    </ul>
+
+
+                    <!-- ================================================= -->
+                    <!-- ICONOS -->
+                    <!-- ================================================= -->
+
+                    <div class="navbar-icons">
+
+
+                        <!-- ================================================= -->
+                        <!-- BUSCAR -->
+                        <!-- ================================================= -->
+
+                        <a href="#"
+                           class="icon-link"
+                           title="Buscar"
+                           aria-label="Buscar">
+
+                            <svg class="icon-svg icon-search"
+                                 xmlns="http://www.w3.org/2000/svg"
+                                 viewBox="0 0 24 24"
+                                 aria-hidden="true">
+
+                                <circle cx="11" cy="11" r="7"></circle>
+
+                                <line x1="16.5"
+                                      y1="16.5"
+                                      x2="22"
+                                      y2="22">
+                                </line>
+
+                            </svg>
+
+                        </a>
+
+
+                        <!-- ================================================= -->
+                        <!-- USUARIO -->
+                        <!-- ================================================= -->
+
+                        <a href="#"
+                           class="icon-link"
+                           title="Mi cuenta"
+                           aria-label="Mi cuenta">
+
+                            <svg class="icon-svg icon-user"
+                                 xmlns="http://www.w3.org/2000/svg"
+                                 viewBox="0 0 24 24"
+                                 aria-hidden="true">
+
+                                <circle cx="12"
+                                        cy="7"
+                                        r="4">
+                                </circle>
+
+                                <path d="M4 21c0-4.2 3.6-7 8-7s8 2.8 8 7">
+                                </path>
+
+                            </svg>
+
+                        </a>
+
+
+                        <!-- ================================================= -->
+                        <!-- CARRITO -->
+                        <!-- ================================================= -->
+
+                        <a href="#"
+                           class="icon-link"
+                           title="Carrito"
+                           aria-label="Carrito">
+
+                            <svg class="icon-svg icon-cart"
+                                 xmlns="http://www.w3.org/2000/svg"
+                                 viewBox="0 0 24 24"
+                                 aria-hidden="true">
+
+                                <path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 7H6">
+                                </path>
+
+                                <circle cx="10"
+                                        cy="20"
+                                        r="1.2">
+                                </circle>
+
+                                <circle cx="18"
+                                        cy="20"
+                                        r="1.2">
+                                </circle>
+
+                            </svg>
+
+                        </a>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </nav>
+
+    </header>
+
+
+    <!-- ===================================================== -->
+    <!-- CONTENIDO DE CADA PÁGINA -->
+    <!-- ===================================================== -->
+
+    <main>
+
+        @RenderBody()
+
+    </main>
+
+
+    <!-- ===================================================== -->
+    <!-- FOOTER F&R -->
+    <!-- ===================================================== -->
+
+    <footer class="footer-fyr">
+
+        <div class="container-fluid">
+
+            <div class="row">
+
+
+                <!-- ================================================= -->
+                <!-- PRODUCTOS -->
+                <!-- ================================================= -->
+
+                <div class="col-md-4 footer-column">
+
+                    <h5>PRODUCTOS</h5>
+
+                    <ul>
+
+                        <li>
+                            <a href="#">BUZOS</a>
+                        </li>
+
+                        <li>
+                            <a href="#">CAMISAS</a>
+                        </li>
+
+                        <li>
+                            <a href="#">SWEATER</a>
+                        </li>
+
+                        <li>
+                            <a href="#">REMERAS</a>
+                        </li>
+
+                        <li>
+                            <a href="#">PANTALONES</a>
+                        </li>
+
+                    </ul>
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- CONTACTANOS -->
+                <!-- ================================================= -->
+
+                <div class="col-md-4 footer-column">
+
+                    <h5>CONTACTANOS</h5>
+
+                    <ul>
+
+                        <li>
+
+                            <span class="contact-icon">
+                                <svg viewBox="0 0 24 24"
+                                     aria-hidden="true">
+
+                                    <path d="M6.6 3.5c-.6 0-1.1.4-1.3 1l-1 3.2c-.2.6 0 1.2.5 1.6l2.4 2c1.2 2.2 3 4 5.2 5.2l2 2.4c.4.5 1 .7 1.6.5l3.2-1c.6-.2 1-.7 1-1.3v-2.1c0-.6-.4-1.1-1-1.3l-3.1-.8c-.5-.1-1 .1-1.3.5l-1.1 1.3c-2.1-1.1-3.8-2.8-4.9-4.9l1.3-1.1c.4-.3.6-.8.5-1.3l-.8-3.1c-.2-.6-.7-1-1.3-1H6.6z">
+                                    </path>
+
+                                </svg>
+                            </span>
+
+                            3564-451239
+
+                        </li>
+
+
+                        <li>
+
+                            <span class="contact-icon">
+
+                                <svg viewBox="0 0 24 24"
+                                     aria-hidden="true">
+
+                                    <rect x="3"
+                                          y="5"
+                                          width="18"
+                                          height="14"
+                                          rx="1">
+                                    </rect>
+
+                                    <polyline points="3,6 12,13 21,6">
+                                    </polyline>
+
+                                </svg>
+
+                            </span>
+
+                            f&r_tienda_online@gmail.com
+
+                        </li>
+
+
+                        <li>
+
+                            <span class="contact-icon">
+
+                                <svg viewBox="0 0 24 24"
+                                     aria-hidden="true">
+
+                                    <path d="M12 21s7-6.1 7-12a7 7 0 1 0-14 0c0 5.9 7 12 7 12z">
+                                    </path>
+
+                                    <circle cx="12"
+                                            cy="9"
+                                            r="2.5">
+                                    </circle>
+
+                                </svg>
+
+                            </span>
+
+                            Sunchales, Santa Fe
+
+                        </li>
+
+
+                        <li>
+
+                            <span class="contact-icon">
+
+                                <svg viewBox="0 0 24 24"
+                                     aria-hidden="true">
+
+                                    <rect x="3"
+                                          y="3"
+                                          width="18"
+                                          height="18"
+                                          rx="5">
+                                    </rect>
+
+                                    <circle cx="12"
+                                            cy="12"
+                                            r="4">
+                                    </circle>
+
+                                    <circle cx="17.5"
+                                            cy="6.5"
+                                            r="1">
+                                    </circle>
+
+                                </svg>
+
+                            </span>
+
+                            @@F&R.OFICIAL
+
+                        </li>
+
+                    </ul>
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- MEDIOS DE PAGO -->
+                <!-- ================================================= -->
+
+                <div class="col-md-4 footer-column">
+
+                    <h5>MEDIOS DE PAGO</h5>
+
+                    <ul>
+
+                        <li>
+                            EFECTIVO
+                        </li>
+
+                        <li>
+                            TARJETA DE DEBITO
+                        </li>
+
+                        <li>
+                            TARJETA DE CREDITO
+                        </li>
+
+                        <li>
+                            TRANSFERENCIA
+                        </li>
+
+                    </ul>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <!-- ===================================================== -->
+    <!-- SCRIPTS -->
+    <!-- ===================================================== -->
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+
+</html>
