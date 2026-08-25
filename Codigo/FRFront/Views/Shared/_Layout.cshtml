@@ -32,19 +32,19 @@
 
             <div class="container-fluid px-4">
 
-               <!-- ================================================= -->
-               <!-- LOGO -->
-               <!-- ================================================= -->
+                <!-- ================================================= -->
+                <!-- LOGO -->
+                <!-- ================================================= -->
 
-               <a class="navbar-brand logo-fyr"
-               asp-controller="Home"
-               asp-action="Index">
+                <a class="navbar-brand logo-fyr"
+                   asp-controller="Home"
+                   asp-action="Index">
 
-               <img src="~/images/logo-fr.png"
-                alt="F&R"
-               class="logo-fyr-img" />
+                    <img src="~/images/logo-fr.png"
+                         alt="F&R"
+                         class="logo-fyr-img" />
 
-               </a>
+                </a>
 
                 <!-- ================================================= -->
                 <!-- BOTÓN RESPONSIVE -->
@@ -71,21 +71,21 @@
 
                     <ul class="navbar-nav mx-auto menu-fyr">
 
+                        <!-- MIS COMPRAS (Solo visible para Clientes Autenticados) -->
+                        @if (User.Identity?.IsAuthenticated == true && User.IsInRole("5"))
+                        {
+                            <li class="nav-item">
 
-                        <!-- MIS COMPRAS -->
+                                <a class="nav-link"
+                                   asp-controller="Cliente"
+                                   asp-action="MisCompras">
 
-                        <li class="nav-item">
+                                    MIS COMPRAS
 
-                            <a class="nav-link"
-                               asp-controller="Home"
-                               asp-action="Index">
+                                </a>
 
-                                MIS COMPRAS
-
-                            </a>
-
-                        </li>
-
+                            </li>
+                        }
 
                         <!-- LANZAMIENTOS -->
 
@@ -155,16 +155,12 @@
 
 
                     <!-- ================================================= -->
-                    <!-- ICONOS -->
+                    <!-- ICONOS Y ACCESO -->
                     <!-- ================================================= -->
 
-                    <div class="navbar-icons">
+                    <div class="navbar-icons d-flex align-items-center">
 
-
-                        <!-- ================================================= -->
-                        <!-- BUSCAR -->
-                        <!-- ================================================= -->
-
+                        <!-- BUSCAR (Siempre visible) -->
                         <a href="#"
                            class="icon-link"
                            title="Buscar"
@@ -187,65 +183,63 @@
 
                         </a>
 
+                        <!-- USUARIO Y CARRITO (Si inició sesión) / INICIAR SESIÓN (Si es invitado) -->
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <!-- USUARIO -->
+                            <a asp-controller="Account"
+                               asp-action="Perfil"
+                               class="icon-link"
+                               title="Mi cuenta"
+                               aria-label="Mi cuenta">
 
-                        <!-- ================================================= -->
-                        <!-- USUARIO -->
-                        <!-- ================================================= -->
+                                <svg class="icon-svg icon-user"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                     viewBox="0 0 24 24"
+                                     aria-hidden="true">
 
-                        <a href="#"
-                           class="icon-link"
-                           title="Mi cuenta"
-                           aria-label="Mi cuenta">
+                                    <circle cx="12" cy="7" r="4"></circle>
 
-                            <svg class="icon-svg icon-user"
-                                 xmlns="http://www.w3.org/2000/svg"
-                                 viewBox="0 0 24 24"
-                                 aria-hidden="true">
+                                    <path d="M4 21c0-4.2 3.6-7 8-7s8 2.8 8 7"></path>
 
-                                <circle cx="12"
-                                        cy="7"
-                                        r="4">
-                                </circle>
+                                </svg>
 
-                                <path d="M4 21c0-4.2 3.6-7 8-7s8 2.8 8 7">
-                                </path>
+                            </a>
 
-                            </svg>
+                            <!-- CARRITO -->
+                            <a asp-controller="Carrito"
+                               asp-action="Index"
+                               class="icon-link"
+                               title="Carrito"
+                               aria-label="Carrito">
 
-                        </a>
+                                <svg class="icon-svg icon-cart"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                     viewBox="0 0 24 24"
+                                     aria-hidden="true">
 
+                                    <path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 7H6"></path>
 
-                        <!-- ================================================= -->
-                        <!-- CARRITO -->
-                        <!-- ================================================= -->
+                                    <circle cx="10" cy="20" r="1.2"></circle>
 
-                        <a href="#"
-                           class="icon-link"
-                           title="Carrito"
-                           aria-label="Carrito">
+                                    <circle cx="18" cy="20" r="1.2"></circle>
 
-                            <svg class="icon-svg icon-cart"
-                                 xmlns="http://www.w3.org/2000/svg"
-                                 viewBox="0 0 24 24"
-                                 aria-hidden="true">
+                                </svg>
 
-                                <path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 7H6">
-                                </path>
+                            </a>
+                        }
+                        else
+                        {
+                            <!-- INICIAR SESIÓN (Texto visible únicamente para invitados) -->
+                            <a asp-controller="Account"
+                               asp-action="Login"
+                               class="nav-link text-uppercase fw-semibold ms-2"
+                               style="color: #111; font-size: 0.9rem; letter-spacing: 0.5px;">
 
-                                <circle cx="10"
-                                        cy="20"
-                                        r="1.2">
-                                </circle>
+                                INICIAR SESIÓN
 
-                                <circle cx="18"
-                                        cy="20"
-                                        r="1.2">
-                                </circle>
-
-                            </svg>
-
-                        </a>
-
+                            </a>
+                        }
 
                     </div>
 
@@ -278,7 +272,6 @@
         <div class="container-fluid">
 
             <div class="row">
-
 
                 <!-- ================================================= -->
                 <!-- PRODUCTOS -->

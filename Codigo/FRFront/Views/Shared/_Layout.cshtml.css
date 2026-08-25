@@ -46,3 +46,7 @@ button.accept-policy {
   white-space: nowrap;
   line-height: 60px;
 }
+.navbar-icons .nav-link:hover {
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}

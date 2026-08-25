@@ -181,8 +181,6 @@ C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FR
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\d867ecdf9n-{0}-muycvpuwrr-muycvpuwrr.gz
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\775otspi62-{0}-87fc7y1x7t-87fc7y1x7t.gz
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\mxqb5l14t5-{0}-mlv21k5csn-mlv21k5csn.gz
-C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\b31kfw0q39-{0}-z9t2bcrvp9-z9t2bcrvp9.gz
-C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\7hn9m71r2r-{0}-z9t2bcrvp9-z9t2bcrvp9.gz
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\staticwebassets.build.json
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\staticwebassets.build.json.cache
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\staticwebassets.development.json
@@ -194,3 +192,5 @@ C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FR
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\FRFront.genruntimeconfig.cache
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\ref\FRFront.dll
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\q8khbhzoej-{0}-9qtycwbj42-9qtycwbj42.gz
+C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\b31kfw0q39-{0}-z8cq8abec5-z8cq8abec5.gz
+C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\7hn9m71r2r-{0}-z8cq8abec5-z8cq8abec5.gz
