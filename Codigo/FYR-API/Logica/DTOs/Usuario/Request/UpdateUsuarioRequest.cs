@@ -1,4 +1,3 @@
-using Entidades.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace DTO.Usuario.Request;

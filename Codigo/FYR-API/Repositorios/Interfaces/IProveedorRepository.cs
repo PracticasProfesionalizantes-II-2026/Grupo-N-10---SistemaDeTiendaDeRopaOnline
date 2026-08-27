@@ -1,6 +1,5 @@
 using DTO.Proveedor.Request;
 using DTO.Proveedor.Response;
-using Entidades.Models;
 
 namespace Repositorios.Interfaces;
 

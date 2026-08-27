@@ -1,0 +1,326 @@
+﻿@using Microsoft.AspNetCore.Http
+@{
+    Layout = null;
+    ViewData["Title"] = "Inicio";
+    var usuarioLogueado = Context.Session.GetString("UsuarioSesion");
+    var rolUsuario = Context.Session.GetString("RolSesion"); // "Administrador" o "Cliente"
+    var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0] : "Rocio";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F&R - Inicio</title>
+    
+    <!-- FAVICON -->
+    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        /* Tira F&R Animada Infinita */
+        .ticker-fyr {
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 8px 0;
+            font-size: 0.9rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            width: 100%;
+        }
+
+        .ticker-track {
+            display: inline-block;
+            white-space: nowrap;
+            animation: ticker 25s linear infinite;
+        }
+
+        .ticker-track span {
+            display: inline-block;
+        }
+
+        @@keyframes ticker {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .user-dropdown-menu {
+            border-radius: 12px;
+            border: 1px solid #111;
+            padding: 10px 0;
+            min-width: 190px;
+        }
+
+        .user-dropdown-menu .user-name-header {
+            font-weight: 800;
+            padding: 8px 16px;
+            font-size: 1rem;
+            color: #000;
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-dropdown-menu .dropdown-item {
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            color: #222;
+        }
+
+        .user-dropdown-menu .dropdown-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .search-input-box {
+            display: none;
+            width: 220px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========================================================= -->
+    <!-- HEADER / BARRA DE NAVEGACIÓN -->
+    <!-- ========================================================= -->
+    <header class="bg-white border-bottom py-4 px-4 d-flex justify-content-between align-items-center">
+        
+        <!-- Logo F&R usando logo-fr.png -->
+        <div>
+            <a asp-controller="Home" asp-action="Index">
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 65px; width: auto;" />
+            </a>
+        </div>
+
+        <!-- Categorías Principales -->
+        <nav class="d-none d-md-flex gap-4 fw-bold text-uppercase fs-6">
+            <a href="#" class="text-dark text-decoration-none">LANZAMIENTOS</a>
+            <a href="#" class="text-dark text-decoration-none">HOMBRE</a>
+            <a href="#" class="text-dark text-decoration-none">MUJER</a>
+            <a href="#" class="text-dark text-decoration-none">OFERTAS</a>
+            <a href="#" class="text-dark text-decoration-none">PRODUCTOS</a>
+        </nav>
+
+        <!-- Lado Derecho: Lupa e Iniciar Sesión / Opciones de Sesión -->
+        <div class="d-flex align-items-center gap-3">
+            
+            <div class="d-flex align-items-center gap-2">
+                <input type="text" id="searchInput" class="form-control form-control-sm rounded-pill search-input-box" placeholder="Ingrese lo que desea buscar" />
+                <button type="button" id="toggleSearch" class="btn btn-link p-0 text-dark text-decoration-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                    </svg>
+                </button>
+            </div>
+
+            @if (!string.IsNullOrEmpty(usuarioLogueado))
+            {
+                <!-- SI ES ADMINISTRADOR MUESTRA "ADMINISTRAR PÁGINA", SI ES CLIENTE MUESTRA "MIS COMPRAS" -->
+                @if (rolUsuario == "Administrador")
+                {
+                    <a asp-controller="Administrador" asp-action="Index" class="text-danger fw-bold text-decoration-none text-uppercase me-2 small">
+                        ADMINISTRAR PÁGINA
+                    </a>
+                }
+                else
+                {
+                    <a href="#" class="text-dark fw-bold text-decoration-none text-uppercase me-2 small">
+                        MIS COMPRAS
+                    </a>
+                }
+
+                <div class="dropdown">
+                    <button class="btn btn-dark dropdown-toggle text-uppercase fw-bold rounded-pill px-3 py-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        MI CUENTA
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow user-dropdown-menu">
+                        <li class="user-name-header text-capitalize">@nombreUsuario</li>
+                        <li><a class="dropdown-item" asp-controller="Home" asp-action="Index">Inicio</a></li>
+                        
+                        @if (rolUsuario == "Administrador")
+                        {
+                            <li><a class="dropdown-item text-danger fw-bold" asp-controller="Administrador" asp-action="Index">Administrar Página</a></li>
+                        }
+
+                        <li><a class="dropdown-item" href="#">Notificaciones</a></li>
+                        
+                        @if (rolUsuario != "Administrador")
+                        {
+                            <li><a class="dropdown-item" href="#">Mis Compras</a></li>
+                            <li><a class="dropdown-item" href="#">Carrito</a></li>
+                        }
+
+                        <li><a class="dropdown-item" href="#">Mi Cuenta</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger fw-bold" asp-controller="Account" asp-action="Logout">Cerrar Sesión</a></li>
+                    </ul>
+                </div>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login" class="text-dark fw-bold text-decoration-none text-uppercase">
+                    INICIAR SESIÓN
+                </a>
+            }
+
+        </div>
+
+    </header>
+
+    <!-- ========================================================= -->
+    <!-- TIRA ANIMADA F&R INFINITA (PRIMERA BARRA) -->
+    <!-- ========================================================= -->
+    <div class="ticker-fyr">
+        <div class="ticker-track">
+            <span>F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span>F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp;&nbsp;&nbsp;</span>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- BANNER PRINCIPAL -->
+    <!-- ========================================================= -->
+    <section class="hero-fyr">
+        <img src="~/images/banner.png" alt="Nueva colección F&R" class="hero-fyr-img" />
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- TIRA ANIMADA F&R INFINITA (SEGUNDA BARRA) -->
+    <!-- ========================================================= -->
+    <div class="ticker-fyr">
+        <div class="ticker-track">
+            <span>F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span>F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp;&nbsp;&nbsp;</span>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- CATEGORÍAS -->
+    <!-- ========================================================= -->
+    <section class="categories-fyr">
+        <div class="categories-container">
+
+            <a href="#" class="category-card">
+                <img src="~/images/nuevo.png" alt="Nueva colección" />
+                <div class="category-button">NUEVO</div>
+            </a>
+
+            <a href="#" class="category-card">
+                <img src="~/images/mujeres.png" alt="Mujeres" />
+                <div class="category-button">MUJERES</div>
+            </a>
+
+            <a href="#" class="category-card">
+                <img src="~/images/hombres.png" alt="Hombres" />
+                <div class="category-button">HOMBRES</div>
+            </a>
+
+        </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- BARRA ENVÍO / OFERTAS -->
+    <!-- ========================================================= -->
+    <section class="promo-bar">
+        <span class="promo-text">ENVÍO A TODO EL PAÍS</span>
+        <div class="promo-circle">
+            <span>OFERTAS!</span>
+        </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- SEGUNDA FILA DE PRODUCTOS -->
+    <!-- ========================================================= -->
+    <section class="featured-products">
+        <div class="products-container">
+
+            <a href="#" class="product-card">
+                <img src="~/images/hombres2.png" alt="Producto F&R" />
+            </a>
+
+            <a href="#" class="product-card">
+                <img src="~/images/mujeres2.png" alt="Producto F&R" />
+            </a>
+
+            <a href="#" class="product-card">
+                <img src="~/images/hombres3.png" alt="Producto F&R" />
+            </a>
+
+        </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- BANNER SALE -->
+    <!-- ========================================================= -->
+    <section class="sale-section">
+        <div class="sale-banner">
+            <img src="~/images/sale.png" alt="Sale" class="sale-image sale-image-left" />
+            <h2 class="sale-title">¡¡ SALE !!</h2>
+            <img src="~/images/off.png" alt="Ofertas" class="sale-image sale-image-right" />
+        </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- FOOTER / INFORMACIÓN DE ABAJO -->
+    <!-- ========================================================= -->
+    <footer class="bg-light pt-5 pb-4 border-top mt-5">
+        <div class="container">
+            <div class="row text-uppercase small fw-bold">
+                
+                <!-- PRODUCTOS -->
+                <div class="col-md-4 mb-4">
+                    <h6 class="fw-bold mb-3">PRODUCTOS</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 text-muted">
+                        <li><a href="#" class="text-decoration-none text-secondary">BUZOS</a></li>
+                        <li><a href="#" class="text-decoration-none text-secondary">CAMISAS</a></li>
+                        <li><a href="#" class="text-decoration-none text-secondary">SWEATER</a></li>
+                        <li><a href="#" class="text-decoration-none text-secondary">REMERAS</a></li>
+                        <li><a href="#" class="text-decoration-none text-secondary">PANTALONES</a></li>
+                    </ul>
+                </div>
+
+                <!-- CONTACTANOS -->
+                <div class="col-md-4 mb-4">
+                    <h6 class="fw-bold mb-3">CONTACTANOS</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 text-secondary">
+                        <li>3564-451239</li>
+                        <li>f&r_tienda_online@gmail.com</li>
+                        <li>Sunchales, Santa Fe</li>
+                        <li>@@F&R.OFICIAL</li>
+                    </ul>
+                </div>
+
+                <!-- MEDIOS DE PAGO -->
+                <div class="col-md-4 mb-4">
+                    <h6 class="fw-bold mb-3">MEDIOS DE PAGO</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 text-secondary">
+                        <li>EFECTIVO</li>
+                        <li>TARJETA DE DÉBITO</li>
+                        <li>TARJETA DE CRÉDITO</li>
+                        <li>TRANSFERENCIA</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        $(document).ready(function () {
+            $('#toggleSearch').click(function () {
+                $('#searchInput').toggle().focus();
+            });
+        });
+    </script>
+</body>
+</html>

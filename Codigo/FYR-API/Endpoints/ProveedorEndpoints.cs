@@ -1,13 +1,15 @@
 using DTO.Proveedor.Request;
-using DTO.Proveedor.Response;
 using Repositorios.Interfaces;
 
 namespace Endpoints;
 
 public static class ProveedorEndpoints
 {
-    public static RouteGroupBuilder MapProveedorEndpoints(this RouteGroupBuilder group)
+    public static void MapProveedorEndpoints(this WebApplication app)
     {
+        var group = app.MapGroup("/api/proveedores")
+            .WithTags("Proveedores");
+
         group.MapGet("/", async (IProveedorRepository repo) =>
         {
             return Results.Ok(await repo.GetAllAsync());
@@ -46,7 +48,5 @@ public static class ProveedorEndpoints
                 ? Results.NoContent()
                 : Results.NotFound();
         });
-
-        return group;
     }
 }

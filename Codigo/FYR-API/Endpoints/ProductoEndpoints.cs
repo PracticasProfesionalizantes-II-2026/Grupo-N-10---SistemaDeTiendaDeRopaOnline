@@ -7,8 +7,8 @@ public static class ProductoEndpoints
 {
     public static void MapProductoEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/productos")
-                       .WithTags("Productos");
+        var group = app.MapGroup("/api/productos")
+            .WithTags("Productos");
 
         group.MapGet("/", async (IProductoRepository repository) =>
         {
@@ -29,7 +29,7 @@ public static class ProductoEndpoints
         {
             var producto = await repository.CreateAsync(request);
 
-            return Results.Created($"/productos/{producto.Id}", producto);
+            return Results.Created($"/api/productos/{producto.Id}", producto);
         });
 
         group.MapPut("/{id:int}", async (int id,

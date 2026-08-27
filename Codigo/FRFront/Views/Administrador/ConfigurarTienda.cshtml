@@ -1,0 +1,174 @@
+@using Microsoft.AspNetCore.Http
+@{
+    Layout = null;
+    ViewData["Title"] = "Configurar Tienda";
+    var usuarioLogueado = Context.Session.GetString("UsuarioSesion");
+    var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0] : "Administrador";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F&R - Configurar Tienda</title>
+    
+    <!-- FAVICON -->
+    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .config-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e9ecef;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            margin-bottom: 25px;
+        }
+
+        .config-section-title {
+            font-weight: 800;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #212529;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #212529;
+        }
+
+        .form-control-custom {
+            border-radius: 50px;
+            padding: 12px 20px;
+            border: 1.5px solid #ced4da;
+            font-weight: 500;
+        }
+
+        .form-control-custom:focus {
+            border-color: #212529;
+            box-shadow: 0 0 0 0.2rem rgba(33, 37, 41, 0.15);
+        }
+
+        .btn-custom-save {
+            background-color: #000000;
+            color: #ffffff;
+            border-radius: 50px;
+            padding: 14px 40px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            border: none;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn-custom-save:hover {
+            background-color: #212529;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========================================================= -->
+    <!-- HEADER ADMINISTRADOR -->
+    <!-- ========================================================= -->
+    <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Home" asp-action="Index">
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 50px; width: auto;" />
+            </a>
+            <span class="fs-5 fw-bold text-muted border-start ps-3 py-1">CONFIGURACIÓN DE TIENDA</span>
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
+                &lt; Volver al Panel
+            </a>
+        </div>
+    </header>
+
+    <!-- ========================================================= -->
+    <!-- FORMULARIO DE CONFIGURACIÓN -->
+    <!-- ========================================================= -->
+    <div class="container py-5" style="max-width: 900px;">
+        
+        <div class="text-center mb-5">
+            <h1 class="fw-bolder tracking-wider mb-2">CONFIGURACIÓN DE TIENDA</h1>
+            <p class="text-muted">Personaliza la información pública de la tienda online</p>
+        </div>
+
+        <form method="post" action="#">
+            
+            <!-- SECCIÓN 1: TEXTOS Y TEXTO DE MARQUESINA -->
+            <div class="config-card">
+                <h5 class="config-section-title">Anuncios y Promociones</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Texto de la Tira Animada (Ticker)</label>
+                    <input type="text" class="form-control form-control-custom" value="F&R" placeholder="Texto que se repite en la marquesina negra" />
+                    <span class="form-text text-muted small ms-2">Este texto aparecerá desplazándose en las barras negras del inicio.</span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Texto Barra Promocional</label>
+                    <input type="text" class="form-control form-control-custom" value="ENVÍO A TODO EL PAÍS" placeholder="Ej: ENVÍO A TODO EL PAÍS" />
+                </div>
+            </div>
+
+            <!-- SECCIÓN 2: DATOS DE CONTACTO (FOOTER) -->
+            <div class="config-card">
+                <h5 class="config-section-title">Datos de Contacto (Pie de Página)</h5>
+                
+                <div class="row g-3">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Teléfono de Contacto</label>
+                        <input type="text" class="form-control form-control-custom" value="3564-451239" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Correo Electrónico</label>
+                        <input type="email" class="form-control form-control-custom" value="f&r_tienda_online@gmail.com" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Ubicación / Ciudad</label>
+                        <input type="text" class="form-control form-control-custom" value="Sunchales, Santa Fe" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Usuario Redes Sociales</label>
+                        <input type="text" class="form-control form-control-custom" value="@@F&R.OFICIAL" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 3: BANNERS PRINCIPALES -->
+            <div class="config-card">
+                <h5 class="config-section-title">Imágenes de Banner Principal</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Banner Portada Principal</label>
+                    <input type="file" class="form-control form-control-custom" />
+                    <span class="form-text text-muted small ms-2">Formatos permitidos: .PNG, .JPG (Recomendado 1920x600px).</span>
+                </div>
+            </div>
+
+            <!-- BOTÓN GUARDAR -->
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-custom-save text-uppercase shadow">
+                    Guardar Cambios
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

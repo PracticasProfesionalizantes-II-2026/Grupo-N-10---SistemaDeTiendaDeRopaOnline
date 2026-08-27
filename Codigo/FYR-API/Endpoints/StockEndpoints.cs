@@ -7,7 +7,7 @@ public static class StockEndpoints
 {
     public static void MapStockEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/stocks")
+        var group = app.MapGroup("/api/stocks")
             .WithTags("Stocks");
 
         group.MapGet("/", async (IStockRepository repository) =>
@@ -28,7 +28,7 @@ public static class StockEndpoints
         {
             var stock = await repository.CreateAsync(request);
 
-            return Results.Created($"/stocks/{stock.Id}", stock);
+            return Results.Created($"/api/stocks/{stock.Id}", stock);
         });
 
         group.MapPut("/{id:int}", async (int id, UpdateStockRequest request, IStockRepository repository) =>

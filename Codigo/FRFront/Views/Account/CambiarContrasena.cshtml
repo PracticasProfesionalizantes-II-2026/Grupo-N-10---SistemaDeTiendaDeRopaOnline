@@ -1,0 +1,96 @@
+@model FRFront.Models.CambiarContrasenaViewModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>F&R - Cambiar Contraseña</title>
+  
+  <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+  <style>
+    body {
+      background-color: #f1f3f5;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 800px;
+      background-color: #ffffff;
+      border-radius: 28px;
+      border: 1px solid #e9ecef;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+      padding: 50px 60px;
+    }
+    
+    .custom-input {
+      padding: 18px 24px !important;
+      font-size: 1.15rem !important;
+      border-radius: 50px !important;
+      border: 2px solid #212529 !important;
+      background-color: #ffffff !important;
+    }
+
+    .custom-btn {
+      padding: 18px !important;
+      font-size: 1.2rem !important;
+      border-radius: 50px !important;
+      background-color: #000000 !important;
+      border: none !important;
+    }
+
+    .custom-title {
+      font-size: 2.8rem !important;
+      letter-spacing: 2px;
+      font-weight: 900 !important;
+    }
+  </style>
+</head>
+<body class="min-vh-100 d-flex align-items-center justify-content-center py-5">
+
+  <div class="login-card">
+    
+    <div class="mb-4">
+      <a asp-controller="Account" asp-action="Login" class="text-decoration-none text-dark fw-bold fs-5">
+        &lt; VOLVER
+      </a>
+    </div>
+
+    <div class="text-center mb-5">
+      <h1 class="custom-title text-uppercase text-dark">NUEVA CONTRASEÑA</h1>
+    </div>
+
+    <form asp-controller="Home" asp-action="CambiarContrasena" method="post" class="w-100">
+      
+      <div asp-validation-summary="ModelOnly" class="text-danger text-center mb-3"></div>
+
+      <div class="mb-4">
+        <input asp-for="NuevaPassword" type="password" class="form-control custom-input text-center" placeholder="Nueva contraseña*" required />
+        <span asp-validation-for="NuevaPassword" class="text-danger small text-center d-block mt-1"></span>
+      </div>
+
+      <div class="mb-5">
+        <input asp-for="ConfirmarPassword" type="password" class="form-control custom-input text-center" placeholder="Confirmar contraseña*" required />
+        <span asp-validation-for="ConfirmarPassword" class="text-danger small text-center d-block mt-1"></span>
+      </div>
+
+      <button type="submit" class="btn btn-dark w-100 custom-btn text-uppercase fw-bold text-white mb-3">
+        GUARDAR
+      </button>
+
+    </form>
+
+  </div>
+
+  <script src="~/lib/jquery/dist/jquery.min.js"></script>
+  <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+  <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>

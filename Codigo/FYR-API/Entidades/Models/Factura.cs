@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Entidades.Models;
 
@@ -9,6 +8,7 @@ public class Factura
     public int Id { get; set; }
 
     public DateTime Fecha { get; set; }
+    public DateTime FechaFactura { get; set; } = DateTime.UtcNow;
 
     public string Tipo { get; set; } = string.Empty;
 

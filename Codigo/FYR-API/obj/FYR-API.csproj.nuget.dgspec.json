@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Usuario\\Documents\\GitHub\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\FYR-API.csproj": {}
+    "C:\\Users\\Usuario\\source\\repos\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\FYR-API.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Usuario\\Documents\\GitHub\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\FYR-API.csproj": {
+    "C:\\Users\\Usuario\\source\\repos\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\FYR-API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Usuario\\Documents\\GitHub\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\FYR-API.csproj",
+        "projectUniqueName": "C:\\Users\\Usuario\\source\\repos\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\FYR-API.csproj",
         "projectName": "FYR-API",
-        "projectPath": "C:\\Users\\Usuario\\Documents\\GitHub\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\FYR-API.csproj",
+        "projectPath": "C:\\Users\\Usuario\\source\\repos\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\FYR-API.csproj",
         "packagesPath": "C:\\Users\\Usuario\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Usuario\\Documents\\GitHub\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\obj\\",
+        "outputPath": "C:\\Users\\Usuario\\source\\repos\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -52,6 +52,14 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
+            "BCrypt.Net-Next": {
+              "target": "Package",
+              "version": "[4.2.0, )"
+            },
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[10.0.9, )"
+            },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[10.0.6, )"
@@ -90,7 +98,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.303/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",

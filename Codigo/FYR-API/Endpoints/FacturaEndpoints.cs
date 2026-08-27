@@ -1,12 +1,15 @@
 using DTO.Factura.Request;
 using Repositorios.Interfaces;
 
+
 namespace Endpoints;
 
 public static class FacturaEndpoints
 {
-    public static RouteGroupBuilder MapFacturaEndpoints(this RouteGroupBuilder group)
+    public static void MapFacturaEndpoints(this WebApplication app)
     {
+        var group = app.MapGroup("/api/facturas")
+            .WithTags("Facturas");
         group.MapGet("/", async (IFacturaRepository repo) =>
         {
             return Results.Ok(await repo.GetAllAsync());
@@ -45,7 +48,5 @@ public static class FacturaEndpoints
                 ? Results.NoContent()
                 : Results.NotFound();
         });
-
-        return group;
     }
 }

@@ -4,7 +4,7 @@ namespace DTO.Factura.Request;
 
 public class CreateFacturaRequest
 {
-    public DateTime Fecha { get; set; }
+   
 
     [Required]
     public string Tipo { get; set; } = string.Empty;
