@@ -8,6 +8,14 @@ builder.Services.AddControllersWithViews();
 // Registrar la configuración global de la tienda (Singleton)
 builder.Services.AddSingleton<TiendaConfig>();
 
+// Registrar IHttpClientFactory y el cliente nombrado para la API del Backend
+builder.Services.AddHttpClient();
+builder.Services.AddHttpClient("BackendApi", client =>
+{
+    // Reemplaza con la URL base y puerto exacto donde corre tu API Backend (ej. 7001)
+    client.BaseAddress = new Uri("https://localhost:7001/"); 
+});
+
 // Configuración del servicio de sesiones
 builder.Services.AddSession(options =>
 {
@@ -41,4 +49,5 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+// app.Run() siempre debe ser la última instrucción
 app.Run();

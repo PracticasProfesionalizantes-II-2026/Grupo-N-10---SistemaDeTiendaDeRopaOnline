@@ -1,4 +1,5 @@
 @using Microsoft.AspNetCore.Http
+@model FRFront.Models.ProductoDto
 @{
     Layout = null;
     ViewData["Title"] = "Alta de Producto";
@@ -44,7 +45,7 @@
 
         .dropzone-upload {
             width: 100%;
-            height: 250px;
+            height: 220px;
             border-radius: 16px;
             border: 2px dashed #ced4da;
             display: flex;
@@ -54,6 +55,8 @@
             background-color: #fafafa;
             cursor: pointer;
             transition: all 0.2s ease;
+            background-size: cover;
+            background-position: center;
         }
 
         .dropzone-upload:hover {
@@ -105,25 +108,33 @@
             <p class="text-muted">Complete todos los campos requeridos para dar de alta el producto en el catálogo</p>
         </div>
 
-        <form id="formCrearProducto">
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger mb-4">
+                <div asp-validation-summary="All"></div>
+            </div>
+        }
+
+        <form asp-controller="Producto" asp-action="Crear" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
             <div class="create-card">
                 <div class="row g-4">
                     
                     <!-- COLUMNA IZQUIERDA: IMAGEN Y DESCRIPCIÓN -->
                     <div class="col-md-5">
                         <label class="form-label fw-bold">IMAGEN *</label>
-                        <div class="dropzone-upload mb-3" onclick="document.getElementById('fileImg').click()">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-upload text-muted mb-2" viewBox="0 0 16 16">
+                        <div class="dropzone-upload mb-3" id="dropzonePreview" onclick="document.getElementById('fileImg').click()">
+                            <svg id="uploadIcon" xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-upload text-muted mb-2" viewBox="0 0 16 16">
                                 <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
                                 <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z"/>
                             </svg>
                             <span class="fw-bold text-uppercase small text-dark" id="uploadStatus">Subir Imagen</span>
                         </div>
-                        <input type="file" id="fileImg" class="d-none" accept="image/*" required />
+                        <input type="file" id="fileImg" name="imagenFile" class="d-none" accept="image/*" required onchange="previewImage(event)" />
 
                         <div class="mt-3">
                             <label class="form-label fw-bold">DESCRIPCIÓN</label>
-                            <textarea class="form-control form-control-custom rounded-4" rows="3" placeholder="Ingresar descripción del producto"></textarea>
+                            <textarea asp-for="Descripcion" class="form-control form-control-custom rounded-4" rows="3" placeholder="Ingresar descripción del producto"></textarea>
                         </div>
                     </div>
 
@@ -132,28 +143,40 @@
                         
                         <div class="mb-3">
                             <label class="form-label fw-bold">NOMBRE *</label>
-                            <input type="text" class="form-control form-control-custom" placeholder="Ingresar nombre del producto" required />
+                            <input asp-for="Nombre" type="text" class="form-control form-control-custom" placeholder="Ingresar nombre del producto" required />
                         </div>
 
                         <div class="row g-3 mb-3">
                             <div class="col-6">
                                 <label class="form-label fw-bold">PRECIO ($) *</label>
-                                <input type="text" class="form-control form-control-custom" placeholder="Ingresar precio" required />
+                                <input asp-for="Precio" type="number" step="0.01" class="form-control form-control-custom" placeholder="Ingresar precio" required />
                             </div>
                             <div class="col-6">
                                 <label class="form-label fw-bold">STOCK *</label>
-                                <input type="number" class="form-control form-control-custom" placeholder="Ingresar stock" min="0" required />
+                                <input asp-for="Stock" type="number" class="form-control form-control-custom" placeholder="Ingresar stock" min="0" required />
                             </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">CATEGORÍA *</label>
+                            <select asp-for="Categoria" class="form-select form-select-custom" required>
+                                <option value="">Seleccionar Categoría</option>
+                                <option value="remeras">Remeras</option>
+                                <option value="pantalones">Pantalones</option>
+                                <option value="abrigos">Abrigos</option>
+                                <option value="polleras">Polleras</option>
+                                <option value="vestidos">Vestidos</option>
+                            </select>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">TALLES *</label>
-                            <input type="text" class="form-control form-control-custom" placeholder="Ej: S/M/L/XL" required />
+                            <input asp-for="Talles" type="text" class="form-control form-control-custom" placeholder="Ej: S/M/L/XL" required />
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">COLOR *</label>
-                            <input type="text" class="form-control form-control-custom" placeholder="Ingresar color del producto" required />
+                            <input asp-for="Color" type="text" class="form-control form-control-custom" placeholder="Ingresar color del producto" required />
                         </div>
 
                     </div>
@@ -192,17 +215,32 @@
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.getElementById('formCrearProducto').addEventListener('submit', function (e) {
-            e.preventDefault();
-            var modalExito = new bootstrap.Modal(document.getElementById('modalExito'));
-            modalExito.show();
-        });
-
-        document.getElementById('fileImg').addEventListener('change', function (e) {
-            if (e.target.files[0]) {
-                document.getElementById('uploadStatus').textContent = e.target.files[0].name;
+        function previewImage(event) {
+            const input = event.target;
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const dropzone = document.getElementById('dropzonePreview');
+                    dropzone.style.backgroundImage = `url('${e.target.result}')`;
+                    document.getElementById('uploadIcon').style.display = 'none';
+                    document.getElementById('uploadStatus').textContent = input.files[0].name;
+                    document.getElementById('uploadStatus').style.backgroundColor = 'rgba(255,255,255,0.8)';
+                    document.getElementById('uploadStatus').style.padding = '4px 8px';
+                    document.getElementById('uploadStatus').style.borderRadius = '4px';
+                }
+                reader.readAsDataURL(input.files[0]);
             }
-        });
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+            document.addEventListener('DOMContentLoaded', function () {
+                var modalExito = new bootstrap.Modal(document.getElementById('modalExito'));
+                modalExito.show();
+            });
+            </text>
+        }
     </script>
 </body>
 </html>
