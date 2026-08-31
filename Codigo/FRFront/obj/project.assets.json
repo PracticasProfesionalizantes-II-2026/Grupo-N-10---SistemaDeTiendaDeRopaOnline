@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Usuario\\source\\repos\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FRFront\\FRFront.csproj",
+      "projectUniqueName": "c:\\Users\\Usuario\\Documents\\GitHub\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FRFront\\FRFront.csproj",
       "projectName": "FRFront",
-      "projectPath": "C:\\Users\\Usuario\\source\\repos\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FRFront\\FRFront.csproj",
+      "projectPath": "c:\\Users\\Usuario\\Documents\\GitHub\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FRFront\\FRFront.csproj",
       "packagesPath": "C:\\Users\\Usuario\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Usuario\\source\\repos\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FRFront\\obj\\",
+      "outputPath": "c:\\Users\\Usuario\\Documents\\GitHub\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FRFront\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -52,7 +52,7 @@
         "auditLevel": "low",
         "auditMode": "all"
       },
-      "SdkAnalysisLevel": "10.0.300"
+      "SdkAnalysisLevel": "10.0.400"
     },
     "frameworks": {
       "net10.0": {
@@ -77,7 +77,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.303/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.AspNetCore": "(,10.0.32767]",
           "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",

@@ -88,27 +88,27 @@
 <body>
 
     <!-- ========================================================= -->
-    <!-- HEADER / BARRA DE NAVEGACIÓN -->
+    <!-- HEADER / BARRA DE NAVEGACIÓN UNIFICADA -->
     <!-- ========================================================= -->
-    <header class="bg-white border-bottom py-4 px-4 d-flex justify-content-between align-items-center">
+    <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
         
-        <!-- Logo F&R usando logo-fr.png -->
+        <!-- Logo F&R -->
         <div>
             <a asp-controller="Home" asp-action="Index">
-                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 65px; width: auto;" />
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 45px; width: auto;" />
             </a>
         </div>
 
-        <!-- Categorías Principales -->
+        <!-- Categorías Principales Conectadas -->
         <nav class="d-none d-md-flex gap-4 fw-bold text-uppercase fs-6">
-            <a href="#" class="text-dark text-decoration-none">LANZAMIENTOS</a>
-            <a href="#" class="text-dark text-decoration-none">HOMBRE</a>
-            <a href="#" class="text-dark text-decoration-none">MUJER</a>
-            <a href="#" class="text-dark text-decoration-none">OFERTAS</a>
-            <a href="#" class="text-dark text-decoration-none">PRODUCTOS</a>
+            <a asp-controller="Home" asp-action="Catalogo" class="text-dark text-decoration-none">LANZAMIENTOS</a>
+            <a asp-controller="Home" asp-action="Hombre" class="text-dark text-decoration-none">HOMBRE</a>
+            <a asp-controller="Home" asp-action="Mujer" class="text-dark text-decoration-none">MUJER</a>
+            <a asp-controller="Home" asp-action="Catalogo" class="text-dark text-decoration-none">OFERTAS</a>
+            <a asp-controller="Home" asp-action="Catalogo" class="text-dark text-decoration-none">PRODUCTOS</a>
         </nav>
 
-        <!-- Lado Derecho: Lupa e Iniciar Sesión / Opciones de Sesión -->
+        <!-- Lado Derecho: Lupa, Carrito y Sesión de Usuario -->
         <div class="d-flex align-items-center gap-3">
             
             <div class="d-flex align-items-center gap-2">
@@ -120,52 +120,47 @@
                 </button>
             </div>
 
+            <!-- Botón del Carrito de Compras -->
+            <a asp-controller="Home" asp-action="Carrito" class="text-dark text-decoration-none position-relative" title="Ver Carrito">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-bag" viewBox="0 0 16 16">
+                    <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1zm3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4h-3.5zM2 5h12v9H2V5z"/>
+                </svg>
+            </a>
+
             @if (!string.IsNullOrEmpty(usuarioLogueado))
             {
-                <!-- SI ES ADMINISTRADOR MUESTRA "ADMINISTRAR PÁGINA", SI ES CLIENTE MUESTRA "MIS COMPRAS" -->
                 @if (rolUsuario == "Administrador")
                 {
-                    <a asp-controller="Administrador" asp-action="Index" class="text-danger fw-bold text-decoration-none text-uppercase me-2 small">
-                        ADMINISTRAR PÁGINA
-                    </a>
-                }
-                else
-                {
-                    <a href="#" class="text-dark fw-bold text-decoration-none text-uppercase me-2 small">
-                        MIS COMPRAS
+                    <a asp-controller="Administrador" asp-action="Index" class="text-danger fw-bold text-decoration-none text-uppercase small me-1">
+                        ADMINISTRAR
                     </a>
                 }
 
                 <div class="dropdown">
-                    <button class="btn btn-dark dropdown-toggle text-uppercase fw-bold rounded-pill px-3 py-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn btn-dark dropdown-toggle text-uppercase fw-bold rounded-pill px-3 py-1.5" style="font-size: 0.85rem;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         MI CUENTA
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow user-dropdown-menu">
-                        <li class="user-name-header text-capitalize">@nombreUsuario</li>
-                        <li><a class="dropdown-item" asp-controller="Home" asp-action="Index">Inicio</a></li>
+                        <li class="user-name-header text-capitalize px-3 py-2 fw-bold border-bottom">@nombreUsuario</li>
+                        <li><a class="dropdown-item py-2 px-3" asp-controller="Home" asp-action="Index">Inicio</a></li>
                         
                         @if (rolUsuario == "Administrador")
                         {
-                            <li><a class="dropdown-item text-danger fw-bold" asp-controller="Administrador" asp-action="Index">Administrar Página</a></li>
+                            <li><a class="dropdown-item py-2 px-3 text-danger fw-bold" asp-controller="Administrador" asp-action="Index">Administrar Página</a></li>
                         }
-
-                        <li><a class="dropdown-item" href="#">Notificaciones</a></li>
-                        
-                        @if (rolUsuario != "Administrador")
+                        else
                         {
-                            <li><a class="dropdown-item" href="#">Mis Compras</a></li>
-                            <li><a class="dropdown-item" href="#">Carrito</a></li>
+                            <li><a class="dropdown-item py-2 px-3" asp-controller="Home" asp-action="Carrito">Mi Carrito</a></li>
                         }
 
-                        <li><a class="dropdown-item" href="#">Mi Cuenta</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger fw-bold" asp-controller="Account" asp-action="Logout">Cerrar Sesión</a></li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li><a class="dropdown-item py-2 px-3 text-danger fw-bold" asp-controller="Account" asp-action="Logout">Cerrar Sesión</a></li>
                     </ul>
                 </div>
             }
             else
             {
-                <a asp-controller="Account" asp-action="Login" class="text-dark fw-bold text-decoration-none text-uppercase">
+                <a asp-controller="Account" asp-action="Login" class="text-dark fw-bold text-decoration-none text-uppercase small">
                     INICIAR SESIÓN
                 </a>
             }
@@ -188,7 +183,9 @@
     <!-- BANNER PRINCIPAL -->
     <!-- ========================================================= -->
     <section class="hero-fyr">
-        <img src="~/images/banner.png" alt="Nueva colección F&R" class="hero-fyr-img" />
+        <a asp-controller="Home" asp-action="Catalogo">
+            <img src="~/images/banner.png" alt="Nueva colección F&R" class="hero-fyr-img" />
+        </a>
     </section>
 
     <!-- ========================================================= -->
@@ -207,17 +204,19 @@
     <section class="categories-fyr">
         <div class="categories-container">
 
-            <a href="#" class="category-card">
+            <a asp-controller="Home" asp-action="Catalogo" class="category-card">
                 <img src="~/images/nuevo.png" alt="Nueva colección" />
                 <div class="category-button">NUEVO</div>
             </a>
 
-            <a href="#" class="category-card">
+            <!-- Categoría Mujeres -->
+            <a asp-controller="Home" asp-action="Mujer" class="category-card">
                 <img src="~/images/mujeres.png" alt="Mujeres" />
                 <div class="category-button">MUJERES</div>
             </a>
 
-            <a href="#" class="category-card">
+            <!-- Categoría Hombres -->
+            <a asp-controller="Home" asp-action="Hombre" class="category-card">
                 <img src="~/images/hombres.png" alt="Hombres" />
                 <div class="category-button">HOMBRES</div>
             </a>
@@ -241,15 +240,15 @@
     <section class="featured-products">
         <div class="products-container">
 
-            <a href="#" class="product-card">
+            <a asp-controller="Home" asp-action="Catalogo" class="product-card">
                 <img src="~/images/hombres2.png" alt="Producto F&R" />
             </a>
 
-            <a href="#" class="product-card">
+            <a asp-controller="Home" asp-action="Catalogo" class="product-card">
                 <img src="~/images/mujeres2.png" alt="Producto F&R" />
             </a>
 
-            <a href="#" class="product-card">
+            <a asp-controller="Home" asp-action="Catalogo" class="product-card">
                 <img src="~/images/hombres3.png" alt="Producto F&R" />
             </a>
 
@@ -260,11 +259,13 @@
     <!-- BANNER SALE -->
     <!-- ========================================================= -->
     <section class="sale-section">
-        <div class="sale-banner">
-            <img src="~/images/sale.png" alt="Sale" class="sale-image sale-image-left" />
-            <h2 class="sale-title">¡¡ SALE !!</h2>
-            <img src="~/images/off.png" alt="Ofertas" class="sale-image sale-image-right" />
-        </div>
+        <a asp-controller="Home" asp-action="Catalogo" class="text-decoration-none">
+            <div class="sale-banner">
+                <img src="~/images/sale.png" alt="Sale" class="sale-image sale-image-left" />
+                <h2 class="sale-title">¡¡ SALE !!</h2>
+                <img src="~/images/off.png" alt="Ofertas" class="sale-image sale-image-right" />
+            </div>
+        </a>
     </section>
 
     <!-- ========================================================= -->
@@ -278,11 +279,11 @@
                 <div class="col-md-4 mb-4">
                     <h6 class="fw-bold mb-3">PRODUCTOS</h6>
                     <ul class="list-unstyled d-flex flex-column gap-2 text-muted">
-                        <li><a href="#" class="text-decoration-none text-secondary">BUZOS</a></li>
-                        <li><a href="#" class="text-decoration-none text-secondary">CAMISAS</a></li>
-                        <li><a href="#" class="text-decoration-none text-secondary">SWEATER</a></li>
-                        <li><a href="#" class="text-decoration-none text-secondary">REMERAS</a></li>
-                        <li><a href="#" class="text-decoration-none text-secondary">PANTALONES</a></li>
+                        <li><a asp-controller="Home" asp-action="Catalogo" class="text-decoration-none text-secondary">BUZOS</a></li>
+                        <li><a asp-controller="Home" asp-action="Catalogo" class="text-decoration-none text-secondary">CAMISAS</a></li>
+                        <li><a asp-controller="Home" asp-action="Catalogo" class="text-decoration-none text-secondary">SWEATER</a></li>
+                        <li><a asp-controller="Home" asp-action="Catalogo" class="text-decoration-none text-secondary">REMERAS</a></li>
+                        <li><a asp-controller="Home" asp-action="Catalogo" class="text-decoration-none text-secondary">PANTALONES</a></li>
                     </ul>
                 </div>
 

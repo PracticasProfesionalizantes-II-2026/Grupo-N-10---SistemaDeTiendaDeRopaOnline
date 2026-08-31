@@ -17,7 +17,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions => sqlOptions.EnableRetryOnFailure() // <--- Agregado para tolerar microcortes con Azure
     ));
 
 //======================================
@@ -39,7 +40,6 @@ builder.Services.AddScoped<IEmpresaService, EmpresaService>();
 // Envio
 builder.Services.AddScoped<IEnvioRepository, EnvioRepository>();
 builder.Services.AddScoped<IEnvioService, EnvioService>();
-
 // Pedido
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();

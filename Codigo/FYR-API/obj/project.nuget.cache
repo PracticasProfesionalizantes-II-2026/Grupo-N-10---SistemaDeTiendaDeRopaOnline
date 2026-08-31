@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "qcwXArg3DlE=",
+  "dgSpecHash": "3Xs2Z22/D70=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Usuario\\source\\repos\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\FYR-API.csproj",
+  "projectFilePath": "C:\\Users\\Usuario\\Documents\\GitHub\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\FYR-API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Usuario\\.nuget\\packages\\azure.core\\1.47.1\\azure.core.1.47.1.nupkg.sha512",
     "C:\\Users\\Usuario\\.nuget\\packages\\azure.identity\\1.14.2\\azure.identity.1.14.2.nupkg.sha512",
@@ -61,9 +61,9 @@
       "code": "NU1903",
       "level": "Warning",
       "message": "El paquete \"Microsoft.OpenApi\" 2.0.0 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-v5pm-xwqc-g5wc",
-      "projectPath": "C:\\Users\\Usuario\\source\\repos\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\FYR-API.csproj",
+      "projectPath": "C:\\Users\\Usuario\\Documents\\GitHub\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\FYR-API.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\Usuario\\source\\repos\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\FYR-API.csproj",
+      "filePath": "C:\\Users\\Usuario\\Documents\\GitHub\\Grupo-N-10---SistemaDeTiendaDeRopaOnline\\Codigo\\FYR-API\\FYR-API.csproj",
       "libraryId": "Microsoft.OpenApi",
       "targetGraphs": [
         "net10.0"

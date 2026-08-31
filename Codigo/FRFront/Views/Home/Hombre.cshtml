@@ -1,0 +1,359 @@
+@using Microsoft.AspNetCore.Http
+@{
+    Layout = null;
+    var usuarioLogueado = Context.Session.GetString("UsuarioSesion");
+    var rolUsuario = Context.Session.GetString("RolSesion");
+    var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0] : "Usuario";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sección Hombre - F&R Tienda Online</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <style>
+        body {
+            background-color: #fff;
+            color: #212529;
+            font-family: sans-serif;
+        }
+        .header-top {
+            border-bottom: 1px solid #e9ecef;
+            padding: 15px 30px;
+        }
+        .ticker-fyr {
+            background-color: #000;
+            color: #fff;
+            font-weight: bold;
+            letter-spacing: 2px;
+            padding: 8px 0;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .btn-volver {
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #000;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        .sidebar-filtros {
+            font-size: 0.9rem;
+        }
+        .sidebar-filtros h6 {
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+        .sidebar-filtros ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar-filtros ul li a {
+            color: #212529;
+            text-decoration: none;
+            display: block;
+            padding: 3px 0;
+            font-size: 0.9rem;
+        }
+        .product-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #fff;
+            transition: transform 0.2s;
+            overflow: hidden;
+            text-decoration: none !important;
+        }
+        .product-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .product-img-wrapper {
+            background-color: #f8f9fa;
+            height: 190px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 4px;
+            position: relative;
+        }
+        .product-img-wrapper img {
+            max-height: 170px;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        .user-dropdown-menu {
+            border-radius: 12px;
+            border: 1px solid #111;
+            padding: 10px 0;
+            min-width: 190px;
+        }
+        .footer-fyr {
+            background-color: #e9ecef;
+            padding: 40px 30px;
+            margin-top: 60px;
+            font-size: 0.85rem;
+        }
+        .footer-fyr h6 {
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+        .footer-fyr ul {
+            list-style: none;
+            padding: 0;
+        }
+        .footer-fyr ul li {
+            margin-bottom: 6px;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER / BARRA DE NAVEGACIÓN UNIFICADA -->
+    <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+        <div>
+            <a asp-controller="Home" asp-action="Index">
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 45px; width: auto;" />
+            </a>
+        </div>
+
+        <nav class="d-none d-md-flex gap-4 fw-bold text-uppercase fs-6">
+            <a asp-controller="Home" asp-action="Catalogo" class="text-dark text-decoration-none">LANZAMIENTOS</a>
+            <a asp-controller="Home" asp-action="Hombre" class="text-dark text-decoration-none">HOMBRE</a>
+            <a asp-controller="Home" asp-action="Mujer" class="text-dark text-decoration-none">MUJER</a>
+            <a asp-controller="Home" asp-action="Catalogo" class="text-dark text-decoration-none">OFERTAS</a>
+            <a asp-controller="Home" asp-action="Catalogo" class="text-dark text-decoration-none">PRODUCTOS</a>
+        </nav>
+
+        <div class="d-flex align-items-center gap-3">
+            <!-- Carrito de Compras -->
+            <a asp-controller="Home" asp-action="Carrito" class="text-dark text-decoration-none position-relative" title="Ver Carrito">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-bag" viewBox="0 0 16 16">
+                    <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1zm3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4h-3.5zM2 5h12v9H2V5z"/>
+                </svg>
+            </a>
+
+            @if (!string.IsNullOrEmpty(usuarioLogueado))
+            {
+                @if (rolUsuario == "Administrador")
+                {
+                    <a asp-controller="Administrador" asp-action="Index" class="text-danger fw-bold text-decoration-none text-uppercase small me-1">
+                        ADMINISTRAR
+                    </a>
+                }
+
+                <div class="dropdown">
+                    <button class="btn btn-dark dropdown-toggle text-uppercase fw-bold rounded-pill px-3 py-1.5" style="font-size: 0.85rem;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        MI CUENTA
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow user-dropdown-menu">
+                        <li class="user-name-header text-capitalize px-3 py-2 fw-bold border-bottom">@nombreUsuario</li>
+                        <li><a class="dropdown-item py-2 px-3" asp-controller="Home" asp-action="Index">Inicio</a></li>
+                        
+                        @if (rolUsuario == "Administrador")
+                        {
+                            <li><a class="dropdown-item py-2 px-3 text-danger fw-bold" asp-controller="Administrador" asp-action="Index">Administrar Página</a></li>
+                        }
+                        else
+                        {
+                            <li><a class="dropdown-item py-2 px-3" asp-controller="Home" asp-action="Carrito">Mi Carrito</a></li>
+                        }
+
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li><a class="dropdown-item py-2 px-3 text-danger fw-bold" asp-controller="Account" asp-action="Logout">Cerrar Sesión</a></li>
+                    </ul>
+                </div>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login" class="text-dark fw-bold text-decoration-none text-uppercase small">
+                    INICIAR SESIÓN
+                </a>
+            }
+        </div>
+    </header>
+
+    <!-- Tira Animada -->
+    <div class="ticker-fyr text-uppercase">
+        <span>F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R</span>
+    </div>
+
+    <!-- Cuerpo principal -->
+    <div class="container-fluid px-4 py-4">
+        <div class="row">
+            <!-- Sidebar Izquierdo con Enlaces -->
+            <div class="col-lg-3 sidebar-filtros pe-4 mb-4">
+                <a asp-controller="Home" asp-action="Index" class="btn-volver">&lt; VOLVER</a>
+
+                <h6 class="fw-bold text-uppercase mb-3" style="font-size: 0.85rem; color: #000;">Categorías</h6>
+                <ul>
+                    <li><a asp-controller="Home" asp-action="Mujer"><strong class="text-muted">MUJER</strong></a></li>
+                    <li class="mt-2"><strong class="text-dark">HOMBRE</strong></li>
+                    <li class="ps-3"><a asp-controller="Home" asp-action="Hombre">Pantalones</a></li>
+                    <li class="ps-3"><a asp-controller="Home" asp-action="Hombre">Remeras</a></li>
+                    <li class="ps-3"><a asp-controller="Home" asp-action="Hombre">Abrigos</a></li>
+                </ul>
+
+                <h6 class="mt-4">Tiempo de Entrega</h6>
+                <p class="text-muted small mb-1">ENTREGA EN 2 DÍAS</p>
+                <p class="text-muted small">ENTREGA EN 7 DÍAS</p>
+
+                <h6 class="mt-4">Color</h6>
+                <div class="d-flex gap-2 mb-3">
+                    <span class="rounded-circle bg-dark d-inline-block" style="width: 18px; height: 18px;"></span>
+                    <span class="rounded-circle bg-secondary d-inline-block" style="width: 18px; height: 18px;"></span>
+                    <span class="rounded-circle bg-primary d-inline-block" style="width: 18px; height: 18px;"></span>
+                    <span class="rounded-circle bg-light border d-inline-block" style="width: 18px; height: 18px;"></span>
+                    <span class="rounded-circle bg-danger d-inline-block" style="width: 18px; height: 18px;"></span>
+                </div>
+
+                <h6 class="mt-4">Precio</h6>
+                <div class="text-muted small">
+                    <p class="mb-1">Hasta $ 30.000 <span class="text-secondary">(234 items)</span></p>
+                    <p class="mb-1">$ 30.000 a $ 60.000 <span class="text-secondary">(154 items)</span></p>
+                    <p>Más de $ 100.000 <span class="text-secondary">(74 items)</span></p>
+                </div>
+            </div>
+
+            <!-- Grid de Productos (Derecha) -->
+            <div class="col-lg-9">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold text-uppercase m-0" style="font-size: 0.95rem; letter-spacing: 1px;">SECCIÓN HOMBRES</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted small">Seguinos en <strong class="text-dark">@@F&R.OFICIAL</strong></span>
+                        <input type="text" class="form-control form-control-sm rounded-pill px-3" placeholder="Buscar productos..." id="searchInput" style="max-width: 200px;">
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Producto 1: Buzo vcv -->
+                    <div class="col-md-4">
+                        <a asp-controller="Home" asp-action="DetalleProducto" asp-route-nombre="BUZO VCV" class="product-card p-3 text-center d-flex flex-column justify-content-between text-decoration-none" style="height: 100%;">
+                            <div class="product-img-wrapper mb-2">
+                                <img src="~/images/hombres.png" alt="Buzo vcv" />
+                            </div>
+                            <div class="py-2">
+                                <span class="fw-bold text-uppercase text-dark" style="font-size: 0.85rem; display: block;">Buzo vcv</span>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- Producto 2: Pantalon cargo -->
+                    <div class="col-md-4">
+                        <a asp-controller="Home" asp-action="DetalleProducto" asp-route-nombre="PANTALON CARGO" class="product-card p-3 text-center d-flex flex-column justify-content-between text-decoration-none" style="height: 100%;">
+                            <div class="product-img-wrapper mb-2">
+                                <img src="~/images/hombres2.png" alt="Pantalon cargo" />
+                            </div>
+                            <div class="py-2">
+                                <span class="fw-bold text-uppercase text-dark" style="font-size: 0.85rem; display: block;">Pantalon cargo</span>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- Producto 3: Remera Fit Friends -->
+                    <div class="col-md-4">
+                        <a asp-controller="Home" asp-action="DetalleProducto" asp-route-nombre="REMERA FIT FRIENDS" class="product-card p-3 text-center d-flex flex-column justify-content-between text-decoration-none" style="height: 100%;">
+                            <div class="product-img-wrapper mb-2">
+                                <img src="~/images/hombres3.png" alt="Remera Fit Friends" />
+                            </div>
+                            <div class="py-2">
+                                <span class="fw-bold text-uppercase text-dark" style="font-size: 0.85rem; display: block;">Remera Fit Friends</span>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- Producto 4: Sweater Tramas -->
+                    <div class="col-md-4">
+                        <a asp-controller="Home" asp-action="DetalleProducto" asp-route-nombre="SWEATER TRAMAS" class="product-card p-3 text-center d-flex flex-column justify-content-between text-decoration-none" style="height: 100%;">
+                            <div class="product-img-wrapper mb-2">
+                                <img src="~/images/hombres.png" alt="Sweater Tramas" />
+                            </div>
+                            <div class="py-2">
+                                <span class="fw-bold text-uppercase text-dark" style="font-size: 0.85rem; display: block;">Sweater Tramas</span>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- Producto 5: Camisa Lino -->
+                    <div class="col-md-4">
+                        <a asp-controller="Home" asp-action="DetalleProducto" asp-route-nombre="CAMISA LINO" class="product-card p-3 text-center d-flex flex-column justify-content-between text-decoration-none" style="height: 100%;">
+                            <div class="product-img-wrapper mb-2">
+                                <img src="~/images/hombres2.png" alt="Camisa Lino" />
+                            </div>
+                            <div class="py-2">
+                                <span class="fw-bold text-uppercase text-dark" style="font-size: 0.85rem; display: block;">Camisa Lino</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Botón Ver Liquidación -->
+                <div class="text-center mt-5">
+                    <button class="btn btn-outline-dark rounded-pill px-5 text-uppercase fw-bold py-2" style="font-size: 0.8rem;">Ver Liquidación</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer exacto en 4 columnas -->
+    <footer class="footer-fyr">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <h6>Productos</h6>
+                    <ul>
+                        <li>Buzos</li>
+                        <li>Camisas</li>
+                        <li>Sweater</li>
+                        <li>Remeras</li>
+                        <li>Pantalones</li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6>Ayudas</h6>
+                    <ul>
+                        <li>Preguntas Frecuentes</li>
+                        <li>Envíos</li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6>Contactanos</h6>
+                    <ul>
+                        <li>📞 3564-485238</li>
+                        <li>✉️ fyr_tienda.online@gmail.com</li>
+                        <li>📍 Sunchales, Santa Fe</li>
+                        <li>📷 @@FR.OFICIAL</li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6>Medios de Pago</h6>
+                    <ul>
+                        <li>Efectivo</li>
+                        <li>Tarjeta de Débito</li>
+                        <li>Tarjeta de Crédito</li>
+                        <li>Transferencia</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
