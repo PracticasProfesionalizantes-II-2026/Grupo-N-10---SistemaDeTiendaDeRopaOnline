@@ -1,9 +1,9 @@
 @using Microsoft.AspNetCore.Http
 @{
     Layout = null;
-    ViewData["Title"] = "Panel de Administrador";
+    ViewData["Title"] = "Panel Administrador";
     var usuarioLogueado = Context.Session.GetString("UsuarioSesion");
-    var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0] : "Administrador";
+    var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0].ToUpper() : "ADMIN";
 }
 
 <!DOCTYPE html>
@@ -13,219 +13,254 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>F&R - Panel de Administración</title>
     
+    <!-- FAVICON & ESTILOS -->
     <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <style>
         body {
             background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #000000;
         }
 
-        /* Estilos de las tarjetas del menú administrador */
-        .admin-card {
+        /* HEADER */
+        .admin-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e9ecef;
+            padding: 16px 40px;
+        }
+
+        .header-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: #333333;
+        }
+
+        /* CONTAINER AMPLIO */
+        .main-container {
+            max-width: 1320px;
+            padding-top: 50px;
+            padding-bottom: 60px;
+        }
+
+        /* TARJETAS DEL MENÚ MÁS GRANDES */
+        .menu-card {
             background: #ffffff;
             border-radius: 16px;
-            border: 1px solid #e9ecef;
-            padding: 30px 20px;
-            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+            padding: 45px 20px;
             text-align: center;
             text-decoration: none;
-            color: #212529;
+            color: #000000;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100%;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.01);
         }
 
-        .admin-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
-            border-color: #212529;
-            color: #000;
+        .menu-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.06);
+            color: #000000;
+            border-color: #cbd5e1;
         }
 
-        .admin-icon {
-            width: 50px;
-            height: 50px;
-            background-color: #212529;
-            color: #fff;
+        .icon-circle {
+            width: 65px;
+            height: 65px;
+            background-color: #111827;
+            color: #ffffff;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 15px;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
         }
 
-        .admin-card-title {
+        .card-label {
             font-weight: 800;
-            font-size: 1.05rem;
+            font-size: 0.95rem;
+            letter-spacing: 0.6px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
-        
-        .admin-card-danger {
+
+        /* TARJETA CERRAR SESIÓN MÁS ANCHA */
+        .logout-card {
+            background: #ffffff;
+            border-radius: 16px;
             border: 1px solid #fee2e2;
+            padding: 30px 20px;
+            text-align: center;
+            text-decoration: none;
+            color: #dc2626;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease-in-out;
+            width: 100%;
         }
-        .admin-card-danger:hover {
-            border-color: #dc3545;
+
+        .logout-card:hover {
+            background-color: #fef2f2;
+            color: #dc2626;
+            border-color: #fca5a5;
         }
-        .admin-card-danger .admin-icon {
-            background-color: #dc3545;
+
+        .icon-logout-circle {
+            width: 50px;
+            height: 50px;
+            background-color: #ef4444;
+            color: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 12px;
         }
     </style>
 </head>
 <body>
 
     <!-- ========================================================= -->
-    <!-- HEADER ADMINISTRADOR -->
+    <!-- HEADER -->
     <!-- ========================================================= -->
-    <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
+    <header class="admin-header d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-3">
             <a asp-controller="Home" asp-action="Index">
-                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 50px; width: auto;" />
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 32px; width: auto;" />
             </a>
-            <span class="fs-5 fw-bold text-muted border-start ps-3 py-1">PANEL ADMINISTRADOR</span>
+            <span class="header-title border-start ps-3">PANEL ADMINISTRADOR</span>
         </div>
 
         <div class="d-flex align-items-center gap-3">
-            <span class="fw-bold text-uppercase small">HOLA, @nombreUsuario</span>
-            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
+            <span class="small fw-bold text-uppercase" style="font-size: 0.8rem;">HOLA, @nombreUsuario</span>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-bold" style="font-size: 0.78rem;">
                 Volver a la Tienda
             </a>
         </div>
     </header>
 
     <!-- ========================================================= -->
-    <!-- CUADRÍCULA DE OPCIONES ADMINISTRATIVAS -->
+    <!-- CONTENIDO PRINCIPAL -->
     <!-- ========================================================= -->
-    <div class="container py-5">
+    <div class="container main-container">
         
         <div class="text-center mb-5">
-            <h1 class="fw-bolder tracking-wider mb-2">CUENTA ADMINISTRADOR</h1>
-            <p class="text-muted">Seleccione una opción para gestionar la plataforma</p>
+            <h1 class="fw-black text-uppercase tracking-wide" style="font-weight: 900; font-size: 2.3rem;">CUENTA ADMINISTRADOR</h1>
+            <p class="text-muted small">Seleccione una opción para gestionar la plataforma</p>
         </div>
 
-        <div class="row g-4">
+        <!-- GRILLA DE OPCIONES EN 4 COLUMNAS -->
+        <div class="row g-4 mb-4">
             
-            <!-- GESTIÓN DE PRODUCTOS -->
-            <div class="col-6 col-md-4 col-lg-3">
-                <a asp-controller="Producto" asp-action="Index" class="admin-card">
-                    <div class="admin-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16">
-                            <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2zm3.564 1.426L5.596 5 8 5.961 14.154 3.5zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464z"/>
-                        </svg>
+            <!-- 1. GESTIÓN DE PRODUCTOS -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <a asp-controller="Administrador" asp-action="Productos" class="menu-card">
+                    <div class="icon-circle">
+                        <i class="bi bi-box-seam"></i>
                     </div>
-                    <span class="admin-card-title">Gestión de Productos</span>
+                    <span class="card-label">GESTIÓN DE PRODUCTOS</span>
                 </a>
             </div>
 
-            <!-- GESTIÓN DE PEDIDOS -->
-            <div class="col-6 col-md-4 col-lg-3">
-                <a asp-controller="Pedido" asp-action="Index" class="admin-card">
-                    <div class="admin-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-truck" viewBox="0 0 16 16">
-                            <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5zm1.294 7.456A2 2 0 0 1 4.732 11h5.536a2 2 0 0 1 3.732-.047l.02.001A.5.5 0 0 0 14.5 10.5v-2.219l-1.48-1.85A.5.5 0 0 0 12.62 6H12v4.5a.5.5 0 0 0 .5.5zM3 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2m9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2M1.5 4a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 0-.5-.5z"/>
-                        </svg>
+            <!-- 2. GESTIÓN DE PEDIDOS -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <a asp-controller="Administrador" asp-action="Pedidos" class="menu-card">
+                    <div class="icon-circle">
+                        <i class="bi bi-truck"></i>
                     </div>
-                    <span class="admin-card-title">Gestión de Pedidos</span>
+                    <span class="card-label">GESTIÓN DE PEDIDOS</span>
                 </a>
             </div>
 
-            <!-- GESTIÓN DE CLIENTES -->
-            <div class="col-6 col-md-4 col-lg-3">
-                <a asp-controller="Cliente" asp-action="Index" class="admin-card">
-                    <div class="admin-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-people" viewBox="0 0 16 16">
-                            <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1A.2.2 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.27.27 0 0 1-.014.002H7.022ZM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4"/>
-                        </svg>
+            <!-- 3. GESTIÓN DE CLIENTES -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <a asp-controller="Administrador" asp-action="Clientes" class="menu-card">
+                    <div class="icon-circle">
+                        <i class="bi bi-people"></i>
                     </div>
-                    <span class="admin-card-title">Gestión de Clientes</span>
+                    <span class="card-label">GESTIÓN DE CLIENTES</span>
                 </a>
             </div>
 
-            <!-- GESTIÓN DE EMPLEADOS -->
-            <div class="col-6 col-md-4 col-lg-3">
-                <a asp-controller="Empleado" asp-action="Index" class="admin-card">
-                    <div class="admin-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-person-badge" viewBox="0 0 16 16">
-                            <path d="M6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
-                            <path d="M4.5 0A2.5 2.5 0 0 0 2 2.5V14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2.5A2.5 2.5 0 0 0 11.5 0zM3 2.5A1.5 1.5 0 0 1 4.5 1h7A1.5 1.5 0 0 1 13 2.5v10.795a4.2 4.2 0 0 0-.776-.492C11.392 12.387 10.063 12 8 12s-3.392.387-4.224.803a4.2 4.2 0 0 0-.776.492z"/>
-                        </svg>
+            <!-- 4. GESTIÓN DE EMPLEADOS -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <a asp-controller="Administrador" asp-action="Empleados" class="menu-card">
+                    <div class="icon-circle">
+                        <i class="bi bi-person-badge"></i>
                     </div>
-                    <span class="admin-card-title">Gestión de Empleados</span>
+                    <span class="card-label">GESTIÓN DE EMPLEADOS</span>
                 </a>
             </div>
 
-            <!-- CONFIGURAR TIENDA -->
-            <div class="col-6 col-md-4 col-lg-3">
-                <a asp-controller="Administrador" asp-action="ConfigurarTienda" class="admin-card">
-                    <div class="admin-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
-                            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
-                            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
-                        </svg>
+            <!-- 5. CONFIGURAR TIENDA -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <a asp-controller="Administrador" asp-action="ConfigurarTienda" class="menu-card">
+                    <div class="icon-circle">
+                        <i class="bi bi-gear"></i>
                     </div>
-                    <span class="admin-card-title">Configurar Tienda</span>
+                    <span class="card-label">CONFIGURAR TIENDA</span>
                 </a>
             </div>
 
-            <!-- HISTORIAL FACTURAS -->
-            <div class="col-6 col-md-4 col-lg-3">
-                <a asp-controller="Factura" asp-action="Index" class="admin-card">
-                    <div class="admin-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-receipt" viewBox="0 0 16 16">
-                            <path d="M1.92.506a.5.5 0 0 1 .434.14L3 1.293l.646-.647a.5.5 0 0 1 .708 0L5 1.293l.646-.647a.5.5 0 0 1 .708 0L7 1.293l.646-.647a.5.5 0 0 1 .708 0L9 1.293l.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .801.13l.5 1A.5.5 0 0 1 15 2v12a.5.5 0 0 1-.053.224l-.5 1a.5.5 0 0 1-.8.13L13 14.707l-.646.647a.5.5 0 0 1-.708 0L11 14.707l-.646.647a.5.5 0 0 1-.708 0L9 14.707l-.646.647a.5.5 0 0 1-.708 0L7 14.707l-.646.647a.5.5 0 0 1-.708 0L5 14.707l-.646.647a.5.5 0 0 1-.708 0L3 14.707l-.646.647a.5.5 0 0 1-.801-.13l-.5-1A.5.5 0 0 1 1 14V2a.5.5 0 0 1 .053-.224l.5-1a.5.5 0 0 1 .367-.27m.217 1.338L2 2.118v11.764l.137.274.51-.51a.5.5 0 0 1 .707 0l.646.647.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.509.509.137-.274V2.118l-.137-.274-.51.51a.5.5 0 0 1-.707 0L12 1.707l-.646.647a.5.5 0 0 1-.708 0L10 1.707l-.646.647a.5.5 0 0 1-.708 0L8 1.707l-.646.647a.5.5 0 0 1-.708 0L6 1.707l-.646.647a.5.5 0 0 1-.708 0L4 1.707l-.646.647a.5.5 0 0 1-.708 0z"/>
-                            <path d="M3 4.5a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5m8-6a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5"/>
-                        </svg>
+            <!-- 6. HISTORIAL FACTURAS -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <a asp-controller="Administrador" asp-action="Facturas" class="menu-card">
+                    <div class="icon-circle">
+                        <i class="bi bi-receipt"></i>
                     </div>
-                    <span class="admin-card-title">Historial Facturas</span>
+                    <span class="card-label">HISTORIAL FACTURAS</span>
                 </a>
             </div>
 
-            <!-- REPORTES DE VENTA -->
-            <div class="col-6 col-md-4 col-lg-3">
-                <a asp-controller="Reporte" asp-action="Index" class="admin-card">
-                    <div class="admin-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-graph-up-arrow" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.9l-3.613 4.417a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61L13.445 4H10.5a.5.5 0 0 1-.5-.5"/>
-                        </svg>
+            <!-- 7. REPORTES DE VENTA -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <a asp-controller="Administrador" asp-action="Reportes" class="menu-card">
+                    <div class="icon-circle">
+                        <i class="bi bi-graph-up-arrow"></i>
                     </div>
-                    <span class="admin-card-title">Reportes de Venta</span>
+                    <span class="card-label">REPORTES DE VENTA</span>
                 </a>
             </div>
 
-            <!-- CONTRASEÑA / SEGURIDAD -->
-            <div class="col-6 col-md-4 col-lg-3">
-                <a asp-controller="Account" asp-action="ForgotPassword" class="admin-card">
-                    <div class="admin-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-shield-lock" viewBox="0 0 16 16">
-                            <path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a1 1 0 0 0 .101.025 1 1 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7 7 0 0 1-1.048-.625 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56"/>
-                            <path d="M9.5 6.5a1.5 1.5 0 0 1-1 1.415l.385 1.99a.5.5 0 0 1-.491.595h-.788a.5.5 0 0 1-.49-.595l.384-1.99a1.5 1.5 0 1 1 2-1.415"/>
-                        </svg>
+            <!-- 8. CAMBIAR CONTRASEÑA -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <a asp-controller="Account" asp-action="CambiarContrasena" class="menu-card">
+                    <div class="icon-circle">
+                        <i class="bi bi-shield-lock"></i>
                     </div>
-                    <span class="admin-card-title">Cambiar Contraseña</span>
-                </a>
-            </div>
-
-            <!-- CERRAR SESIÓN -->
-            <div class="col-12 mt-4">
-                <a asp-controller="Account" asp-action="Logout" class="admin-card admin-card-danger text-danger mx-auto" style="max-width: 300px; padding: 15px;">
-                    <div class="admin-icon mb-2 mt-1" style="width: 40px; height: 40px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
-                            <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
-                        </svg>
-                    </div>
-                    <span class="admin-card-title fs-6">Cerrar Sesión</span>
+                    <span class="card-label">CAMBIAR CONTRASEÑA</span>
                 </a>
             </div>
 
         </div>
+
+        <!-- BOTÓN CERRAR SESIÓN -->
+        <div class="row justify-content-center mt-4">
+            <div class="col-12 col-md-6 col-lg-3">
+                <a asp-controller="Account" asp-action="Logout" class="logout-card">
+                    <div class="icon-logout-circle">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </div>
+                    <span class="card-label fw-bold">CERRAR SESIÓN</span>
+                </a>
+            </div>
+        </div>
+
     </div>
 
+    <!-- SCRIPTS -->
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

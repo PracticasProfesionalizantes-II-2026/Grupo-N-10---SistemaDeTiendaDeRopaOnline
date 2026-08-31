@@ -6,14 +6,12 @@ namespace FRFront.Controllers
 {
     public class AccountController : Controller
     {
-        // GET: Account/Login
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
 
-        // POST: Account/Login
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
@@ -25,37 +23,39 @@ namespace FRFront.Controllers
             // Guardamos el correo en la sesión activa
             HttpContext.Session.SetString("UsuarioSesion", model.Email);
 
-            // Validamos si el usuario ingresado corresponde a un Administrador
-            if (model.Email.ToLower().Contains("admin"))
+            string emailLower = model.Email.ToLower();
+
+            // Evaluación de Roles para Pruebas Frontend:
+            if (emailLower.Contains("admin"))
             {
                 HttpContext.Session.SetString("RolSesion", "Administrador");
+            }
+            else if (emailLower.Contains("empleado") || emailLower.Contains("cajero"))
+            {
+                HttpContext.Session.SetString("RolSesion", "Empleado");
             }
             else
             {
                 HttpContext.Session.SetString("RolSesion", "Cliente");
             }
 
-            // Redirige a la pantalla principal del cliente/tienda
+            // Redirige al inicio
             return RedirectToAction("Index", "Home");
         }
 
-        // GET: Account/Logout
         [HttpGet]
         public IActionResult Logout()
         {
-            // Limpia la sesión y redirige al inicio
             HttpContext.Session.Clear();
             return RedirectToAction("Index", "Home");
         }
 
-        // GET: Account/Register
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
 
-        // POST: Account/Register
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
@@ -63,19 +63,15 @@ namespace FRFront.Controllers
             {
                 return View(model);
             }
-
-            // Próximamente: Integración con la API/Backend
             return RedirectToAction("Login", "Account");
         }
 
-        // GET: Account/ForgotPassword
         [HttpGet]
         public IActionResult ForgotPassword()
         {
             return View();
         }
 
-        // POST: Account/ForgotPassword
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {

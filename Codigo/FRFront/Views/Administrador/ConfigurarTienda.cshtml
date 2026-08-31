@@ -3,7 +3,7 @@
     Layout = null;
     ViewData["Title"] = "Configurar Tienda";
     var usuarioLogueado = Context.Session.GetString("UsuarioSesion");
-    var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0] : "Administrador";
+    var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0].ToUpper() : "ADMIN";
 }
 
 <!DOCTYPE html>
@@ -13,162 +13,381 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>F&R - Configurar Tienda</title>
     
-    <!-- FAVICON -->
+    <!-- FAVICON & ESTILOS -->
     <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <style>
-        body {
-            background-color: #f8f9fa;
+        :root {
+            --primary-dark: #111827;
+            --accent-color: #2563eb;
+            --bg-body: #f8fafc;
+            --border-color: #e2e8f0;
         }
 
+        body {
+            background-color: var(--bg-body);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #1e293b;
+        }
+
+        /* HEADER MÁS GRANDE */
+        .admin-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e9ecef;
+            padding: 16px 40px;
+        }
+
+        /* CONTENEDOR ANCHO (1300px) */
+        .main-container {
+            max-width: 1300px;
+            padding-top: 40px;
+            padding-bottom: 60px;
+        }
+
+        /* TARJETAS MÁS GRANDES Y ESPACIOSAS */
         .config-card {
             background: #ffffff;
             border-radius: 16px;
-            border: 1px solid #e9ecef;
-            padding: 30px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+            padding: 36px 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            margin-bottom: 30px;
         }
 
         .config-section-title {
             font-weight: 800;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #212529;
-            margin-bottom: 20px;
+            letter-spacing: 0.8px;
+            color: var(--accent-color);
+            margin-bottom: 24px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #212529;
+            border-bottom: 2px solid #f1f5f9;
         }
 
+        .form-label {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        /* INPUTS MÁS GRANDES Y ALTOS */
         .form-control-custom {
-            border-radius: 50px;
-            padding: 12px 20px;
-            border: 1.5px solid #ced4da;
+            border-radius: 10px;
+            padding: 14px 20px;
+            border: 1.5px solid #cbd5e1;
+            font-size: 1.05rem;
             font-weight: 500;
         }
 
-        .form-control-custom:focus {
-            border-color: #212529;
-            box-shadow: 0 0 0 0.2rem rgba(33, 37, 41, 0.15);
+        .form-control-custom:disabled {
+            background-color: #f8fafc;
+            color: #475569;
+        }
+
+        /* ETIQUETAS DINÁMICAS (TAGS) MÁS GRANDES */
+        .tag-item {
+            background-color: #e2e8f0;
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding: 8px 18px;
+            border-radius: 25px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            color: #ef4444;
+            font-weight: bold;
+            display: none;
+        }
+
+        .add-tag-box {
+            display: none;
+        }
+
+        /* SECCIÓN MÉTODOS DE PAGO */
+        .payment-box {
+            background-color: #f8fafc;
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .form-check-input {
+            width: 1.25em;
+            height: 1.25em;
+            margin-top: 0.1em;
+        }
+
+        .form-check-label {
+            font-size: 1rem;
+            margin-left: 6px;
+        }
+
+        /* BOTONES DE ACCIÓN MÁS GRANDES */
+        .btn-custom-edit {
+            background-color: #e2e8f0;
+            color: #1e293b;
+            border-radius: 10px;
+            padding: 14px 40px;
+            font-weight: 800;
+            font-size: 1rem;
+            border: none;
+        }
+
+        .btn-custom-edit:hover {
+            background-color: #cbd5e1;
         }
 
         .btn-custom-save {
-            background-color: #000000;
+            background-color: var(--primary-dark);
             color: #ffffff;
-            border-radius: 50px;
-            padding: 14px 40px;
+            border-radius: 10px;
+            padding: 14px 48px;
             font-weight: 800;
-            letter-spacing: 1px;
+            font-size: 1rem;
             border: none;
-            transition: all 0.2s ease-in-out;
         }
 
         .btn-custom-save:hover {
-            background-color: #212529;
-            transform: translateY(-2px);
+            background-color: #000000;
+        }
+
+        .btn-custom-cancel {
+            background-color: #dc2626;
+            color: #ffffff;
+            border-radius: 10px;
+            padding: 14px 32px;
+            font-weight: 800;
+            font-size: 1rem;
+            border: none;
         }
     </style>
 </head>
 <body>
 
-    <!-- ========================================================= -->
-    <!-- HEADER ADMINISTRADOR -->
-    <!-- ========================================================= -->
-    <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
+    <!-- HEADER -->
+    <header class="admin-header d-flex justify-content-between align-items-center shadow-sm">
         <div class="d-flex align-items-center gap-3">
             <a asp-controller="Home" asp-action="Index">
-                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 50px; width: auto;" />
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 35px; width: auto;" />
             </a>
-            <span class="fs-5 fw-bold text-muted border-start ps-3 py-1">CONFIGURACIÓN DE TIENDA</span>
+            <span class="fs-6 fw-bold text-dark border-start ps-3">CONFIGURACIÓN DE TIENDA</span>
         </div>
 
         <div class="d-flex align-items-center gap-3">
+            <span class="small fw-bold text-uppercase" style="font-size: 0.85rem;">HOLA, @nombreUsuario</span>
             <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
                 &lt; Volver al Panel
             </a>
         </div>
     </header>
 
-    <!-- ========================================================= -->
-    <!-- FORMULARIO DE CONFIGURACIÓN -->
-    <!-- ========================================================= -->
-    <div class="container py-5" style="max-width: 900px;">
+    <!-- CONTENIDO FORMULARIO -->
+    <div class="container main-container">
         
         <div class="text-center mb-5">
-            <h1 class="fw-bolder tracking-wider mb-2">CONFIGURACIÓN DE TIENDA</h1>
-            <p class="text-muted">Personaliza la información pública de la tienda online</p>
+            <h1 class="fw-black mb-2" style="font-weight: 900; font-size: 2.2rem;">CONFIGURAR TIENDA</h1>
+            <p class="text-muted fs-6">Gestiona el contenido público, branding e información visible para los clientes</p>
         </div>
 
-        <form method="post" action="#">
+        <!-- Mensaje de Éxito del Servidor -->
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success fs-6 mb-4 shadow-sm" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            </div>
+        }
+
+        <!-- FORMULARIO HABILITADO PARA ENVIAR DATOS -->
+        <form asp-controller="Administrador" asp-action="ConfigurarTienda" method="post" id="storeForm">
             
-            <!-- SECCIÓN 1: TEXTOS Y TEXTO DE MARQUESINA -->
+            <!-- SECCIÓN 1: ANUNCIOS Y PROMOCIONES -->
             <div class="config-card">
                 <h5 class="config-section-title">Anuncios y Promociones</h5>
                 
                 <div class="mb-4">
-                    <label class="form-label fw-bold">Texto de la Tira Animada (Ticker)</label>
-                    <input type="text" class="form-control form-control-custom" value="F&R" placeholder="Texto que se repite en la marquesina negra" />
-                    <span class="form-text text-muted small ms-2">Este texto aparecerá desplazándose en las barras negras del inicio.</span>
+                    <label class="form-label">Texto de la Tira Animada (Ticker)</label>
+                    <input type="text" name="tickerText" class="form-control form-control-custom editable-field" value="F&R" disabled />
+                    <span class="form-text text-muted small">Aparece en constante movimiento en la marquesina principal.</span>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Texto Barra Promocional</label>
-                    <input type="text" class="form-control form-control-custom" value="ENVÍO A TODO EL PAÍS" placeholder="Ej: ENVÍO A TODO EL PAÍS" />
-                </div>
-            </div>
-
-            <!-- SECCIÓN 2: DATOS DE CONTACTO (FOOTER) -->
-            <div class="config-card">
-                <h5 class="config-section-title">Datos de Contacto (Pie de Página)</h5>
-                
-                <div class="row g-3">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Teléfono de Contacto</label>
-                        <input type="text" class="form-control form-control-custom" value="3564-451239" />
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Correo Electrónico</label>
-                        <input type="email" class="form-control form-control-custom" value="f&r_tienda_online@gmail.com" />
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Ubicación / Ciudad</label>
-                        <input type="text" class="form-control form-control-custom" value="Sunchales, Santa Fe" />
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Usuario Redes Sociales</label>
-                        <input type="text" class="form-control form-control-custom" value="@@F&R.OFICIAL" />
-                    </div>
+                <div class="mb-0">
+                    <label class="form-label">Texto Barra Promocional</label>
+                    <input type="text" name="bannerText" class="form-control form-control-custom editable-field" value="ENVÍO A TODO EL PAÍS - OFERTAS! - ¡¡ SALE !!" disabled />
                 </div>
             </div>
 
-            <!-- SECCIÓN 3: BANNERS PRINCIPALES -->
+            <!-- SECCIÓN 2: NAVEGACIÓN Y CATEGORÍAS -->
             <div class="config-card">
-                <h5 class="config-section-title">Imágenes de Banner Principal</h5>
+                <h5 class="config-section-title">Navegación y Categorías Visibles</h5>
                 
                 <div class="mb-4">
-                    <label class="form-label fw-bold">Banner Portada Principal</label>
-                    <input type="file" class="form-control form-control-custom" />
-                    <span class="form-text text-muted small ms-2">Formatos permitidos: .PNG, .JPG (Recomendado 1920x600px).</span>
+                    <label class="form-label d-block">Menú Principal</label>
+                    <div id="mainMenuContainer" class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="tag-item">MIS COMPRAS <i class="bi bi-x-lg tag-remove" onclick="removeTag(this)"></i></span>
+                        <span class="tag-item">LANZAMIENTOS <i class="bi bi-x-lg tag-remove" onclick="removeTag(this)"></i></span>
+                        <span class="tag-item">HOMBRE <i class="bi bi-x-lg tag-remove" onclick="removeTag(this)"></i></span>
+                        <span class="tag-item">MUJER <i class="bi bi-x-lg tag-remove" onclick="removeTag(this)"></i></span>
+                        <span class="tag-item">OFERTAS <i class="bi bi-x-lg tag-remove" onclick="removeTag(this)"></i></span>
+                        <span class="tag-item">PRODUCTOS <i class="bi bi-x-lg tag-remove" onclick="removeTag(this)"></i></span>
+                    </div>
+                    <div class="input-group add-tag-box" style="max-width: 350px;">
+                        <input type="text" id="newMenuInput" class="form-control" placeholder="Nueva opción de menú">
+                        <button type="button" class="btn btn-dark fw-bold" onclick="addTag('mainMenuContainer', 'newMenuInput')">Agregar</button>
+                    </div>
+                </div>
+
+                <div class="mb-0">
+                    <label class="form-label d-block">Subcategorías Destacadas</label>
+                    <div id="subCategoryContainer" class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="tag-item">BUZOS <i class="bi bi-x-lg tag-remove" onclick="removeTag(this)"></i></span>
+                        <span class="tag-item">CAMISAS <i class="bi bi-x-lg tag-remove" onclick="removeTag(this)"></i></span>
+                        <span class="tag-item">SWEATER <i class="bi bi-x-lg tag-remove" onclick="removeTag(this)"></i></span>
+                        <span class="tag-item">REMERAS <i class="bi bi-x-lg tag-remove" onclick="removeTag(this)"></i></span>
+                        <span class="tag-item">PANTALONES <i class="bi bi-x-lg tag-remove" onclick="removeTag(this)"></i></span>
+                    </div>
+                    <div class="input-group add-tag-box" style="max-width: 350px;">
+                        <input type="text" id="newSubInput" class="form-control" placeholder="Nueva subcategoría">
+                        <button type="button" class="btn btn-dark fw-bold" onclick="addTag('subCategoryContainer', 'newSubInput')">Agregar</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- BOTÓN GUARDAR -->
-            <div class="text-center mt-4">
-                <button type="submit" class="btn btn-custom-save text-uppercase shadow">
-                    Guardar Cambios
-                </button>
+            <!-- SECCIÓN 3: MÉTODOS DE PAGO -->
+            <div class="config-card">
+                <h5 class="config-section-title">Métodos de Pago Habilitados</h5>
+                <div class="payment-box row g-4 mx-0">
+                    <div class="col-6 col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input editable-field" type="checkbox" name="payCash" checked disabled id="payCash">
+                            <label class="form-check-label fw-bold" for="payCash">Efectivo</label>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input editable-field" type="checkbox" name="payDebit" checked disabled id="payDebit">
+                            <label class="form-check-label fw-bold" for="payDebit">Tarjeta Débito</label>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input editable-field" type="checkbox" name="payCredit" checked disabled id="payCredit">
+                            <label class="form-check-label fw-bold" for="payCredit">Tarjeta Crédito</label>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input editable-field" type="checkbox" name="payTransfer" checked disabled id="payTransfer">
+                            <label class="form-check-label fw-bold" for="payTransfer">Transferencia</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 4: DATOS DE CONTACTO -->
+            <div class="config-card">
+                <h5 class="config-section-title">Datos de Contacto (Pie de Página)</h5>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Teléfono de Contacto</label>
+                        <input type="text" name="phone" class="form-control form-control-custom editable-field" value="3564-451239" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Correo Electrónico</label>
+                        <input type="email" name="email" class="form-control form-control-custom editable-field" value="f&r_tienda_online@gmail.com" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Ubicación / Ciudad</label>
+                        <input type="text" name="location" class="form-control form-control-custom editable-field" value="Sunchales, Santa Fe" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Usuario Redes Sociales</label>
+                        <input type="text" name="social" class="form-control form-control-custom editable-field" value="@@F&R.OFICIAL" disabled />
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOTONES DE ACCIÓN -->
+            <div class="d-flex justify-content-end gap-3 mt-4">
+                <button type="button" id="btnEdit" class="btn btn-custom-edit text-uppercase">EDITAR</button>
+                <button type="button" id="btnCancel" class="btn btn-custom-cancel text-uppercase d-none">CANCELAR</button>
+                <button type="submit" id="btnSave" class="btn btn-custom-save text-uppercase d-none">GUARDAR</button>
             </div>
 
         </form>
 
     </div>
 
+    <!-- SCRIPTS -->
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let isEditing = false;
+
+        const btnEdit = document.getElementById('btnEdit');
+        const btnSave = document.getElementById('btnSave');
+        const btnCancel = document.getElementById('btnCancel');
+
+        btnEdit.addEventListener('click', () => {
+            toggleEditMode(true);
+        });
+
+        btnCancel.addEventListener('click', () => {
+            toggleEditMode(false);
+        });
+
+        function toggleEditMode(enable) {
+            isEditing = enable;
+            
+            const fields = document.querySelectorAll('.editable-field');
+            fields.forEach(field => field.disabled = !enable);
+
+            const removeIcons = document.querySelectorAll('.tag-remove');
+            removeIcons.forEach(icon => icon.style.display = enable ? 'inline-block' : 'none');
+
+            const addBoxes = document.querySelectorAll('.add-tag-box');
+            addBoxes.forEach(box => box.style.display = enable ? 'flex' : 'none');
+
+            if (enable) {
+                btnEdit.classList.add('d-none');
+                btnSave.classList.remove('d-none');
+                btnCancel.classList.remove('d-none');
+            } else {
+                btnEdit.classList.remove('d-none');
+                btnSave.classList.add('d-none');
+                btnCancel.classList.add('d-none');
+            }
+        }
+
+        function removeTag(element) {
+            if (isEditing) {
+                element.parentElement.remove();
+            }
+        }
+
+        function addTag(containerId, inputId) {
+            const input = document.getElementById(inputId);
+            const value = input.value.trim().toUpperCase();
+
+            if (value !== '') {
+                const container = document.getElementById(containerId);
+                const newSpan = document.createElement('span');
+                newSpan.className = 'tag-item';
+                newSpan.innerHTML = `${value} <i class="bi bi-x-lg tag-remove" style="display: inline-block;" onclick="removeTag(this)"></i>`;
+                
+                container.appendChild(newSpan);
+                input.value = '';
+            }
+        }
+    </script>
 </body>
 </html>

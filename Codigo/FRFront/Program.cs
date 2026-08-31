@@ -1,7 +1,12 @@
+using FRFront.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Registrar la configuración global de la tienda (Singleton)
+builder.Services.AddSingleton<TiendaConfig>();
 
 // Configuración del servicio de sesiones
 builder.Services.AddSession(options =>

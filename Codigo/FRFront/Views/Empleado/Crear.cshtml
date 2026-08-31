@@ -1,0 +1,273 @@
+@using Microsoft.AspNetCore.Http
+@{
+    Layout = null;
+    ViewData["Title"] = "Crear Cuenta Empleado";
+    var usuarioLogueado = Context.Session.GetString("UsuarioSesion");
+    var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0] : "Administrador";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F&R - Crear Cuenta Empleado</title>
+    
+    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .create-emp-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e9ecef;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .form-control-custom, .form-select-custom {
+            border-radius: 50px;
+            padding: 12px 20px;
+            border: 1.5px solid #ced4da;
+            font-weight: 500;
+        }
+
+        .form-control-custom:focus, .form-select-custom:focus {
+            border-color: #212529;
+            box-shadow: 0 0 0 0.2rem rgba(33, 37, 41, 0.15);
+        }
+
+        .btn-custom-register {
+            background-color: #000000;
+            color: #ffffff;
+            border-radius: 50px;
+            padding: 14px 50px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            border: none;
+            transition: all 0.2s ease-in-out;
+            width: 100%;
+        }
+
+        .btn-custom-register:hover {
+            background-color: #212529;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .error-feedback {
+            color: #dc3545;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .input-error {
+            border-color: #dc3545 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========================================================= -->
+    <!-- HEADER -->
+    <!-- ========================================================= -->
+    <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Home" asp-action="Index">
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 50px; width: auto;" />
+            </a>
+            <span class="fs-5 fw-bold text-muted border-start ps-3 py-1">CREAR CUENTA EMPLEADO</span>
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
+                &lt; Volver
+            </a>
+        </div>
+    </header>
+
+    <!-- ========================================================= -->
+    <!-- FORMULARIO DE REGISTRO DE EMPLEADO -->
+    <!-- ========================================================= -->
+    <div class="container py-5" style="max-width: 850px;">
+        
+        <div class="text-center mb-4">
+            <h1 class="fw-bolder tracking-wider mb-2">CREAR CUENTA EMPLEADO</h1>
+            <p class="text-muted">Complete los datos personales y de acceso para registrar un nuevo empleado</p>
+        </div>
+
+        <!-- ALERTA GLOBAL DE ERROR DE CAMPOS REQUERIDOS -->
+        <div id="alertCamposRequeridos" class="alert alert-danger rounded-4 fw-bold text-center mb-4 d-none">
+            Debe llenar los campos requeridos*
+        </div>
+
+        <form id="formCrearEmpleado" novalidate>
+            <div class="create-emp-card">
+                <div class="row g-3">
+                    
+                    <!-- DNI -->
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label fw-bold small text-uppercase">DNI *</label>
+                        <input type="text" id="inputDNI" class="form-control form-control-custom" placeholder="Ingrese número de DNI" />
+                        <div id="errorDNI" class="error-feedback">Ingrese un DNI válido</div>
+                    </div>
+
+                    <!-- CORREO ELECTRÓNICO -->
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label fw-bold small text-uppercase">Correo Electrónico *</label>
+                        <input type="email" id="inputEmail" class="form-control form-control-custom" placeholder="ejemplo@correo.com" />
+                        <div id="errorEmail" class="error-feedback">El correo ya existe.</div>
+                    </div>
+
+                    <!-- NOMBRE -->
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label fw-bold small text-uppercase">Nombre *</label>
+                        <input type="text" id="inputNombre" class="form-control form-control-custom" placeholder="Ingrese nombre" />
+                    </div>
+
+                    <!-- APELLIDO -->
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label fw-bold small text-uppercase">Apellido *</label>
+                        <input type="text" id="inputApellido" class="form-control form-control-custom" placeholder="Ingrese apellido" />
+                        <div id="errorPersonaDNI" class="error-feedback">Nombre y/o apellido no concuerda con el DNI</div>
+                    </div>
+
+                    <!-- NOMBRE DE USUARIO -->
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label fw-bold small text-uppercase">Nombre de Usuario *</label>
+                        <input type="text" id="inputUsuario" class="form-control form-control-custom" placeholder="Ingrese nombre de usuario" />
+                        <div id="errorUsuario" class="error-feedback">Nombre ya existente</div>
+                    </div>
+
+                    <!-- ELEGIR ROL -->
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label fw-bold small text-uppercase">Elegir el ROL *</label>
+                        <select id="selectRol" class="form-select form-select-custom">
+                            <option value="">-- Seleccionar ROL --</option>
+                            <option value="Cajero">Cajero / Empleado Vendedor</option>
+                            <option value="Administrador">Administrador de Sistema</option>
+                        </select>
+                        <div id="errorRol" class="error-feedback">No se le asignó un ROL</div>
+                    </div>
+
+                    <!-- CONTRASEÑA -->
+                    <div class="col-12 mb-3">
+                        <label class="form-label fw-bold small text-uppercase">Contraseña *</label>
+                        <input type="password" id="inputPass" class="form-control form-control-custom" placeholder="Mínimo 7 caracteres, 1 mayúscula y 1 símbolo" />
+                        <div id="errorPass" class="error-feedback">La contraseña debe contener al menos 7 caracteres, una mayúscula y un símbolo.</div>
+                    </div>
+
+                </div>
+
+                <!-- BOTÓN REGISTRARME -->
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-custom-register text-uppercase shadow">
+                        Registrarme
+                    </button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- MODAL POPUP: EMPLEADO REGISTRADO CON ÉXITO -->
+    <!-- ========================================================= -->
+    <div class="modal fade" id="modalEmpleadoRegistrado" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-body text-center p-5">
+                    <div class="mb-3 text-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                        </svg>
+                    </div>
+                    <h3 class="fw-bold text-uppercase mb-2">¡EMPLEADO REGISTRADO CON ÉXITO!</h3>
+                    <p class="text-muted mb-4">La cuenta ha sido creada y asignada correctamente.</p>
+                    <a asp-controller="Administrador" asp-action="Index" class="btn btn-dark rounded-pill fw-bold px-4 py-2 text-uppercase">
+                        &lt; VOLVER
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('formCrearEmpleado').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Limpieza inicial de errores
+            document.querySelectorAll('.error-feedback').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.form-control-custom, .form-select-custom').forEach(el => el.classList.remove('input-error'));
+            document.getElementById('alertCamposRequeridos').classList.add('d-none');
+
+            // Captura de valores
+            const dni = document.getElementById('inputDNI').value.trim();
+            const email = document.getElementById('inputEmail').value.trim();
+            const nombre = document.getElementById('inputNombre').value.trim();
+            const apellido = document.getElementById('inputApellido').value.trim();
+            const usuario = document.getElementById('inputUsuario').value.trim();
+            const rol = document.getElementById('selectRol').value;
+            const pass = document.getElementById('inputPass').value;
+
+            let hayError = false;
+
+            // 1. Validar Campos Requeridos
+            if (!dni || !email || !nombre || !apellido || !usuario || !rol || !pass) {
+                document.getElementById('alertCamposRequeridos').classList.remove('d-none');
+                hayError = true;
+            }
+
+            // 2. Validar DNI (Numérico)
+            if (dni && (isNaN(dni) || dni.length < 7 || dni.length > 8)) {
+                document.getElementById('errorDNI').style.display = 'block';
+                document.getElementById('inputDNI').classList.add('input-error');
+                hayError = true;
+            }
+
+            // 3. Simulación de Email duplicado
+            if (email && email.toLowerCase().includes('existe')) {
+                document.getElementById('errorEmail').style.display = 'block';
+                document.getElementById('inputEmail').classList.add('input-error');
+                hayError = true;
+            }
+
+            // 4. Simulación de Nombre de Usuario duplicado
+            if (usuario && usuario.toLowerCase() === 'admin') {
+                document.getElementById('errorUsuario').style.display = 'block';
+                document.getElementById('inputUsuario').classList.add('input-error');
+                hayError = true;
+            }
+
+            // 5. Validar Selección de Rol
+            if (!rol) {
+                document.getElementById('errorRol').style.display = 'block';
+                document.getElementById('selectRol').classList.add('input-error');
+                hayError = true;
+            }
+
+            // 6. Validar Complejidad de Contraseña (7 chars, 1 Mayúscula, 1 Símbolo)
+            const regexPass = /^(?=.*[A-Z])(?=.*[!@@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{7,}$/;
+            if (pass && !regexPass.test(pass)) {
+                document.getElementById('errorPass').style.display = 'block';
+                document.getElementById('inputPass').classList.add('input-error');
+                hayError = true;
+            }
+
+            // Si no hay errores, muestra el modal de éxito
+            if (!hayError) {
+                var modal = new bootstrap.Modal(document.getElementById('modalEmpleadoRegistrado'));
+                modal.show();
+            }
+        });
+    </script>
+</body>
+</html>

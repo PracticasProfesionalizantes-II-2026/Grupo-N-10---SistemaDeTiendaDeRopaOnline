@@ -1,0 +1,208 @@
+@using Microsoft.AspNetCore.Http
+@{
+    Layout = null;
+    ViewData["Title"] = "Alta de Producto";
+    var usuarioLogueado = Context.Session.GetString("UsuarioSesion");
+    var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0] : "Administrador";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F&R - Nuevo Producto</title>
+    
+    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .create-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e9ecef;
+            padding: 35px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .form-control-custom, .form-select-custom {
+            border-radius: 50px;
+            padding: 12px 20px;
+            border: 1.5px solid #ced4da;
+            font-weight: 500;
+        }
+
+        .form-control-custom:focus, .form-select-custom:focus {
+            border-color: #212529;
+            box-shadow: 0 0 0 0.2rem rgba(33, 37, 41, 0.15);
+        }
+
+        .dropzone-upload {
+            width: 100%;
+            height: 250px;
+            border-radius: 16px;
+            border: 2px dashed #ced4da;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #fafafa;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .dropzone-upload:hover {
+            border-color: #212529;
+            background-color: #f1f3f5;
+        }
+
+        .btn-custom-save {
+            background-color: #000000;
+            color: #ffffff;
+            border-radius: 50px;
+            padding: 14px 50px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            border: none;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn-custom-save:hover {
+            background-color: #212529;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Home" asp-action="Index">
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 50px; width: auto;" />
+            </a>
+            <span class="fs-5 fw-bold text-muted border-start ps-3 py-1">NUEVO PRODUCTO</span>
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Producto" asp-action="Index" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
+                &lt; Volver
+            </a>
+        </div>
+    </header>
+
+    <!-- FORMULARIO DE ALTA -->
+    <div class="container py-5" style="max-width: 950px;">
+        
+        <div class="text-center mb-5">
+            <h1 class="fw-bolder tracking-wider mb-2">NUEVO PRODUCTO</h1>
+            <p class="text-muted">Complete todos los campos requeridos para dar de alta el producto en el catálogo</p>
+        </div>
+
+        <form id="formCrearProducto">
+            <div class="create-card">
+                <div class="row g-4">
+                    
+                    <!-- COLUMNA IZQUIERDA: IMAGEN Y DESCRIPCIÓN -->
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">IMAGEN *</label>
+                        <div class="dropzone-upload mb-3" onclick="document.getElementById('fileImg').click()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-upload text-muted mb-2" viewBox="0 0 16 16">
+                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z"/>
+                            </svg>
+                            <span class="fw-bold text-uppercase small text-dark" id="uploadStatus">Subir Imagen</span>
+                        </div>
+                        <input type="file" id="fileImg" class="d-none" accept="image/*" required />
+
+                        <div class="mt-3">
+                            <label class="form-label fw-bold">DESCRIPCIÓN</label>
+                            <textarea class="form-control form-control-custom rounded-4" rows="3" placeholder="Ingresar descripción del producto"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- COLUMNA DERECHA: DATOS DEL PRODUCTO -->
+                    <div class="col-md-7">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">NOMBRE *</label>
+                            <input type="text" class="form-control form-control-custom" placeholder="Ingresar nombre del producto" required />
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-bold">PRECIO ($) *</label>
+                                <input type="text" class="form-control form-control-custom" placeholder="Ingresar precio" required />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold">STOCK *</label>
+                                <input type="number" class="form-control form-control-custom" placeholder="Ingresar stock" min="0" required />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">TALLES *</label>
+                            <input type="text" class="form-control form-control-custom" placeholder="Ej: S/M/L/XL" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">COLOR *</label>
+                            <input type="text" class="form-control form-control-custom" placeholder="Ingresar color del producto" required />
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="text-center border-top pt-4 mt-4">
+                    <button type="submit" class="btn btn-custom-save text-uppercase shadow">
+                        GUARDAR
+                    </button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+    <!-- MODAL POPUP: PRODUCTO GUARDADO CON ÉXITO -->
+    <div class="modal fade" id="modalExito" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-body text-center p-5">
+                    <div class="mb-3 text-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                        </svg>
+                    </div>
+                    <h3 class="fw-bold text-uppercase mb-2">¡Producto guardado con éxito!</h3>
+                    <p class="text-muted mb-4">El producto ha sido añadido correctamente al catálogo de la tienda.</p>
+                    <a asp-controller="Producto" asp-action="Index" class="btn btn-dark rounded-pill fw-bold px-4 py-2 text-uppercase">
+                        &lt; Volver a Productos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('formCrearProducto').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var modalExito = new bootstrap.Modal(document.getElementById('modalExito'));
+            modalExito.show();
+        });
+
+        document.getElementById('fileImg').addEventListener('change', function (e) {
+            if (e.target.files[0]) {
+                document.getElementById('uploadStatus').textContent = e.target.files[0].name;
+            }
+        });
+    </script>
+</body>
+</html>

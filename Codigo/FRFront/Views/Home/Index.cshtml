@@ -1,10 +1,12 @@
 ﻿@using Microsoft.AspNetCore.Http
+@using FRFront.Models
+@inject TiendaConfig Config
 @{
     Layout = null;
     ViewData["Title"] = "Inicio";
     var usuarioLogueado = Context.Session.GetString("UsuarioSesion");
-    var rolUsuario = Context.Session.GetString("RolSesion"); // "Administrador" o "Cliente"
-    var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0] : "Rocio";
+    var rolUsuario = Context.Session.GetString("RolSesion"); // "Administrador", "Empleado", "Cajero" o "Cliente"
+    var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0] : "Usuario";
 }
 
 <!DOCTYPE html>
@@ -14,14 +16,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>F&R - Inicio</title>
     
-    <!-- FAVICON -->
     <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
-
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
     <style>
-        /* Tira F&R Animada Infinita */
         .ticker-fyr {
             background-color: #000;
             color: #fff;
@@ -45,12 +44,8 @@
         }
 
         @@keyframes ticker {
-            0% {
-                transform: translateX(0);
-            }
-            100% {
-                transform: translateX(-50%);
-            }
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
         }
 
         .user-dropdown-menu {
@@ -92,14 +87,12 @@
     <!-- ========================================================= -->
     <header class="bg-white border-bottom py-4 px-4 d-flex justify-content-between align-items-center">
         
-        <!-- Logo F&R usando logo-fr.png -->
         <div>
             <a asp-controller="Home" asp-action="Index">
                 <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 65px; width: auto;" />
             </a>
         </div>
 
-        <!-- Categorías Principales -->
         <nav class="d-none d-md-flex gap-4 fw-bold text-uppercase fs-6">
             <a href="#" class="text-dark text-decoration-none">LANZAMIENTOS</a>
             <a href="#" class="text-dark text-decoration-none">HOMBRE</a>
@@ -108,7 +101,6 @@
             <a href="#" class="text-dark text-decoration-none">PRODUCTOS</a>
         </nav>
 
-        <!-- Lado Derecho: Lupa e Iniciar Sesión / Opciones de Sesión -->
         <div class="d-flex align-items-center gap-3">
             
             <div class="d-flex align-items-center gap-2">
@@ -122,11 +114,16 @@
 
             @if (!string.IsNullOrEmpty(usuarioLogueado))
             {
-                <!-- SI ES ADMINISTRADOR MUESTRA "ADMINISTRAR PÁGINA", SI ES CLIENTE MUESTRA "MIS COMPRAS" -->
                 @if (rolUsuario == "Administrador")
                 {
                     <a asp-controller="Administrador" asp-action="Index" class="text-danger fw-bold text-decoration-none text-uppercase me-2 small">
                         ADMINISTRAR PÁGINA
+                    </a>
+                }
+                else if (rolUsuario == "Empleado" || rolUsuario == "Cajero")
+                {
+                    <a asp-controller="Empleado" asp-action="Index" class="text-dark fw-bold text-decoration-none text-uppercase me-2 small">
+                        PANEL CAJERO
                     </a>
                 }
                 else
@@ -148,10 +145,14 @@
                         {
                             <li><a class="dropdown-item text-danger fw-bold" asp-controller="Administrador" asp-action="Index">Administrar Página</a></li>
                         }
+                        else if (rolUsuario == "Empleado" || rolUsuario == "Cajero")
+                        {
+                            <li><a class="dropdown-item text-dark fw-bold" asp-controller="Empleado" asp-action="Index">Panel Cajero</a></li>
+                        }
 
                         <li><a class="dropdown-item" href="#">Notificaciones</a></li>
                         
-                        @if (rolUsuario != "Administrador")
+                        @if (rolUsuario != "Administrador" && rolUsuario != "Empleado" && rolUsuario != "Cajero")
                         {
                             <li><a class="dropdown-item" href="#">Mis Compras</a></li>
                             <li><a class="dropdown-item" href="#">Carrito</a></li>
@@ -174,91 +175,85 @@
 
     </header>
 
-    <!-- ========================================================= -->
-    <!-- TIRA ANIMADA F&R INFINITA (PRIMERA BARRA) -->
-    <!-- ========================================================= -->
+    <!-- MARQUESINA DINÁMICA (TICKER) -->
     <div class="ticker-fyr">
         <div class="ticker-track">
-            <span>F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp;&nbsp;&nbsp;</span>
-            <span>F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span>
+                @for (int i = 0; i < 15; i++)
+                {
+                    @Config.TickerText @:&nbsp;&nbsp;&nbsp;&nbsp;
+                }
+            </span>
+            <span>
+                @for (int i = 0; i < 15; i++)
+                {
+                    @Config.TickerText @:&nbsp;&nbsp;&nbsp;&nbsp;
+                }
+            </span>
         </div>
     </div>
 
-    <!-- ========================================================= -->
-    <!-- BANNER PRINCIPAL -->
-    <!-- ========================================================= -->
     <section class="hero-fyr">
         <img src="~/images/banner.png" alt="Nueva colección F&R" class="hero-fyr-img" />
     </section>
 
-    <!-- ========================================================= -->
-    <!-- TIRA ANIMADA F&R INFINITA (SEGUNDA BARRA) -->
-    <!-- ========================================================= -->
+    <!-- SEGUNDA MARQUESINA DINÁMICA -->
     <div class="ticker-fyr">
         <div class="ticker-track">
-            <span>F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp;&nbsp;&nbsp;</span>
-            <span>F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span>
+                @for (int i = 0; i < 15; i++)
+                {
+                    @Config.TickerText @:&nbsp;&nbsp;&nbsp;&nbsp;
+                }
+            </span>
+            <span>
+                @for (int i = 0; i < 15; i++)
+                {
+                    @Config.TickerText @:&nbsp;&nbsp;&nbsp;&nbsp;
+                }
+            </span>
         </div>
     </div>
 
-    <!-- ========================================================= -->
-    <!-- CATEGORÍAS -->
-    <!-- ========================================================= -->
     <section class="categories-fyr">
         <div class="categories-container">
-
             <a href="#" class="category-card">
                 <img src="~/images/nuevo.png" alt="Nueva colección" />
                 <div class="category-button">NUEVO</div>
             </a>
-
             <a href="#" class="category-card">
                 <img src="~/images/mujeres.png" alt="Mujeres" />
                 <div class="category-button">MUJERES</div>
             </a>
-
             <a href="#" class="category-card">
                 <img src="~/images/hombres.png" alt="Hombres" />
                 <div class="category-button">HOMBRES</div>
             </a>
-
         </div>
     </section>
 
-    <!-- ========================================================= -->
-    <!-- BARRA ENVÍO / OFERTAS -->
-    <!-- ========================================================= -->
+    <!-- BARRA PROMOCIONAL DINÁMICA -->
     <section class="promo-bar">
-        <span class="promo-text">ENVÍO A TODO EL PAÍS</span>
+        <span class="promo-text">@Config.BannerText</span>
         <div class="promo-circle">
             <span>OFERTAS!</span>
         </div>
     </section>
 
-    <!-- ========================================================= -->
-    <!-- SEGUNDA FILA DE PRODUCTOS -->
-    <!-- ========================================================= -->
     <section class="featured-products">
         <div class="products-container">
-
             <a href="#" class="product-card">
                 <img src="~/images/hombres2.png" alt="Producto F&R" />
             </a>
-
             <a href="#" class="product-card">
                 <img src="~/images/mujeres2.png" alt="Producto F&R" />
             </a>
-
             <a href="#" class="product-card">
                 <img src="~/images/hombres3.png" alt="Producto F&R" />
             </a>
-
         </div>
     </section>
 
-    <!-- ========================================================= -->
-    <!-- BANNER SALE -->
-    <!-- ========================================================= -->
     <section class="sale-section">
         <div class="sale-banner">
             <img src="~/images/sale.png" alt="Sale" class="sale-image sale-image-left" />
@@ -267,14 +262,10 @@
         </div>
     </section>
 
-    <!-- ========================================================= -->
-    <!-- FOOTER / INFORMACIÓN DE ABAJO -->
-    <!-- ========================================================= -->
+    <!-- FOOTER CON DATOS DE CONTACTO DINÁMICOS -->
     <footer class="bg-light pt-5 pb-4 border-top mt-5">
         <div class="container">
             <div class="row text-uppercase small fw-bold">
-                
-                <!-- PRODUCTOS -->
                 <div class="col-md-4 mb-4">
                     <h6 class="fw-bold mb-3">PRODUCTOS</h6>
                     <ul class="list-unstyled d-flex flex-column gap-2 text-muted">
@@ -285,19 +276,15 @@
                         <li><a href="#" class="text-decoration-none text-secondary">PANTALONES</a></li>
                     </ul>
                 </div>
-
-                <!-- CONTACTANOS -->
                 <div class="col-md-4 mb-4">
                     <h6 class="fw-bold mb-3">CONTACTANOS</h6>
                     <ul class="list-unstyled d-flex flex-column gap-2 text-secondary">
-                        <li>3564-451239</li>
-                        <li>f&r_tienda_online@gmail.com</li>
-                        <li>Sunchales, Santa Fe</li>
-                        <li>@@F&R.OFICIAL</li>
+                        <li>@Config.Phone</li>
+                        <li>@Config.Email</li>
+                        <li>@Config.Location</li>
+                        <li>@Config.Social</li>
                     </ul>
                 </div>
-
-                <!-- MEDIOS DE PAGO -->
                 <div class="col-md-4 mb-4">
                     <h6 class="fw-bold mb-3">MEDIOS DE PAGO</h6>
                     <ul class="list-unstyled d-flex flex-column gap-2 text-secondary">
@@ -307,14 +294,12 @@
                         <li>TRANSFERENCIA</li>
                     </ul>
                 </div>
-
             </div>
         </div>
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    
     <script>
         $(document).ready(function () {
             $('#toggleSearch').click(function () {
