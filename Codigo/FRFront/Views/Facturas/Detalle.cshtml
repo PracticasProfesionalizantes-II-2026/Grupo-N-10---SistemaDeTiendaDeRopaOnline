@@ -1,0 +1,150 @@
+@model FRFront.Models.PedidoDto
+@{
+    Layout = null;
+    ViewData["Title"] = "Factura Digital #" + Model.Id.ToString("D5");
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factura Digital #@Model.Id.ToString("D5")</title>
+    
+    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .invoice-box {
+            max-width: 850px;
+            margin: auto;
+            padding: 40px;
+            border: 1px solid #eee;
+            background: #fff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+        }
+
+        .table-custom th {
+            background-color: #f8f9fa;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            font-weight: 800;
+        }
+
+        @@media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: #fff;
+            }
+            .invoice-box {
+                box-shadow: none;
+                border: none;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA SUPERIOR (OCULTA EN IMPRESIÓN/DESCARGA) -->
+    <div class="no-print bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center mb-4">
+        <a asp-controller="Administrador" asp-action="Facturas" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
+            &lt; VOLVER
+        </a>
+        <button onclick="window.print()" class="btn btn-dark btn-sm rounded-pill fw-bold px-4">
+            🖨️ IMPRIMIR / DESCARGAR PDF
+        </button>
+    </div>
+
+    <div class="container pb-5">
+        <div class="invoice-box">
+            
+            <!-- ENCABEZADO FACTURA -->
+            <div class="d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
+                <div>
+                    <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 50px; width: auto;" class="mb-2" />
+                    <h5 class="fw-bold mb-0">F&R Clothing</h5>
+                    <p class="text-muted small mb-0">Tienda de Ropa Online</p>
+                </div>
+                <div class="text-end">
+                    <h3 class="fw-black text-uppercase mb-1" style="font-weight: 900;">FACTURA B</h3>
+                    <p class="fw-bold fs-5 text-secondary mb-0">N° #@Model.Id.ToString("D5")</p>
+                    <p class="small text-muted mb-0">Fecha: <strong>@Model.Fecha.ToString("dd/MM/yyyy")</strong></p>
+                </div>
+            </div>
+
+            <!-- DATOS DEL CLIENTE -->
+            <div class="row mb-4">
+                <div class="col-6">
+                    <h6 class="text-uppercase text-muted fw-bold small">Cliente</h6>
+                    <p class="fw-bold text-uppercase mb-0">@Model.Cliente</p>
+                    <p class="small text-muted mb-0">Forma de Pago: @Model.TipoEntrega</p>
+                </div>
+                <div class="col-6 text-end">
+                    <h6 class="text-uppercase text-muted fw-bold small">Estado del Pago</h6>
+                    <span class="badge bg-dark text-uppercase px-3 py-2 fw-bold">@Model.Estado</span>
+                </div>
+            </div>
+
+            <!-- DETALLE DE ARTÍCULOS -->
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered table-custom align-middle">
+                    <thead>
+                        <tr>
+                            <th>N° ART.</th>
+                            <th>DESCRIPCIÓN</th>
+                            <th class="text-center">CANT.</th>
+                            <th class="text-end">PRECIO UNIT.</th>
+                            <th class="text-end">SUBTOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Detalle != null && Model.Detalle.Any())
+                        {
+                            int index = 1;
+                            foreach (var item in Model.Detalle)
+                            {
+                                <tr>
+                                    <td class="fw-bold">#@index.ToString("D3")</td>
+                                    <td class="fw-bold text-uppercase">@item.ProductoNombre</td>
+                                    <td class="text-center fw-bold">@item.Cantidad</td>
+                                    <td class="text-end">$ @item.PrecioUnitario.ToString("N2")</td>
+                                    <td class="text-end fw-bold">$ @item.Subtotal.ToString("N2")</td>
+                                </tr>
+                                index++;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- TOTALES -->
+            <div class="row justify-content-end">
+                <div class="col-5">
+                    <div class="d-flex justify-content-between border-top pt-2">
+                        <span class="fw-black fs-5" style="font-weight: 900;">TOTAL:</span>
+                        <span class="fw-black fs-5" style="font-weight: 900;">$ @Model.Total.ToString("N2")</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PIE DE PÁGINA -->
+            <div class="text-center border-top pt-4 mt-5">
+                <p class="small text-muted mb-0">Gracias por tu compra en <strong>F&R</strong>.</p>
+                <p class="small text-muted mb-0">Este documento sirve como comprobante de pago digital.</p>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

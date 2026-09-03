@@ -3,6 +3,17 @@
 @{
     Layout = null;
     ViewData["Title"] = "Alta de Producto";
+
+    // Detectar el rol desde la sesión activa
+    var rolSesion = Context.Session.GetString("RolSesion") 
+                 ?? Context.Session.GetString("Rol") 
+                 ?? "Administrador";
+
+    // Determinar el controlador al que debe volver
+    string controladorVolver = rolSesion.Equals("Cajero", StringComparison.OrdinalIgnoreCase) 
+        ? "Cajero" 
+        : "Administrador";
+
     var usuarioLogueado = Context.Session.GetString("UsuarioSesion");
     var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0] : "Administrador";
 }
@@ -21,6 +32,7 @@
     <style>
         body {
             background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
         .create-card {
@@ -84,18 +96,18 @@
 </head>
 <body>
 
-    <!-- HEADER -->
+    <!-- HEADER DINÁMICO SEGÚN ROL -->
     <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
         <div class="d-flex align-items-center gap-3">
             <a asp-controller="Home" asp-action="Index">
-                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 50px; width: auto;" />
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 45px; width: auto;" />
             </a>
-            <span class="fs-5 fw-bold text-muted border-start ps-3 py-1">NUEVO PRODUCTO</span>
+            <span class="fs-5 fw-bold text-dark border-start ps-3 py-1">NUEVO PRODUCTO</span>
         </div>
 
         <div class="d-flex align-items-center gap-3">
             <a asp-controller="Producto" asp-action="Index" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
-                &lt; Volver
+                &lt; Volver a Productos
             </a>
         </div>
     </header>
@@ -104,13 +116,13 @@
     <div class="container py-5" style="max-width: 950px;">
         
         <div class="text-center mb-5">
-            <h1 class="fw-bolder tracking-wider mb-2">NUEVO PRODUCTO</h1>
+            <h1 class="fw-bolder tracking-wider mb-2" style="font-weight: 900;">NUEVO PRODUCTO</h1>
             <p class="text-muted">Complete todos los campos requeridos para dar de alta el producto en el catálogo</p>
         </div>
 
         @if (!ViewData.ModelState.IsValid)
         {
-            <div class="alert alert-danger mb-4">
+            <div class="alert alert-danger mb-4 rounded-4">
                 <div asp-validation-summary="All"></div>
             </div>
         }
@@ -224,9 +236,9 @@
                     dropzone.style.backgroundImage = `url('${e.target.result}')`;
                     document.getElementById('uploadIcon').style.display = 'none';
                     document.getElementById('uploadStatus').textContent = input.files[0].name;
-                    document.getElementById('uploadStatus').style.backgroundColor = 'rgba(255,255,255,0.8)';
-                    document.getElementById('uploadStatus').style.padding = '4px 8px';
-                    document.getElementById('uploadStatus').style.borderRadius = '4px';
+                    document.getElementById('uploadStatus').style.backgroundColor = 'rgba(255,255,255,0.85)';
+                    document.getElementById('uploadStatus').style.padding = '4px 12px';
+                    document.getElementById('uploadStatus').style.borderRadius = '20px';
                 }
                 reader.readAsDataURL(input.files[0]);
             }

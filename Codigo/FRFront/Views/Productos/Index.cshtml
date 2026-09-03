@@ -3,6 +3,17 @@
 @{
     Layout = null;
     ViewData["Title"] = "Gestión de Productos";
+
+    // Mapeamos a Empleado si el rol es Empleado o Cajero, de lo contrario Administrador
+    var rolSesion = Context.Session.GetString("RolSesion") 
+                 ?? Context.Session.GetString("RolUsuario") 
+                 ?? Context.Session.GetString("Rol") 
+                 ?? "Administrador";
+
+    string controladorVolver = (rolSesion.Equals("Empleado", StringComparison.OrdinalIgnoreCase) || rolSesion.Equals("Cajero", StringComparison.OrdinalIgnoreCase)) 
+        ? "Empleado" 
+        : "Administrador";
+
     var catSeleccionada = ViewBag.CategoriaSeleccionada as string ?? "Todos";
     var busquedaActual = ViewBag.BusquedaActual as string ?? "";
 }
@@ -143,7 +154,7 @@
 </head>
 <body>
 
-    <!-- HEADER -->
+    <!-- HEADER CON RETORNO A /Empleado O /Administrador -->
     <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
         <div class="d-flex align-items-center gap-3">
             <a asp-controller="Home" asp-action="Index">
@@ -153,9 +164,9 @@
         </div>
 
         <div class="d-flex align-items-center gap-3">
-            <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
+            <button type="button" onclick="volverAlPanel()" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
                 &lt; Volver al Panel
-            </a>
+            </button>
         </div>
     </header>
 
@@ -184,12 +195,12 @@
                     <div class="col-12 col-md-4">
                         <label class="form-label fw-bold small text-muted mb-1">FILTRAR POR CATEGORÍA:</label>
                         <select name="categoria" class="form-select form-select-custom" onchange="this.form.submit()">
-                            <!option value="Todos" @(catSeleccionada == "Todos" ? "selected" : "")>Todas las categorías</!option>
-                            <!option value="remeras" @(catSeleccionada == "remeras" ? "selected" : "")>Remeras</!option>
-                            <!option value="pantalones" @(catSeleccionada == "pantalones" ? "selected" : "")>Pantalones</!option>
-                            <!option value="abrigos" @(catSeleccionada == "abrigos" ? "selected" : "")>Abrigos</!option>
-                            <!option value="polleras" @(catSeleccionada == "polleras" ? "selected" : "")>Polleras</!option>
-                            <!option value="vestidos" @(catSeleccionada == "vestidos" ? "selected" : "")>Vestidos</!option>
+                            <option value="Todos" selected="@(catSeleccionada == "Todos")">Todas las categorías</option>
+                            <option value="remeras" selected="@(catSeleccionada == "remeras")">Remeras</option>
+                            <option value="pantalones" selected="@(catSeleccionada == "pantalones")">Pantalones</option>
+                            <option value="abrigos" selected="@(catSeleccionada == "abrigos")">Abrigos</option>
+                            <option value="polleras" selected="@(catSeleccionada == "polleras")">Polleras</option>
+                            <option value="vestidos" selected="@(catSeleccionada == "vestidos")">Vestidos</option>
                         </select>
                     </div>
                     <div class="col-12 col-md-8">
@@ -312,6 +323,15 @@
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function volverAlPanel() {
+            // Verifica si venías del controlador Empleado o Administrador
+            if (document.referrer && (document.referrer.includes('/Empleado') || document.referrer.includes('/Administrador'))) {
+                window.location.href = document.referrer;
+            } else {
+                window.location.href = '/@controladorVolver';
+            }
+        }
+
         function confirmarEliminar(id) {
             document.getElementById('productoIdEliminar').value = id;
             var modal = new bootstrap.Modal(document.getElementById('modalEliminar'));
