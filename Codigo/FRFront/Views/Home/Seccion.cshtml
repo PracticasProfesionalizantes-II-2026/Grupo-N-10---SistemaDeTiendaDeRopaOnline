@@ -1,0 +1,97 @@
+@model IEnumerable<FRFront.Models.Producto>
+
+@{
+    var titulo = ViewData["TituloSeccion"]?.ToString() ?? "SECCIÓN";
+    var genero = ViewData["GeneroActual"]?.ToString() ?? "Hombre";
+    ViewData["Title"] = titulo;
+}
+
+<div class="container my-4">
+
+    <!-- CINTA NEGRA REPETITIVA -->
+    <div class="bg-black text-white text-[10px] tracking-widest py-1.5 overflow-hidden whitespace-nowrap mb-4">
+        <div class="inline-block uppercase">
+            F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R F&R
+        </div>
+    </div>
+
+    <!-- ENCABEZADO Y BOTÓN VOLVER -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <a asp-controller="Home" asp-action="Index" class="text-decoration-none text-dark fw-bold small">&lt; VOLVER</a>
+        <h3 class="fw-bold text-uppercase mb-0" style="letter-spacing: 2px;">@titulo</h3>
+        <div style="width: 70px;"></div>
+    </div>
+
+    <div class="row">
+        
+        <!-- SIDEBAR DE CATEGORÍAS DIRECTAS -->
+        <div class="col-md-3 border-end pb-4">
+            <h6 class="fw-bold text-uppercase mb-3" style="font-size: 0.9rem; letter-spacing: 1px;">CATEGORÍAS:</h6>
+            
+            <div class="small text-secondary">
+                <p class="mb-3">
+                    @if (genero.Equals("Mujer", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <a asp-controller="Home" asp-action="Mujer" class="text-decoration-none fw-bold text-dark">VER TODO DE MUJER</a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Home" asp-action="Hombre" class="text-decoration-none fw-bold text-dark">VER TODO DE HOMBRE</a>
+                    }
+                </p>
+
+                <!-- Categorías principales directas con rutas explícitas -->
+                <div class="d-flex flex-column gap-2">
+                    @if (genero.Equals("Mujer", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <a asp-controller="Home" asp-action="Mujer" asp-route-categoria="Remeras" class="text-decoration-none fw-bold text-dark py-1">REMERAS</a>
+                        <a asp-controller="Home" asp-action="Mujer" asp-route-categoria="Pantalones" class="text-decoration-none fw-bold text-dark py-1">PANTALONES</a>
+                        <a asp-controller="Home" asp-action="Mujer" asp-route-categoria="Abrigos" class="text-decoration-none fw-bold text-dark py-1">ABRIGOS</a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Home" asp-action="Hombre" asp-route-categoria="Remeras" class="text-decoration-none fw-bold text-dark py-1">REMERAS</a>
+                        <a asp-controller="Home" asp-action="Hombre" asp-route-categoria="Pantalones" class="text-decoration-none fw-bold text-dark py-1">PANTALONES</a>
+                        <a asp-controller="Home" asp-action="Hombre" asp-route-categoria="Abrigos" class="text-decoration-none fw-bold text-dark py-1">ABRIGOS</a>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- GRILLA DE PRODUCTOS -->
+        <div class="col-md-9">
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var prod in Model)
+                    {
+                        <div class="col">
+                            <a asp-action="DetalleProducto" asp-route-nombre="@prod.Nombre" class="card h-100 text-decoration-none text-dark border-light shadow-sm">
+                                <div class="bg-light p-3 text-center position-relative" style="height: 250px;">
+                                    @if (prod.SinStock)
+                                    {
+                                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 text-white fw-bold text-uppercase" style="letter-spacing: 2px; z-index: 2;">
+                                            SIN STOCK
+                                        </div>
+                                    }
+                                    <img src="@Url.Content(prod.Imagen)" alt="@prod.Nombre" class="img-fluid h-100 object-fit-cover">
+                                </div>
+                                <div class="card-body text-center">
+                                    <h6 class="card-title fw-semibold small">@prod.Nombre</h6>
+                                    <p class="fw-bold text-dark mb-0">$@prod.Precio.ToString("N0")</p>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12 text-center py-5">
+                        <p class="text-muted">No hay productos disponibles en esta categoría.</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+    </div>
+</div>

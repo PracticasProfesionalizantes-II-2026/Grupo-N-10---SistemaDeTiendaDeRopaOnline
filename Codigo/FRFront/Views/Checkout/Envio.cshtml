@@ -1,0 +1,158 @@
+@model List<FRFront.Models.ItemCarrito>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Detalle de Envío";
+}
+
+<div class="container my-5" style="max-width: 800px;">
+    
+    <!-- Encabezado de Progreso / Volver -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <a asp-controller="Carrito" asp-action="Index" class="text-dark fw-bold text-uppercase text-decoration-none small" style="letter-spacing: 1px;">
+            &lt; Volver al Carrito
+        </a>
+        <span class="text-muted fw-bold small text-uppercase">Paso 1 de 3: Envío</span>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+        <h3 class="fw-bold text-uppercase mb-4" style="letter-spacing: 1.5px; font-size: 1.4rem;">Detalle de envío</h3>
+
+        <form asp-controller="Checkout" asp-action="ProcesarEnvio" method="post">
+            
+            <!-- Opciones de Envío -->
+            <div class="border rounded-4 p-3 mb-4 bg-light">
+                <div class="form-check mb-3 py-1 border-bottom pb-3" id="opcionEnvioNormal">
+                    <input class="form-check-input envio-option" type="radio" name="tipoEnvio" id="envioNormal" value="Normal">
+                    <label class="form-check-label d-flex justify-content-between w-100 fw-semibold ps-2 cursor-pointer" for="envioNormal">
+                        <span id="labelNormalText">Envío a domicilio (7 días hábiles)</span>
+                        <span id="labelNormalPrecio" class="text-dark">$ 10.000,00</span>
+                    </label>
+                </div>
+
+                <div class="form-check mb-3 py-1 border-bottom pb-3">
+                    <input class="form-check-input envio-option" type="radio" name="tipoEnvio" id="envioPremium" value="Premium" checked>
+                    <label class="form-check-label d-flex justify-content-between w-100 fw-semibold ps-2 cursor-pointer" for="envioPremium">
+                        <span id="labelPremiumText">Envío a domicilio premium (2 días hábiles)</span>
+                        <span id="labelPremiumPrecio" class="text-dark">$ 6.000,00</span>
+                    </label>
+                </div>
+
+                <div class="form-check py-1">
+                    <input class="form-check-input envio-option" type="radio" name="tipoEnvio" id="retiroLocal" value="Retiro">
+                    <label class="form-check-label d-flex justify-content-between w-100 fw-semibold ps-2 cursor-pointer" for="retiroLocal">
+                        <span>Retiro en el local (Sunchales, Santa Fe)</span>
+                        <span class="text-success fw-bold">Gratis</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Formulario de Dirección (Se oculta si elige Retiro en el local) -->
+            <div id="seccionDireccion" class="row g-3 transition-all">
+                <div class="col-md-4">
+                    <label class="form-label text-muted small fw-bold">Código postal*</label>
+                    <input type="text" name="codigoPostal" id="inputCp" class="form-control rounded-pill px-3 campo-requerido" placeholder="Ej. 2322" value="2322" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small fw-bold">Ciudad*</label>
+                    <input type="text" name="ciudad" id="inputCiudad" class="form-control rounded-pill px-3 campo-requerido" placeholder="Ej. Sunchales" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small fw-bold">Provincia*</label>
+                    <input type="text" name="provincia" id="inputProvincia" class="form-control rounded-pill px-3 campo-requerido" placeholder="Ej. Santa Fe" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Calle*</label>
+                    <input type="text" name="calle" id="inputCalle" class="form-control rounded-pill px-3 campo-requerido" placeholder="Ej. Alberdi" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Número*</label>
+                    <input type="text" name="numero" id="inputNumero" class="form-control rounded-pill px-3 campo-requerido" placeholder="Ej. 760" required>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label text-muted small fw-bold">Destinatario*</label>
+                    <input type="text" name="destinatario" id="inputDestinatario" class="form-control rounded-pill px-3 campo-requerido" placeholder="Ej. Francisco Aguirre" required>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label text-muted small fw-bold">Comentarios</label>
+                    <textarea name="comentarios" class="form-control rounded-4 p-3" rows="3" placeholder="Ej. Si no llego a estar déjala al vecino"></textarea>
+                </div>
+            </div>
+
+            <!-- Botón Siguiente -->
+            <div class="text-end mt-5">
+                <button type="submit" class="btn btn-primary rounded-pill px-5 py-3 text-uppercase fw-bold shadow-sm" style="background-color: #4b6bfb; border: none; letter-spacing: 1.5px;">
+                    Siguiente &rarr;
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- Script unificado para mostrar/ocultar dirección y actualizar tarifas por CP -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const radiosEnvio = document.querySelectorAll('.envio-option');
+        const seccionDireccion = document.getElementById('seccionDireccion');
+        const camposRequeridos = document.querySelectorAll('.campo-requerido');
+        
+        const inputCp = document.getElementById('inputCp');
+        const opcionEnvioNormal = document.getElementById('opcionEnvioNormal');
+        const labelPremiumPrecio = document.getElementById('labelPremiumPrecio');
+        const labelNormalPrecio = document.getElementById('labelNormalPrecio');
+
+        function actualizarFormularioEnvio() {
+            const esRetiroLocal = document.getElementById('retiroLocal').checked;
+
+            if (esRetiroLocal) {
+                seccionDireccion.style.opacity = '0';
+                seccionDireccion.style.display = 'none';
+                camposRequeridos.forEach(campo => campo.removeAttribute('required'));
+            } else {
+                seccionDireccion.style.display = 'flex';
+                setTimeout(() => { seccionDireccion.style.opacity = '1'; }, 50);
+                camposRequeridos.forEach(campo => campo.setAttribute('required', 'true'));
+            }
+        }
+
+        function actualizarTarifasPorCP() {
+            const cp = inputCp ? inputCp.value.trim() : "";
+            if (cp === "2322") {
+                opcionEnvioNormal.style.display = 'none';
+                labelPremiumPrecio.textContent = "$ 6.000,00";
+                // Si estaba seleccionado el normal y se oculta, pasamos al premium por defecto
+                if (document.getElementById('envioNormal').checked) {
+                    document.getElementById('envioPremium').checked = true;
+                }
+            } else {
+                opcionEnvioNormal.style.display = 'block';
+                labelNormalPrecio.textContent = "$ 10.000,00";
+                labelPremiumPrecio.textContent = "$ 20.000,00";
+            }
+        }
+
+        radiosEnvio.forEach(radio => {
+            radio.addEventListener('change', actualizarFormularioEnvio);
+        });
+
+        if (inputCp) {
+            inputCp.addEventListener('input', actualizarTarifasPorCP);
+            actualizarTarifasPorCP();
+        }
+
+        actualizarFormularioEnvio();
+    });
+</script>
+
+<style>
+    .transition-all {
+        transition: opacity 0.3s ease-in-out;
+    }
+    .cursor-pointer {
+        cursor: pointer;
+    }
+</style>

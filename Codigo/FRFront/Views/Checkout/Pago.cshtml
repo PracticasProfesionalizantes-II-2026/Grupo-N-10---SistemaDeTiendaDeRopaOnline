@@ -1,0 +1,300 @@
+@model List<FRFront.Models.ItemCarrito>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Método de Pago";
+
+    decimal subtotal = Model.Sum(i => i.Total);
+
+    decimal costoEnvio = 0;
+    var costoEnvioStr = Context.Session.GetString("CostoEnvio");
+    if (!string.IsNullOrEmpty(costoEnvioStr))
+    {
+        decimal.TryParse(costoEnvioStr, out costoEnvio);
+    }
+    
+    var nombreEnvio = Context.Session.GetString("TipoEnvio") ?? "Envío estándar";
+    
+    // Verificamos si eligió retiro en el local en el paso anterior
+    bool esRetiroLocal = nombreEnvio.Contains("Retiro", StringComparison.OrdinalIgnoreCase);
+
+    decimal totalInicial = subtotal + costoEnvio;
+}
+
+<div class="container my-5" style="max-width: 800px;">
+    
+    <!-- Encabezado de Progreso / Volver -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <a asp-controller="Checkout" asp-action="Envio" class="text-dark fw-bold text-uppercase text-decoration-none small" style="letter-spacing: 1px;">
+            &lt; Volver
+        </a>
+        <span class="text-muted fw-bold small text-uppercase">Paso 2 de 3: Pago</span>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+        <h3 class="fw-bold text-uppercase mb-4" style="letter-spacing: 1.5px; font-size: 1.4rem;">Método de pago</h3>
+
+        <form asp-controller="Checkout" asp-action="ProcesarPago" method="post">
+            
+            <!-- Opciones de Pago -->
+            <div class="border rounded-4 p-3 mb-4 bg-light">
+                
+                <!-- Efectivo (Solo visible si es retiro en local) -->
+                <div class="form-check mb-3 py-1 border-bottom pb-3" id="bloqueEfectivo" style="@(esRetiroLocal ? "" : "display: none;")">
+                    <input class="form-check-input metodo-pago" type="radio" name="metodoPago" id="pagoEfectivo" value="Efectivo" @(esRetiroLocal ? "checked" : "")>
+                    <label class="form-check-label d-flex justify-content-between w-100 fw-semibold ps-2 cursor-pointer" for="pagoEfectivo">
+                        <span>Efectivo (Solo local)</span>
+                        <span class="text-success fw-bold">-%20 OFF</span>
+                    </label>
+                </div>
+
+                <!-- Tarjeta de Débito -->
+                <div class="form-check mb-3 py-1 border-bottom pb-3">
+                    <input class="form-check-input metodo-pago" type="radio" name="metodoPago" id="pagoDebito" value="Debito" @(esRetiroLocal ? "" : "checked")>
+                    <label class="form-check-label d-flex justify-content-between w-100 fw-semibold ps-2 cursor-pointer" for="pagoDebito">
+                        <span>Tarjeta de Débito</span>
+                        <span class="text-muted small">1 pago</span>
+                    </label>
+                </div>
+
+                <!-- Tarjeta de Crédito -->
+                <div class="form-check mb-3 py-1 border-bottom pb-3">
+                    <input class="form-check-input metodo-pago" type="radio" name="metodoPago" id="pagoCredito" value="Credito">
+                    <label class="form-check-label d-flex justify-content-between w-100 fw-semibold ps-2 cursor-pointer" for="pagoCredito">
+                        <span>Tarjeta de Crédito</span>
+                        <span class="text-muted small">Hasta 12 cuotas</span>
+                    </label>
+                </div>
+
+                <!-- Transferencia -->
+                <div class="form-check py-1">
+                    <input class="form-check-input metodo-pago" type="radio" name="metodoPago" id="pagoTransferencia" value="Transferencia">
+                    <label class="form-check-label d-flex justify-content-between w-100 fw-semibold ps-2 cursor-pointer" for="pagoTransferencia">
+                        <span>Transferencia</span>
+                        <span class="text-dark">CBU / Alias</span>
+                    </label>
+                </div>
+
+            </div>
+
+            <!-- SECCIÓN DINÁMICA: Formulario de Tarjeta (Aparece para Débito y Crédito) -->
+            <div id="seccionFormTarjeta" class="border rounded-4 p-4 mb-4 bg-white shadow-sm d-none">
+                <h5 class="fw-bold text-uppercase mb-3" style="font-size: 0.90rem; letter-spacing: 1px;">Datos de la Tarjeta</h5>
+                
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label text-muted small fw-bold">Número de tarjeta</label>
+                        <input type="text" name="numeroTarjeta" id="inputNumeroTarjeta" class="form-control rounded-pill px-3" placeholder="4532 8740 0293 4893" maxlength="19" autocomplete="off">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-bold">Vencimiento (MM/AA)</label>
+                        <input type="text" name="vencimiento" id="inputVencimiento" class="form-control rounded-pill px-3" placeholder="MM/AA" maxlength="5" autocomplete="off">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-bold">Código de seguridad (CVV)</label>
+                        <input type="password" name="cvv" id="inputCvv" class="form-control rounded-pill px-3" placeholder="123" maxlength="4" autocomplete="off">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-muted small fw-bold">Nombre del titular</label>
+                        <input type="text" name="titular" class="form-control rounded-pill px-3" placeholder="Como figura en la tarjeta" autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- Selector de Cuotas (Únicamente para Tarjeta de Crédito) -->
+                <div id="seccionCuotas" class="mt-4 pt-3 border-top d-none">
+                    <h5 class="fw-bold text-uppercase mb-2" style="font-size: 0.85rem; letter-spacing: 1px;">Seleccioná las cuotas</h5>
+                    <select name="cuotas" id="selectCuotas" class="form-select rounded-pill px-3 py-2 fw-semibold">
+                        <option value="1">1 cuota sin interés</option>
+                        <option value="3">3 cuotas sin interés</option>
+                        <option value="6">6 cuotas (20% de interés)</option>
+                        <option value="12">12 cuotas (40% de interés)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- SECCIÓN DINÁMICA: Datos de Transferencia -->
+            <div id="seccionTransferencia" class="card border rounded-4 p-4 mb-4 bg-white shadow-sm d-none">
+                <h5 class="fw-bold text-uppercase mb-3" style="font-size: 0.95rem; letter-spacing: 1px;">Datos de transferencia</h5>
+                <p class="mb-2 text-secondary small"><strong>CBU:</strong> 0000003100012345678901</p>
+                <p class="mb-2 text-secondary small"><strong>Alias:</strong> F&R.SHOP</p>
+                <p class="mb-0 text-secondary small"><strong>Dueño de la cuenta:</strong> Francisco Aguirre</p>
+            </div>
+
+            <!-- Resumen de Compra Dinámico -->
+            <div class="card border-0 rounded-4 p-4 mb-4 bg-light">
+                <h5 class="fw-bold text-uppercase mb-3 pb-2 border-bottom" style="font-size: 1rem; letter-spacing: 1px;">Tu compra</h5>
+                
+                <div class="d-flex justify-content-between mb-2 text-secondary">
+                    <span>SubTotal</span>
+                    <span id="txtSubtotal" class="fw-bold text-dark" data-valor="@subtotal">$ @subtotal.ToString("N2")</span>
+                </div>
+                
+                <div class="d-flex justify-content-between mb-2 text-secondary">
+                    <span>Envío <small class="text-muted">(@nombreEnvio)</small></span>
+                    <span id="txtEnvio" class="fw-bold text-dark" data-valor="@costoEnvio">$ @costoEnvio.ToString("N2")</span>
+                </div>
+
+                <!-- Línea de Descuento (Efectivo) -->
+                <div id="filaDescuento" class="d-flex justify-content-between mb-2 text-success d-none">
+                    <span>Descuento Efectivo (-20%)</span>
+                    <span id="txtDescuento" class="fw-bold">- $ 0,00</span>
+                </div>
+
+                <!-- Línea de Interés (Crédito en cuotas) -->
+                <div id="filaInteres" class="d-flex justify-content-between mb-2 text-danger d-none">
+                    <span>Interés por financiación</span>
+                    <span id="txtInteres" class="fw-bold">+ $ 0,00</span>
+                </div>
+
+                <hr>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold fs-5 text-uppercase">Total</span>
+                    <span id="txtTotal" class="fw-bold fs-3 text-dark">$ @totalInicial.ToString("N2")</span>
+                </div>
+            </div>
+
+            <!-- Botones de Acción (Pagar con éxito o Simular Rechazo) -->
+            <div class="d-flex justify-content-between align-items-center">
+                <a asp-controller="Checkout" asp-action="PagoRechazado" class="btn btn-outline-danger rounded-pill px-4 py-3 text-uppercase fw-bold small shadow-sm" style="letter-spacing: 1px;">
+                    Simular Pago Rechazado
+                </a>
+
+                <button type="submit" class="btn btn-primary rounded-pill px-5 py-3 text-uppercase fw-bold shadow-sm" style="background-color: #4b6bfb; border: none; letter-spacing: 1.5px;">
+                    Pagar &rarr;
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- Script de control para formato de tarjeta, cuotas, transferencias y cálculos -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const radiosPago = document.querySelectorAll('.metodo-pago');
+        const seccionFormTarjeta = document.getElementById('seccionFormTarjeta');
+        const seccionCuotas = document.getElementById('seccionCuotas');
+        const seccionTransferencia = document.getElementById('seccionTransferencia');
+        const selectCuotas = document.getElementById('selectCuotas');
+
+        // Inputs de tarjeta para formato automático
+        const inputNumeroTarjeta = document.getElementById('inputNumeroTarjeta');
+        const inputVencimiento = document.getElementById('inputVencimiento');
+        const inputCvv = document.getElementById('inputCvv');
+
+        const txtSubtotal = document.getElementById('txtSubtotal');
+        const txtEnvio = document.getElementById('txtEnvio');
+        const txtTotal = document.getElementById('txtTotal');
+        const filaDescuento = document.getElementById('filaDescuento');
+        const txtDescuento = document.getElementById('txtDescuento');
+        const filaInteres = document.getElementById('filaInteres');
+        const txtInteres = document.getElementById('txtInteres');
+
+        const subtotalBase = parseFloat(txtSubtotal.getAttribute('data-valor')) || 0;
+        const costoEnvio = parseFloat(txtEnvio.getAttribute('data-valor')) || 0;
+
+        // Formato automático de número de tarjeta (Espacios cada 4 dígitos, máximo 16)
+        if (inputNumeroTarjeta) {
+            inputNumeroTarjeta.addEventListener('input', function (e) {
+                let valor = e.target.value.replace(/\D/g, ''); // Solo números
+                if (valor.length > 16) valor = valor.slice(0, 16); // Máximo 16 dígitos
+                let formateado = valor.match(/.{1,4}/g);
+                e.target.value = formateado ? formateado.join(' ') : '';
+            });
+        }
+
+        // Formato automático de vencimiento (MM/AA con barra automática)
+        if (inputVencimiento) {
+            inputVencimiento.addEventListener('input', function (e) {
+                let valor = e.target.value.replace(/\D/g, '');
+                if (valor.length > 4) valor = valor.slice(0, 4);
+                if (valor.length >= 3) {
+                    e.target.value = valor.slice(0, 2) + '/' + valor.slice(2);
+                } else {
+                    e.target.value = valor;
+                }
+            });
+        }
+
+        // CVV solo números (máximo 4)
+        if (inputCvv) {
+            inputCvv.addEventListener('input', function (e) {
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+            });
+        }
+
+        function recalcularTotales() {
+            const radioSeleccionado = document.querySelector('input[name="metodoPago"]:checked');
+            if (!radioSeleccionado) return;
+            
+            const metodoSeleccionado = radioSeleccionado.value;
+            let subtotalConAjuste = subtotalBase;
+            let interesMonto = 0;
+
+            if (metodoSeleccionado === 'Debito') {
+                seccionFormTarjeta.classList.remove('d-none');
+                seccionCuotas.classList.add('d-none');
+                seccionTransferencia.classList.add('d-none');
+                filaInteres.classList.add('d-none');
+                filaDescuento.classList.add('d-none');
+            } 
+            else if (metodoSeleccionado === 'Credito') {
+                seccionFormTarjeta.classList.remove('d-none');
+                seccionCuotas.classList.remove('d-none');
+                seccionTransferencia.classList.add('d-none');
+                filaDescuento.classList.add('d-none');
+
+                const cuotas = parseInt(selectCuotas.value);
+                if (cuotas === 6) {
+                    interesMonto = subtotalBase * 0.20;
+                } else if (cuotas === 12) {
+                    interesMonto = subtotalBase * 0.40;
+                }
+
+                if (interesMonto > 0) {
+                    filaInteres.classList.remove('d-none');
+                    txtInteres.textContent = "+ $ " + interesMonto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                } else {
+                    filaInteres.classList.add('d-none');
+                }
+            } 
+            else if (metodoSeleccionado === 'Efectivo') {
+                seccionFormTarjeta.classList.add('d-none');
+                seccionTransferencia.classList.add('d-none');
+                filaInteres.classList.add('d-none');
+
+                const descuento = subtotalBase * 0.20;
+                subtotalConAjuste -= descuento;
+                filaDescuento.classList.remove('d-none');
+                txtDescuento.textContent = "- $ " + descuento.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            } 
+            else if (metodoSeleccionado === 'Transferencia') {
+                seccionFormTarjeta.classList.add('d-none');
+                seccionTransferencia.classList.remove('d-none');
+                filaInteres.classList.add('d-none');
+                filaDescuento.classList.add('d-none');
+            }
+
+            const totalFinal = subtotalConAjuste + costoEnvio + interesMonto;
+            txtSubtotal.textContent = "$ " + subtotalConAjuste.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            txtTotal.textContent = "$ " + totalFinal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        radiosPago.forEach(radio => {
+            radio.addEventListener('change', recalcularTotales);
+        });
+
+        if (selectCuotas) {
+            selectCuotas.addEventListener('change', recalcularTotales);
+        }
+
+        recalcularTotales();
+    });
+</script>
+
+<style>
+    .cursor-pointer {
+        cursor: pointer;
+    }
+</style>
