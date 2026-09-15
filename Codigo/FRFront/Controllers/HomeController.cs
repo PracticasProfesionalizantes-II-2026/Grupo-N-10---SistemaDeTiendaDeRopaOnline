@@ -120,8 +120,8 @@ namespace FRFront.Controllers
         }
 
         public IActionResult Index()
-        {
-            return View(_productos); // Ahora enviamos la lista a la página de inicio
+       {
+           return View(_productos); // Ahora enviamos la lista a la página de inicio
         }
 
         public IActionResult Lanzamientos()
@@ -208,28 +208,23 @@ namespace FRFront.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        // GET: Muestra la pantalla de cambio de contraseña
         [HttpGet]
         public IActionResult CambiarContrasena()
         {
             return View();
         }
 
-        // POST: Procesa el formulario con las validaciones
         [HttpPost]
         public IActionResult CambiarContrasena(CambiarContrasenaViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                // Si hay un error de validación, vuelve a cargar la vista con los mensajes en rojo
                 return View(model);
             }
 
-            // TODO: Aquí va la llamada a tu API/Backend para actualizar la clave
-
-            return Redirect($"/Home/Index"); // O RedirectToAction("Index");
+            return RedirectToAction("Index");
         }
-
+        
         [HttpGet]
         public IActionResult CambiarContrasenaEmpleadoExito()
         {
