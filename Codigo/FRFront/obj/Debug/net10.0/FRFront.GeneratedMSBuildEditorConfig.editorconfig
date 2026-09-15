@@ -79,16 +79,24 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZXNcaW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Usuario/source/repos/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Empleado/Crear.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbGVhZG9cQ3JlYXIuY3NodG1s
+[C:/Users/Usuario/source/repos/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Empleados/Crear.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbGVhZG9zXENyZWFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Usuario/source/repos/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Empleado/Detalle.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbGVhZG9cRGV0YWxsZS5jc2h0bWw=
+[C:/Users/Usuario/source/repos/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Empleados/Detalle.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbGVhZG9zXERldGFsbGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/source/repos/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Empleados/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbGVhZG9zXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Usuario/source/repos/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Empleado/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbGVhZG9cSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/source/repos/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Empleado/NuevaVenta.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbGVhZG9cTnVldmFWZW50YS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Usuario/source/repos/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Facturas/Detalle.cshtml]

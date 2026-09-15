@@ -1,197 +1,125 @@
-@model List<FRFront.Models.ClienteDto>
+@model IEnumerable<FRFront.Models.ClienteDto>
+
 @{
-    Layout = null;
     ViewData["Title"] = "Gestión de Clientes";
+    Layout = "_LayoutAdministrador";
+    string? rolSesion = Context.Session.GetString("RolSesion");
+    bool esCajero = (rolSesion == "Empleado" || rolSesion == "CAJERO");
 }
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F&R - Gestión de Clientes</title>
-    
-    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+<div class="container-fluid py-5 px-4 px-md-5" style="max-width: 1400px;">
 
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-
-        .client-card {
-            background: #ffffff;
-            border-radius: 16px;
-            border: 1px solid #e9ecef;
-            padding: 18px 24px;
-            transition: all 0.25s ease;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-        }
-
-        .client-card:hover {
-            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-            border-color: #ced4da;
-        }
-
-        .table-header-custom {
-            font-size: 0.75rem;
-            font-weight: 800;
-            letter-spacing: 1px;
-            color: #6c757d;
-            text-transform: uppercase;
-            padding: 0 24px 12px 24px;
-        }
-
-        .btn-black-pill {
-            background-color: #000;
-            color: #fff;
-            border-radius: 50px;
-            padding: 8px 20px;
-            font-weight: 800;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border: none;
-            text-decoration: none;
-        }
-
-        .badge-estado {
-            font-weight: 800;
-            padding: 6px 14px;
-            border-radius: 50px;
-            font-size: 0.72rem;
-            letter-spacing: 0.5px;
-            display: inline-block;
-            text-transform: uppercase;
-        }
-
-        .badge-activo { background-color: #e6f4ea; color: #1e7e34; }
-        .badge-inactivo { background-color: #e8f0fe; color: #1a73e8; }
-        .badge-bloqueado { background-color: #fce8e6; color: #c5221f; }
-
-        .form-control-pill {
-            border-radius: 50px;
-            padding: 10px 20px;
-            border: 1px solid #ced4da;
-        }
-    </style>
-</head>
-<body>
-
-    <!-- HEADER -->
-    <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
-        <div class="d-flex align-items-center gap-3">
-            <a asp-controller="Home" asp-action="Index">
-                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 45px; width: auto;" />
-            </a>
-            <span class="fs-5 fw-bold text-dark border-start ps-3 py-1">GESTIÓN DE CLIENTES</span>
-        </div>
-
+    <!-- ENCABEZADO Y BOTÓN VOLVER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
-                &lt; VOLVER AL PANEL
+            <a asp-controller="@(esCajero ? "Empleado" : "Administrador")" asp-action="Index" class="btn btn-outline-dark rounded-pill fw-bold px-4 py-2 mb-3" style="font-size: 0.85rem;">
+                &lt; Volver al Panel
             </a>
+            <h1 class="fw-black text-uppercase mb-2" style="font-weight: 900; font-size: 2.6rem; letter-spacing: 1px;">GESTIÓN DE CLIENTES</h1>
+            <p class="text-muted fs-6 mb-0">Listado y administración de perfiles de clientes registrados</p>
         </div>
-    </header>
-
-    <div class="container py-5" style="max-width: 1250px;">
-
-        <!-- BÚSQUEDA -->
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-            <div>
-                <h1 class="fw-black text-uppercase mb-1" style="font-weight: 900;">CLIENTES</h1>
-                <p class="text-muted mb-0">Listado de usuarios registrados en el sistema</p>
-            </div>
-
-            <form method="get" asp-controller="Administrador" asp-action="Clientes" class="d-flex gap-2">
-                <input type="text" name="busqueda" value="@ViewBag.BusquedaActual" placeholder="Buscar cliente por nombre..." class="form-control form-control-pill" style="min-width: 280px;" />
-                <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold">BUSCAR</button>
-            </form>
-        </div>
-
-        <!-- ENCABEZADOS -->
-        <div class="row table-header-custom d-none d-md-flex align-items-center">
-            <div class="col-md-2">N° CLIENTE</div>
-            <div class="col-md-2">NOMBRE</div>
-            <div class="col-md-2 text-center">TELÉFONO</div>
-            <div class="col-md-3">EMAIL</div>
-            <div class="col-md-1 text-center">ESTADO</div>
-            <div class="col-md-2 text-end">ACCIONES</div>
-        </div>
-
-        <!-- LISTA -->
-        <div class="d-flex flex-column gap-3">
-            @if (Model != null && Model.Any())
-            {
-                foreach (var cli in Model)
-                {
-                    string badgeClass = cli.Estado.ToUpper() switch
-                    {
-                        "ACTIVO" => "badge-activo",
-                        "INACTIVO" => "badge-inactivo",
-                        "BLOQUEADO" => "badge-bloqueado",
-                        _ => "badge-inactivo"
-                    };
-
-                    <div class="client-card">
-                        <div class="row align-items-center text-center text-md-start">
-                            <div class="col-12 col-md-2 mb-2 mb-md-0 fw-bold fs-6">
-                                @cli.NumeroCliente
-                            </div>
-
-                            <div class="col-12 col-md-2 mb-2 mb-md-0 fw-bold text-uppercase">
-                                @cli.NombreCompleto
-                            </div>
-
-                            <div class="col-12 col-md-2 mb-2 mb-md-0 text-center text-muted fw-semibold">
-                                @(string.IsNullOrEmpty(cli.Telefono) ? "-" : cli.Telefono)
-                            </div>
-
-                            <div class="col-12 col-md-3 mb-2 mb-md-0 text-muted">
-                                @cli.Email
-                            </div>
-
-                            <div class="col-12 col-md-1 mb-2 mb-md-0 text-center">
-                                <span class="badge-estado @badgeClass">
-                                    @cli.Estado
-                                </span>
-                            </div>
-
-                            <div class="col-12 col-md-2 text-end d-flex justify-content-center justify-content-md-end">
-                                <div class="dropdown">
-                                    <button class="btn-black-pill dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                        OPCIONES
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end rounded-3 shadow border-0">
-                                        <li>
-                                            <a class="dropdown-menu-item dropdown-item fw-bold" asp-controller="Administrador" asp-action="DetalleCliente" asp-route-id="@cli.Id">
-                                                Ver Detalle
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-menu-item dropdown-item fw-bold" asp-controller="Administrador" asp-action="HistorialCliente" asp-route-id="@cli.Id">
-                                                Historial de Compras
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                }
-            }
-            else
-            {
-                <div class="client-card text-center py-5">
-                    <p class="text-muted mb-0 fw-bold">No se encontraron clientes registrados.</p>
-                </div>
-            }
-        </div>
-
     </div>
 
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-pill px-4 py-3 mb-4 shadow-sm fs-6" role="alert">
+            <strong>✓ Éxito:</strong> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- BUSCADOR -->
+    <div class="card-custom p-4 mb-4">
+        <form method="get" asp-controller="Administrador" asp-action="Clientes" class="row g-3 align-items-center">
+            <div class="col-12 col-md-10">
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text bg-light border-0 rounded-pill-start ps-4">🔍</span>
+                    <input type="text" name="busqueda" value="@ViewBag.BusquedaActual" class="form-control bg-light border-0 rounded-pill-end py-3 fs-6" placeholder="Buscar cliente por DNI, nombre, email o número de cliente...">
+                </div>
+            </div>
+            <div class="col-12 col-md-2">
+                <button type="submit" class="btn btn-dark w-100 rounded-pill fw-bold py-3 fs-6" style="letter-spacing: 0.5px;">BUSCAR</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- TABLA DE CLIENTES -->
+    <div class="card-custom p-0 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light border-bottom">
+                    <tr class="text-uppercase fw-bold text-muted" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                        <th class="ps-4 py-4">CÓDIGO</th>
+                        <th class="py-4">DNI</th>
+                        <th class="py-4">CLIENTE</th>
+                        <th class="py-4">EMAIL</th>
+                        <th class="py-4">TELÉFONO</th>
+                        <th class="py-4">FECHA ALTA</th>
+                        <th class="py-4">ESTADO</th>
+                        <th class="text-end pe-4 py-4">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var cliente in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 py-3 fw-bold text-dark fs-6">@cliente.NumeroCliente</td>
+                                <td class="py-3 fw-bold text-dark fs-6">@(string.IsNullOrEmpty(cliente.Dni) ? "S/D" : cliente.Dni)</td>
+                                <td class="py-3">
+                                    <span class="fw-bold text-dark d-block fs-6">@cliente.NombreCompleto</span>
+                                </td>
+                                <td class="py-3 text-muted fs-6">@cliente.Email</td>
+                                <td class="py-3 text-muted fs-6">@cliente.Telefono</td>
+                                <td class="py-3 text-muted fs-6">@cliente.FechaAlta.ToString("dd/MM/yyyy")</td>
+                                <td class="py-3">
+                                    @if (cliente.Estado == "ACTIVO")
+                                    {
+                                        <span class="badge bg-dark text-white rounded-pill px-3 py-2 fs-6">ACTIVO</span>
+                                    }
+                                    else if (cliente.Estado == "INACTIVO")
+                                    {
+                                        <span class="badge bg-secondary text-white rounded-pill px-3 py-2 fs-6">INACTIVO</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger text-white rounded-pill px-3 py-2 fs-6">BLOQUEADO</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4 py-3">
+                                    <div class="dropdown">
+                                        <button class="btn btn-md btn-light rounded-circle border px-3 py-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            ⋮
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 p-2">
+                                            <li>
+                                                <a class="dropdown-item fw-bold py-2 fs-6" asp-controller="Administrador" asp-action="DetalleCliente" asp-route-id="@cliente.Id">
+                                                    👁 Ver Detalle
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item fw-bold py-2 fs-6" asp-controller="Administrador" asp-action="HistorialCliente" asp-route-id="@cliente.Id">
+                                                    📜 Historial de Compras
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted fs-5">
+                                No se encontraron clientes registrados con los criterios ingresados.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>

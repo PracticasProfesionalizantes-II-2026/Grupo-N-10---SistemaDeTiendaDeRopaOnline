@@ -76,7 +76,7 @@
         @if (TempData["SuccessMessage"] != null)
         {
             <div class="alert alert-success alert-dismissible fade show rounded-4 fw-bold mb-4" role="alert">
-                @TempData["SuccessMessage"]
+                ✓ @TempData["SuccessMessage"]
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         }
@@ -91,7 +91,7 @@
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />
                     <button type="submit" class="btn btn-outline-secondary btn-sm rounded-pill fw-bold px-3" onclick="return confirm('¿Restablecer la contraseña del usuario temporalmente?');">
-                        🔑 CONTRASEÑA OLVIDADA
+                        🔑 RESETEAR CONTRASEÑA
                     </button>
                 </form>
             </div>
@@ -131,7 +131,6 @@
                         <label class="form-label fw-bold text-uppercase small">Rol</label>
                         <select asp-for="Rol" class="form-select">
                             <option value="CAJERO">CAJERO</option>
-                            <option value="CAJERA">CAJERA</option>
                             <option value="ADMINISTRADOR">ADMINISTRADOR</option>
                             <option value="SUPERVISOR">SUPERVISOR</option>
                         </select>
@@ -147,14 +146,14 @@
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
-                    <!-- BOTÓN BORRAR USUARIO -->
+                    <!-- BOTÓN ELIMINAR -->
                     <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold" asp-action="EliminarEmpleado" asp-controller="Administrador" asp-route-id="@Model.Id" onclick="return confirm('¿Confirma eliminar este usuario del sistema?');">
                         BORRAR USUARIO
                     </button>
 
                     <div class="d-flex gap-2">
                         <a asp-controller="Administrador" asp-action="Empleados" class="btn btn-light rounded-pill px-4 fw-bold">CANCELAR</a>
-                        <button type="submit" class="btn-custom-dark text-uppercase">EDITAR</button>
+                        <button type="submit" class="btn-custom-dark text-uppercase">GUARDAR CAMBIOS</button>
                     </div>
                 </div>
             </form>

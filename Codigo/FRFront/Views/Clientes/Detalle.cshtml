@@ -1,172 +1,77 @@
 @model FRFront.Models.ClienteDto
+
 @{
-    Layout = null;
-    ViewData["Title"] = "Detalle de Cliente";
-    bool estaBloqueado = Model.Estado.Equals("BLOQUEADO", StringComparison.OrdinalIgnoreCase);
-    
-    // Asignación de teléfonos personalizados diferentes por cliente
-    string telefonoMostrar = !string.IsNullOrWhiteSpace(Model.Telefono) ? Model.Telefono : Model.Id switch
-    {
-        1 => "03493 456789",
-        2 => "03493 667173",
-        3 => "03493 101010",
-        _ => $"03493 4{Model.Id:D5}"
-    };
+    ViewData["Title"] = "Detalle del Cliente";
+    Layout = "_LayoutAdministrador";
 }
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F&R - Detalle de Cliente</title>
-    
-    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+<div class="container-fluid px-4 py-4" style="max-width: 900px;">
 
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-
-        .form-card {
-            background: #ffffff;
-            border-radius: 20px;
-            border: 1px solid #e9ecef;
-            padding: 40px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-        }
-
-        .form-control-readonly {
-            background-color: #f8f9fa !important;
-            border-radius: 50px;
-            padding: 12px 20px;
-            border: 1px solid #e9ecef;
-            font-weight: 600;
-            color: #212529;
-            cursor: not-allowed;
-        }
-
-        .badge-estado {
-            font-weight: 800;
-            padding: 8px 16px;
-            border-radius: 50px;
-            font-size: 0.75rem;
-            letter-spacing: 0.5px;
-            display: inline-block;
-            text-transform: uppercase;
-        }
-
-        .badge-activo { background-color: #e6f4ea; color: #1e7e34; }
-        .badge-inactivo { background-color: #e8f0fe; color: #1a73e8; }
-        .badge-bloqueado { background-color: #fce8e6; color: #c5221f; }
-    </style>
-</head>
-<body>
-
-    <!-- HEADER -->
-    <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
-        <div class="d-flex align-items-center gap-3">
-            <a asp-controller="Home" asp-action="Index">
-                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 45px; width: auto;" />
-            </a>
-            <span class="fs-5 fw-bold text-dark border-start ps-3 py-1">INFORMACIÓN DE CLIENTE</span>
-        </div>
-
+    <div class="d-flex align-items-center justify-content-between mb-4">
         <div>
-            <a asp-controller="Administrador" asp-action="Clientes" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
-                &lt; VOLVER A CLIENTES
+            <a asp-action="Clientes" class="text-decoration-none text-muted small fw-bold">&lt; VOLVER A CLIENTES</a>
+            <h2 class="fw-bold text-uppercase mt-2 mb-0">Ficha del Cliente @Model.NumeroCliente</h2>
+        </div>
+        <div>
+            <a asp-action="HistorialCliente" asp-route-id="@Model.Id" class="btn btn-outline-dark rounded-pill fw-bold">
+                📜 HISTORIAL DE COMPRAS
             </a>
         </div>
-    </header>
-
-    <div class="container py-5" style="max-width: 850px;">
-
-        <div class="mb-4 d-flex justify-content-between align-items-center">
-            <div>
-                <h1 class="fw-black text-uppercase mb-1" style="font-weight: 900;">@Model.NombreCompleto</h1>
-                <p class="text-muted mb-0">Cliente N°: <strong>@Model.NumeroCliente</strong></p>
-            </div>
-            <div>
-                @{
-                    string badgeClass = Model.Estado.ToUpper() switch
-                    {
-                        "ACTIVO" => "badge-activo",
-                        "INACTIVO" => "badge-inactivo",
-                        "BLOQUEADO" => "badge-bloqueado",
-                        _ => "badge-inactivo"
-                    };
-                }
-                <span class="badge-estado @badgeClass">
-                    ● @Model.Estado
-                </span>
-            </div>
-        </div>
-
-        <div class="form-card">
-            <div class="row g-3">
-                <!-- NOMBRE -->
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold text-uppercase small text-muted">Nombre</label>
-                    <input type="text" value="@Model.Nombre" class="form-control form-control-readonly" readonly />
-                </div>
-
-                <!-- APELLIDO -->
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold text-uppercase small text-muted">Apellido</label>
-                    <input type="text" value="@Model.Apellido" class="form-control form-control-readonly" readonly />
-                </div>
-
-                <!-- EMAIL -->
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold text-uppercase small text-muted">Email / Usuario</label>
-                    <input type="email" value="@Model.Email" class="form-control form-control-readonly" readonly />
-                </div>
-
-                <!-- TELÉFONO -->
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold text-uppercase small text-muted">Teléfono</label>
-                    <input type="text" value="@telefonoMostrar" class="form-control form-control-readonly" readonly />
-                </div>
-
-                <!-- FECHA DE REGISTRO -->
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold text-uppercase small text-muted">Fecha de Registro</label>
-                    <input type="text" value="@Model.FechaAlta.ToString("dd/MM/yyyy")" class="form-control form-control-readonly" readonly />
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center mt-4 pt-4 border-top">
-                <!-- HISTORIAL DE COMPRAS -->
-                <a asp-controller="Administrador" asp-action="HistorialCliente" asp-route-id="@Model.Id" class="btn btn-outline-dark rounded-pill px-4 fw-bold small text-uppercase">
-                    📋 VER HISTORIAL DE COMPRAS
-                </a>
-
-                <!-- BLOQUEAR / DESBLOQUEAR -->
-                <form asp-controller="Administrador" asp-action="CambiarEstadoCliente" method="post" style="display:inline;">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="id" value="@Model.Id" />
-                    <input type="hidden" name="nuevoEstado" value="@(estaBloqueado ? "ACTIVO" : "BLOQUEADO")" />
-                    
-                    @if (estaBloqueado)
-                    {
-                        <button type="submit" class="btn btn-outline-success rounded-pill px-4 fw-bold small text-uppercase">
-                            🔓 DESBLOQUEAR CLIENTE
-                        </button>
-                    }
-                    else
-                    {
-                        <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold small text-uppercase" onclick="return confirm('¿Confirma bloquear a este cliente?');">
-                            🔒 BLOQUEAR CLIENTE
-                        </button>
-                    }
-                </form>
-            </div>
-        </div>
-
     </div>
 
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+            <form asp-action="EditarCliente" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold text-uppercase">DNI / CUIT *</label>
+                        <input type="text" asp-for="Dni" class="form-control rounded-pill" required />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold text-uppercase">Estado del Cliente</label>
+                        <select asp-for="Estado" class="form-select rounded-pill">
+                            <option value="ACTIVO">ACTIVO</option>
+                            <option value="INACTIVO">INACTIVO</option>
+                            <option value="BLOQUEADO">BLOQUEADO</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold text-uppercase">Nombre *</label>
+                        <input type="text" asp-for="Nombre" class="form-control rounded-pill" required />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold text-uppercase">Apellido *</label>
+                        <input type="text" asp-for="Apellido" class="form-control rounded-pill" required />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold text-uppercase">Email *</label>
+                        <input type="email" asp-for="Email" class="form-control rounded-pill" required />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold text-uppercase">Teléfono</label>
+                        <input type="text" asp-for="Telefono" class="form-control rounded-pill" />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold text-uppercase">Fecha de Registro</label>
+                        <input type="text" class="form-control rounded-pill bg-light" value="@Model.FechaAlta.ToString("dd/MM/yyyy HH:mm")" readonly />
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <a asp-action="Clientes" class="btn btn-light rounded-pill px-4 fw-bold">CANCELAR</a>
+                    <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold">GUARDAR CAMBIOS</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
