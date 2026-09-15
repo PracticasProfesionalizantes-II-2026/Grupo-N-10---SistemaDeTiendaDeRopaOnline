@@ -1,0 +1,128 @@
+@model FRFront.Models.ClienteDto
+@{
+    Layout = null;
+    ViewData["Title"] = "Detalle del Cliente";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F&R - Detalle de Cliente</title>
+    
+    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .form-card {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #e9ecef;
+            padding: 35px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+
+        .form-control, .form-select {
+            border-radius: 50px;
+            padding: 12px 20px;
+            border: 1px solid #ced4da;
+            font-weight: 600;
+        }
+
+        .btn-custom-dark {
+            background-color: #000;
+            color: #fff;
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-weight: 800;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            border: none;
+        }
+
+        .btn-custom-dark:hover {
+            background-color: #212529;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Home" asp-action="Index">
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 45px; width: auto;" />
+            </a>
+            <span class="fs-5 fw-bold text-dark border-start ps-3 py-1">DETALLE DE CLIENTE</span>
+        </div>
+
+        <div>
+            <a asp-controller="Administrador" asp-action="Clientes" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
+                &lt; VOLVER A CLIENTES
+            </a>
+        </div>
+    </header>
+
+    <div class="container py-5" style="max-width: 800px;">
+
+        <div class="mb-4">
+            <h1 class="fw-black text-uppercase mb-1" style="font-weight: 900;">INFORMACIÓN DE CLIENTE</h1>
+            <p class="text-muted mb-0">Cliente N°: <strong>@Model.NumeroCliente</strong></p>
+        </div>
+
+        <div class="form-card">
+            <form asp-controller="Administrador" asp-action="EditarCliente" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+
+                <div class="row g-3">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold text-uppercase small">Nombre</label>
+                        <input type="text" asp-for="Nombre" class="form-control" required />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold text-uppercase small">Apellido</label>
+                        <input type="text" asp-for="Apellido" class="form-control" required />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold text-uppercase small">Email</label>
+                        <input type="email" asp-for="Email" class="form-control" required />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold text-uppercase small">Estado</label>
+                        <select asp-for="Estado" class="form-select">
+                            <option value="ACTIVO">ACTIVO</option>
+                            <option value="INACTIVO">INACTIVO</option>
+                            <option value="BLOQUEADO">BLOQUEADO</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold text-uppercase small">Fecha de Alta</label>
+                        <input type="text" class="form-control bg-light" value="@Model.FechaAlta.ToString("dd/MM/yyyy")" readonly />
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-3 mt-4">
+                    <a asp-controller="Administrador" asp-action="Clientes" class="btn btn-light rounded-pill px-4 fw-bold">CANCELAR</a>
+                    <button type="submit" class="btn-custom-dark text-uppercase">GUARDAR CAMBIOS</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

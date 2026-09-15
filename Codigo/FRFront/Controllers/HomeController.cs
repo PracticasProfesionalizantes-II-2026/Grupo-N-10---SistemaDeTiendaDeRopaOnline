@@ -1,8 +1,12 @@
 using System.Diagnostics;
+<<<<<<< HEAD
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+=======
+using Microsoft.AspNetCore.Mvc;
+>>>>>>> 341bcb1 (Merge con Rama-Roci y restauracion de estado)
 using FRFront.Models;
 
 namespace FRFront.Controllers
@@ -11,6 +15,7 @@ namespace FRFront.Controllers
     {
         private readonly ILogger<HomeController> _logger;
 
+<<<<<<< HEAD
         // Lista centralizada de productos
         private static readonly List<Producto> _productos = new List<Producto>
         {
@@ -114,12 +119,15 @@ namespace FRFront.Controllers
             }
         };
 
+=======
+>>>>>>> 341bcb1 (Merge con Rama-Roci y restauracion de estado)
         public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
         }
 
         public IActionResult Index()
+<<<<<<< HEAD
        {
            return View(_productos); // Ahora enviamos la lista a la página de inicio
         }
@@ -194,6 +202,9 @@ namespace FRFront.Controllers
             ViewData["Talles"] = productoEncontrado.Talles;
             ViewData["SinStock"] = productoEncontrado.SinStock;
 
+=======
+        {
+>>>>>>> 341bcb1 (Merge con Rama-Roci y restauracion de estado)
             return View();
         }
 
@@ -208,17 +219,26 @@ namespace FRFront.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
+<<<<<<< HEAD
+=======
+        // GET: Muestra la pantalla de cambio de contraseña
+>>>>>>> 341bcb1 (Merge con Rama-Roci y restauracion de estado)
         [HttpGet]
         public IActionResult CambiarContrasena()
         {
             return View();
         }
 
+<<<<<<< HEAD
+=======
+        // POST: Procesa el formulario con las validaciones
+>>>>>>> 341bcb1 (Merge con Rama-Roci y restauracion de estado)
         [HttpPost]
         public IActionResult CambiarContrasena(CambiarContrasenaViewModel model)
         {
             if (!ModelState.IsValid)
             {
+<<<<<<< HEAD
                 return View(model);
             }
 
@@ -230,5 +250,20 @@ namespace FRFront.Controllers
         {
             return View();
         }
+=======
+                // Si hay un error de validación, vuelve a cargar la vista con los mensajes en rojo
+                return View(model);
+            }
+
+            // TODO: Aquí va la llamada a tu API/Backend para actualizar la clave
+
+            return RedirectToAction("Index");
+        }
+        [HttpGet]
+        public IActionResult CambiarContrasenaEmpleadoExito()
+       {
+            return View();
+       }
+>>>>>>> 341bcb1 (Merge con Rama-Roci y restauracion de estado)
     }
 }

@@ -1,0 +1,182 @@
+@model List<FRFront.Models.PedidoDto>
+@{
+    Layout = null;
+    ViewData["Title"] = "Historial de Facturas";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F&R - Historial Facturas</title>
+    
+    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .invoice-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e9ecef;
+            padding: 18px 30px;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .invoice-card:hover {
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            border-color: #ced4da;
+        }
+
+        .table-header-custom {
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #6c757d;
+            text-transform: uppercase;
+            padding: 0 30px 12px 30px;
+        }
+
+        .badge-estado {
+            font-weight: 800;
+            padding: 8px 12px;
+            border-radius: 50px;
+            font-size: 0.72rem;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            text-transform: uppercase;
+            text-align: center;
+            width: 100%;
+            max-width: 130px;
+        }
+
+        .badge-aprobado { background-color: #e6f4ea; color: #1e7e34; }
+        .badge-proceso { background-color: #fff3cd; color: #856404; }
+        .badge-tienda { background-color: #e8f0fe; color: #1a73e8; }
+        .badge-rechazado { background-color: #fce8e6; color: #c5221f; }
+
+        .btn-ver {
+            background-color: #000;
+            color: #fff;
+            border-radius: 50px;
+            padding: 8px 20px;
+            font-weight: 800;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-ver:hover {
+            background-color: #212529;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Home" asp-action="Index">
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 45px; width: auto;" />
+            </a>
+            <span class="fs-5 fw-bold text-dark border-start ps-3 py-1">HISTORIAL FACTURAS</span>
+        </div>
+
+        <div>
+            <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
+                &lt; VOLVER
+            </a>
+        </div>
+    </header>
+
+    <div class="container py-5" style="max-width: 1300px;">
+
+        <div class="mb-4">
+            <h1 class="fw-black text-uppercase mb-1" style="font-weight: 900;">FACTURAS</h1>
+            <p class="text-muted mb-0">Listado de comprobantes y facturas electrónicas emitidas</p>
+        </div>
+
+        <!-- ENCABEZADOS -->
+        <div class="row table-header-custom d-none d-md-flex align-items-center">
+            <div class="col-md-2">N° PEDIDO</div>
+            <div class="col-md-3">CLIENTE</div>
+            <div class="col-md-2 text-center">FECHA</div>
+            <div class="col-md-2 text-center">TOTAL</div>
+            <div class="col-md-2 text-center">ESTADO</div>
+            <div class="col-md-1 text-end">ACCIONES</div>
+        </div>
+
+        <!-- LISTADO -->
+        <div class="d-flex flex-column gap-3">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    string estadoFactura = item.Estado.ToUpper() switch
+                    {
+                        "ENTREGADO" => "APROBADO",
+                        "EN CAMINO" => "EN PROCESO",
+                        "CONFIRMADO" => "PAGO EN TIENDA",
+                        "CANCELADO" => "RECHAZADO",
+                        _ => "PENDIENTE"
+                    };
+
+                    string badgeClass = estadoFactura switch
+                    {
+                        "APROBADO" => "badge-aprobado",
+                        "EN PROCESO" => "badge-proceso",
+                        "PAGO EN TIENDA" => "badge-tienda",
+                        "RECHAZADO" => "badge-rechazado",
+                        _ => "badge-proceso"
+                    };
+
+                    <div class="invoice-card">
+                        <div class="row align-items-center text-center text-md-start">
+                            <div class="col-12 col-md-2 mb-2 mb-md-0 fw-bold fs-6">
+                                #@item.Id.ToString("D5")
+                            </div>
+                            <div class="col-12 col-md-3 mb-2 mb-md-0 fw-bold text-uppercase">
+                                @item.Cliente
+                            </div>
+                            <div class="col-12 col-md-2 mb-2 mb-md-0 text-center text-muted fw-semibold">
+                                @item.Fecha.ToString("dd/MM/yy")
+                            </div>
+                            <div class="col-12 col-md-2 mb-2 mb-md-0 text-center fw-bold fs-6">
+                                $ @item.Total.ToString("N2")
+                            </div>
+                            <div class="col-12 col-md-2 mb-2 mb-md-0 text-center">
+                                <span class="badge-estado @badgeClass">@estadoFactura</span>
+                            </div>
+                            <div class="col-12 col-md-1 text-end d-flex justify-content-center justify-content-md-end">
+                                <a asp-controller="Administrador" asp-action="VerFactura" asp-route-id="@item.Id" class="btn-ver">
+                                    VER
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="invoice-card text-center py-5">
+                    <p class="text-muted mb-0 fw-bold">No hay facturas disponibles.</p>
+                </div>
+            }
+        </div>
+
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

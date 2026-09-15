@@ -1,0 +1,188 @@
+is_global = true
+build_property.TargetFramework = net10.0
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v10.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property.EntryPointFilePath = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = FRFront
+build_property.RootNamespace = FRFront
+build_property.ProjectDir = C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 10.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 10.0
+build_property.EnableCodeStyleSeverity = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Account/CambiarContrasena.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxDYW1iaWFyQ29udHJhc2VuYS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Account/CambiarContrasenaEmpleadoExito.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxDYW1iaWFyQ29udHJhc2VuYUVtcGxlYWRvRXhpdG8uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Account/ForgotPassword.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxGb3Jnb3RQYXNzd29yZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Account/Login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Account/Register.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxSZWdpc3Rlci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Administrador/ConfigurarTienda.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5pc3RyYWRvclxDb25maWd1cmFyVGllbmRhLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Administrador/CrearEmpleado.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5pc3RyYWRvclxDcmVhckVtcGxlYWRvLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Administrador/EditarEmpleado.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5pc3RyYWRvclxFZGl0YXJFbXBsZWFkby5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Administrador/Empleados.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5pc3RyYWRvclxFbXBsZWFkb3MuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Administrador/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5pc3RyYWRvclxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Carrito/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2Fycml0b1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Checkout/CompraExitosas.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2hlY2tvdXRcQ29tcHJhRXhpdG9zYXMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Checkout/Envio.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2hlY2tvdXRcRW52aW8uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Checkout/Pago.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2hlY2tvdXRcUGFnby5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Checkout/PagoRechazado.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2hlY2tvdXRcUGFnb1JlY2hhemFkby5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Clientes/Detalle.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZXNcRGV0YWxsZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Clientes/index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZXNcaW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Cliente/MisCompras.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZVxNaXNDb21wcmFzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Cliente/Notificaciones.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZVxOb3RpZmljYWNpb25lcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Empleado/Crear.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbGVhZG9cQ3JlYXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Empleado/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbGVhZG9cSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Facturas/Detalle.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmFjdHVyYXNcRGV0YWxsZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Facturas/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmFjdHVyYXNcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Home/Catalogo.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxDYXRhbG9nby5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Home/DetalleProducto.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxEZXRhbGxlUHJvZHVjdG8uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Home/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Home/Ofertas.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxPZmVydGFzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Home/Privacy.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Home/Seccion.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxTZWNjaW9uLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Pedidos/Detalle.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGVkaWRvc1xEZXRhbGxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Pedidos/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGVkaWRvc1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Productos/Crear.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZHVjdG9zXENyZWFyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Productos/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZHVjdG9zXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Productos/Modificar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZHVjdG9zXE1vZGlmaWNhci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Shared/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Shared/_LayoutAdministrador.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXRBZG1pbmlzdHJhZG9yLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Shared/_LayoutEmpleado.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXRFbXBsZWFkby5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Shared/_ValidationScriptsPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = b-qbmfynq4gx

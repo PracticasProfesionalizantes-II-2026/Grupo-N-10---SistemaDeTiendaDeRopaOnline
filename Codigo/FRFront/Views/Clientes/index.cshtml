@@ -1,0 +1,252 @@
+@using Microsoft.AspNetCore.Http
+@model List<FRFront.Models.ClienteDto>
+@{
+    Layout = null;
+    ViewData["Title"] = "Gestión de Clientes";
+
+    var busquedaActual = ViewBag.BusquedaActual as string ?? "";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F&R - Gestión de Clientes</title>
+    
+    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .client-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e9ecef;
+            padding: 18px 30px;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .client-card:hover {
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            border-color: #ced4da;
+        }
+
+        .table-header-custom {
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #6c757d;
+            text-transform: uppercase;
+            padding: 0 30px 12px 30px;
+        }
+
+        .badge-estado {
+            font-weight: 800;
+            padding: 8px 12px;
+            border-radius: 50px;
+            font-size: 0.72rem;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            text-transform: uppercase;
+            text-align: center;
+            width: 100%;
+            max-width: 110px;
+        }
+
+        .badge-activo { background-color: #e6f4ea; color: #1e7e34; }
+        .badge-inactivo { background-color: #e8f0fe; color: #1a73e8; }
+        .badge-bloqueado { background-color: #fce8e6; color: #c5221f; }
+
+        .btn-action-dropdown {
+            background-color: #000;
+            color: #fff;
+            border-radius: 50px;
+            padding: 8px 16px;
+            font-weight: 800;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-action-dropdown:hover, .btn-action-dropdown:focus {
+            background-color: #212529;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .search-input {
+            border-radius: 50px;
+            padding: 10px 24px;
+            border: 1px solid #ced4da;
+            font-weight: 600;
+        }
+
+        .dropdown-menu {
+            min-width: 220px;
+        }
+
+        .dropdown-item {
+            font-size: 0.8rem;
+            letter-spacing: 0.3px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Home" asp-action="Index">
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 45px; width: auto;" />
+            </a>
+            <span class="fs-5 fw-bold text-dark border-start ps-3 py-1">GESTIÓN DE CLIENTES</span>
+        </div>
+
+        <div>
+            <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
+                &lt; VOLVER AL PANEL
+            </a>
+        </div>
+    </header>
+
+    <div class="container py-5" style="max-width: 1300px;">
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+            <div>
+                <h1 class="fw-black tracking-wider mb-1" style="font-weight: 900;">CLIENTES</h1>
+                <p class="text-muted mb-0">Listado de usuarios registrados en el sistema</p>
+            </div>
+
+            <!-- BUSCADOR -->
+            <form asp-controller="Administrador" asp-action="Clientes" method="get" class="d-flex gap-2" style="max-width: 420px; width: 100%;">
+                <input type="text" name="busqueda" value="@busquedaActual" class="form-control search-input shadow-sm" placeholder="Buscar cliente por nombre" />
+                <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold text-uppercase" style="font-size: 0.75rem;">BUSCAR</button>
+            </form>
+        </div>
+
+        <!-- TABLA ENCABEZADOS -->
+        <div class="row table-header-custom d-none d-md-flex align-items-center">
+            <div class="col-md-2">N° CLIENTE</div>
+            <div class="col-md-3">NOMBRE</div>
+            <div class="col-md-2 text-center">FECHA DE ALTA</div>
+            <div class="col-md-3">EMAIL</div>
+            <div class="col-md-1 text-center ps-0 pe-3">ESTADO</div>
+            <div class="col-md-1 text-end ps-3">ACCIONES</div>
+        </div>
+
+        <!-- LISTA DE CLIENTES -->
+        <div class="d-flex flex-column gap-3">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    string badgeClass = item.Estado.ToUpper() switch
+                    {
+                        "ACTIVO" => "badge-activo",
+                        "INACTIVO" => "badge-inactivo",
+                        _ => "badge-bloqueado"
+                    };
+
+                    <div class="client-card">
+                        <div class="row align-items-center text-center text-md-start">
+                            <div class="col-12 col-md-2 mb-2 mb-md-0 fw-bold fs-6">
+                                @item.NumeroCliente
+                            </div>
+                            <div class="col-12 col-md-3 mb-2 mb-md-0 fw-bold text-uppercase">
+                                @item.NombreCompleto
+                            </div>
+                            <div class="col-12 col-md-2 mb-2 mb-md-0 text-center text-muted fw-semibold">
+                                @item.FechaAlta.ToString("dd/MM/yy")
+                            </div>
+                            <div class="col-12 col-md-3 mb-2 mb-md-0 fw-semibold text-lowercase text-truncate">
+                                @item.Email
+                            </div>
+                            
+                            <!-- ESTADO CON ESPACIADO PROPIO -->
+                            <div class="col-12 col-md-1 mb-2 mb-md-0 text-center ps-0 pe-2">
+                                <span class="badge-estado @badgeClass">@item.Estado</span>
+                            </div>
+
+                            <!-- ACCIONES CON ESPACIADO PROPIO -->
+                            <div class="col-12 col-md-1 text-end d-flex justify-content-center justify-content-md-end ps-2">
+                                <div class="dropdown">
+                                    <button class="btn-action-dropdown dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        OPCIONES
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2">
+                                        <li>
+                                            <a asp-controller="Administrador" asp-action="DetalleCliente" asp-route-id="@item.Id" class="dropdown-item fw-bold text-dark rounded-3 py-2">
+                                                📝 VER INFORMACION Y EDITAR
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a asp-controller="Administrador" asp-action="HistorialCliente" asp-route-id="@item.Id" class="dropdown-item fw-bold text-dark rounded-3 py-2">
+                                                🛍️ VER HISTORIAL
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        @if (item.Estado.ToUpper() != "ACTIVO")
+                                        {
+                                            <li>
+                                                <form asp-controller="Administrador" asp-action="CambiarEstadoCliente" method="post">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <input type="hidden" name="nuevoEstado" value="ACTIVO" />
+                                                    <button type="submit" class="dropdown-item fw-bold text-success rounded-3 py-2">
+                                                        ✓ ACTIVAR CLIENTE
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        }
+                                        @if (item.Estado.ToUpper() != "BLOQUEADO")
+                                        {
+                                            <li>
+                                                <form asp-controller="Administrador" asp-action="CambiarEstadoCliente" method="post">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <input type="hidden" name="nuevoEstado" value="BLOQUEADO" />
+                                                    <button type="submit" class="dropdown-item fw-bold text-warning rounded-3 py-2">
+                                                        🚫 BLOQUEAR CLIENTE
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        }
+                                        <li>
+                                            <form asp-controller="Administrador" asp-action="EliminarCliente" method="post" onsubmit="return confirm('¿Desea eliminar este cliente?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <button type="submit" class="dropdown-item fw-bold text-danger rounded-3 py-2">
+                                                    🗑️ ELIMINAR CLIENTE
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="client-card text-center py-5">
+                    <p class="text-muted mb-0 fw-bold">No se encontraron clientes registrados.</p>
+                </div>
+            }
+        </div>
+
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
