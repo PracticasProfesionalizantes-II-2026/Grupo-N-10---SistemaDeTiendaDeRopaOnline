@@ -45,6 +45,55 @@ namespace FRFront.Controllers
             return View("~/Views/Empleado/NuevaVenta.cshtml");
         }
 
+        // GET: /Empleado/BuscarClientePorDni?dni=...
+        [HttpGet]
+        public async Task<IActionResult> BuscarClientePorDni(string dni)
+        {
+            if (string.IsNullOrEmpty(dni))
+            {
+                return Json(new { existe = false });
+            }
+
+            try
+            {
+                var response = await _httpClient.GetAsync("api/clientes");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var clientes = JsonSerializer.Deserialize<List<ClienteDto>>(content, _jsonOptions);
+                    
+                    var clienteApi = clientes?.FirstOrDefault(c => c.Dni != null && c.Dni.Trim() == dni.Trim());
+                    if (clienteApi != null)
+                    {
+                        return Json(new { 
+                            existe = true, 
+                            nombre = clienteApi.Nombre, 
+                            apellido = clienteApi.Apellido, 
+                            email = clienteApi.Email, 
+                            telefono = string.IsNullOrEmpty(clienteApi.Telefono) ? "Sin registrar" : clienteApi.Telefono 
+                        });
+                    }
+                }
+            }
+            catch { }
+
+            var clienteMemoria = AdministradorController.ClientesEnMemoria
+                .FirstOrDefault(c => c.Dni != null && c.Dni.Trim() == dni.Trim());
+
+            if (clienteMemoria != null)
+            {
+                return Json(new { 
+                    existe = true, 
+                    nombre = clienteMemoria.Nombre, 
+                    apellido = clienteMemoria.Apellido, 
+                    email = clienteMemoria.Email, 
+                    telefono = string.IsNullOrEmpty(clienteMemoria.Telefono) ? "Sin registrar" : clienteMemoria.Telefono 
+                });
+            }
+
+            return Json(new { existe = false });
+        }
+
         // POST: /Empleado/ProcesarVenta
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -69,7 +118,9 @@ namespace FRFront.Controllers
                 : JsonSerializer.Deserialize<List<DetallePedidoDto>>(jsonDetalle, _jsonOptions) ?? new List<DetallePedidoDto>();
 
             int nuevoId = 100 + Random.Shared.Next(100, 999);
-            string nombreClienteCompleto = $"{clienteNombre.ToUpper()} {clienteApellido.ToUpper()}";
+            string nombreClienteCompleto = $"{clienteNombre.Trim().ToUpper()} {clienteApellido.Trim().ToUpper()}";
+            string dniLimpio = string.IsNullOrEmpty(clienteDni) ? "S/D" : clienteDni.Trim();
+            string telefonoLimpio = string.IsNullOrEmpty(clienteTelefono) ? "Sin registrar" : clienteTelefono.Trim();
 
             var nuevoPedido = new PedidoDto
             {
@@ -82,10 +133,34 @@ namespace FRFront.Controllers
                 Detalle = detalles
             };
 
-            // REGISTRO EN EL HISTORIAL COMPARTIDO (ADMIN, CAJERO Y CLIENTE)
-            AdministradorController.RegistrarNuevoPedido(nuevoPedido, clienteDni, clienteEmail, clienteTelefono);
+            // Registro garantizado en memoria local asignando el DNI y Teléfono real
+            AdministradorController.RegistrarNuevoPedido(nuevoPedido, dniLimpio, clienteEmail, telefonoLimpio);
 
-            TempData["SuccessMessage"] = $"¡Venta registrada con éxito! Factura #{nuevoId} creada para {nombreClienteCompleto} y guardada en el Historial de Compras.";
+            // Persistencia en la API Backend (FYR_DB)
+            try
+            {
+                var bodyApi = new
+                {
+                    Dni = dniLimpio,
+                    Nombre = clienteNombre.Trim().ToUpper(),
+                    Apellido = clienteApellido.Trim().ToUpper(),
+                    ClienteNombre = nombreClienteCompleto,
+                    Email = clienteEmail,
+                    Telefono = telefonoLimpio,
+                    Phone = telefonoLimpio,
+                    Total = totalVenta,
+                    MetodoPago = metodoPago,
+                    Estado = "ENTREGADO",
+                    Detalles = detalles
+                };
+
+                var jsonBody = JsonSerializer.Serialize(bodyApi);
+                var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+                await _httpClient.PostAsync("api/pedidos", content);
+            }
+            catch { }
+
+            TempData["SuccessMessage"] = $"¡Venta registrada con éxito! Factura #{nuevoId} creada para {nombreClienteCompleto}.";
 
             return RedirectToAction("Index");
         }

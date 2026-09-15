@@ -12,6 +12,19 @@ using Endpoints;
 var builder = WebApplication.CreateBuilder(args);
 
 //======================================
+// Configuración de CORS
+//======================================
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
+//======================================
 // Base de Datos
 //======================================
 
@@ -91,10 +104,13 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+app.UseCors("AllowFrontend");
+
 app.MapOpenApi();
 app.MapScalarApiReference();
 
 app.UseHttpsRedirection();
+
 //======================================
 // Endpoints
 //======================================
@@ -120,4 +136,5 @@ app.MapMedioContactoEndpoints();
 app.MapStockEndpoints();
 
 app.MapGet("/", () => "Bienvenido a la API de FYR");
+
 app.Run();

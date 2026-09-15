@@ -27,8 +27,12 @@ namespace FRFront.Controllers
         {
             PedidosEnMemoria.Insert(0, nuevoPedido);
 
+            string dniBuscado = string.IsNullOrEmpty(dni) ? "S/D" : dni.Trim();
+            string telBuscado = string.IsNullOrEmpty(telefono) ? "Sin registrar" : telefono.Trim();
+
+            // Verificar si el cliente ya existe por DNI o Nombre Completo
             var clienteExistente = ClientesEnMemoria.FirstOrDefault(c => 
-                (!string.IsNullOrEmpty(c.Dni) && c.Dni == dni) || 
+                (c.Dni != "S/D" && c.Dni == dniBuscado) || 
                 c.NombreCompleto.Equals(nuevoPedido.Cliente, StringComparison.OrdinalIgnoreCase));
 
             if (clienteExistente == null)
@@ -37,17 +41,30 @@ namespace FRFront.Controllers
                 string nom = partesNombre.Length > 0 ? partesNombre[0] : nuevoPedido.Cliente;
                 string ape = partesNombre.Length > 1 ? string.Join(" ", partesNombre.Skip(1)) : "";
 
+                int nuevoId = ClientesEnMemoria.Any() ? ClientesEnMemoria.Max(c => c.Id) + 1 : 1;
+
                 ClientesEnMemoria.Add(new ClienteDto
                 {
-                    Id = ClientesEnMemoria.Any() ? ClientesEnMemoria.Max(c => c.Id) + 1 : 1,
-                    Dni = string.IsNullOrEmpty(dni) ? "S/D" : dni,
+                    Id = nuevoId,
+                    Dni = dniBuscado,
                     Nombre = nom,
                     Apellido = ape,
-                    Email = email,
-                    Telefono = telefono,
+                    Email = email ?? "",
+                    Telefono = telBuscado,
                     FechaAlta = DateTime.Now,
                     Estado = "ACTIVO"
                 });
+            }
+            else
+            {
+                if (clienteExistente.Dni == "S/D" && dniBuscado != "S/D")
+                {
+                    clienteExistente.Dni = dniBuscado;
+                }
+                if ((string.IsNullOrEmpty(clienteExistente.Telefono) || clienteExistente.Telefono == "Sin registrar") && telBuscado != "Sin registrar")
+                {
+                    clienteExistente.Telefono = telBuscado;
+                }
             }
         }
 
@@ -115,7 +132,7 @@ namespace FRFront.Controllers
         [HttpGet("Administrador/Reportes")]
         [HttpGet("Administrador/ReportesVentas")]
         [ActionName("Reportes")]
-        public IActionResult ReportesVentas(DateTime? desde, DateTime? hasta)
+        public async Task<IActionResult> ReportesVentas(DateTime? desde, DateTime? hasta)
         {
             string? rol = HttpContext.Session.GetString("RolSesion");
             if (rol != "Administrador")
@@ -126,7 +143,24 @@ namespace FRFront.Controllers
             DateTime fechaInicio = desde ?? DateTime.Today.AddDays(-30);
             DateTime fechaFin = hasta ?? DateTime.Today.AddDays(1).AddSeconds(-1);
 
-            var ventasFiltradas = PedidosEnMemoria
+            var listaPedidos = PedidosEnMemoria;
+
+            try
+            {
+                var response = await _httpClient.GetAsync("api/pedidos");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var apiPedidos = JsonSerializer.Deserialize<List<PedidoDto>>(content, _jsonOptions);
+                    if (apiPedidos != null && apiPedidos.Any())
+                    {
+                        listaPedidos = apiPedidos;
+                    }
+                }
+            }
+            catch { }
+
+            var ventasFiltradas = listaPedidos
                 .Where(p => p.Fecha.Date >= fechaInicio.Date && p.Fecha.Date <= fechaFin.Date)
                 .Select(p => new VentaDetalleReporte
                 {
@@ -168,6 +202,21 @@ namespace FRFront.Controllers
         {
             var productos = ProductosEnMemoria;
 
+            try
+            {
+                var response = await _httpClient.GetAsync("api/productos");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var apiProds = JsonSerializer.Deserialize<List<ProductoDto>>(content, _jsonOptions);
+                    if (apiProds != null && apiProds.Any())
+                    {
+                        productos = apiProds;
+                    }
+                }
+            }
+            catch { }
+
             if (!string.IsNullOrEmpty(categoria) && !categoria.Equals("Todos", StringComparison.OrdinalIgnoreCase))
             {
                 productos = productos.Where(p => p.Categoria.Equals(categoria, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -206,6 +255,14 @@ namespace FRFront.Controllers
                 }
 
                 ProductosEnMemoria.Add(nuevoProducto);
+
+                try
+                {
+                    var json = JsonSerializer.Serialize(nuevoProducto);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+                    await _httpClient.PostAsync("api/productos", content);
+                }
+                catch { }
 
                 TempData["SuccessMessage"] = "Producto creado con éxito.";
                 return RedirectToAction(nameof(Productos));
@@ -273,7 +330,24 @@ namespace FRFront.Controllers
         [HttpGet]
         public async Task<IActionResult> Pedidos()
         {
-            return View("~/Views/Pedidos/Index.cshtml", PedidosEnMemoria);
+            var pedidos = PedidosEnMemoria;
+
+            try
+            {
+                var response = await _httpClient.GetAsync("api/pedidos");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var apiPedidos = JsonSerializer.Deserialize<List<PedidoDto>>(content, _jsonOptions);
+                    if (apiPedidos != null && apiPedidos.Any())
+                    {
+                        pedidos = apiPedidos;
+                    }
+                }
+            }
+            catch { }
+
+            return View("~/Views/Pedidos/Index.cshtml", pedidos);
         }
 
         [HttpGet]
@@ -303,13 +377,28 @@ namespace FRFront.Controllers
         }
 
         // ==========================================
-        // GESTIÓN DE CLIENTES
+        // GESTIÓN DE CLIENTES Y DETALLE
         // ==========================================
 
         [HttpGet]
         public async Task<IActionResult> Clientes(string? busqueda)
         {
             var clientes = ClientesEnMemoria;
+
+            try
+            {
+                var response = await _httpClient.GetAsync("api/clientes");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var apiClientes = JsonSerializer.Deserialize<List<ClienteDto>>(content, _jsonOptions);
+                    if (apiClientes != null && apiClientes.Any())
+                    {
+                        clientes = apiClientes;
+                    }
+                }
+            }
+            catch { }
 
             if (!string.IsNullOrEmpty(busqueda))
             {
@@ -326,9 +415,46 @@ namespace FRFront.Controllers
         }
 
         [HttpGet]
-        public IActionResult DetalleCliente(int id)
+        public async Task<IActionResult> DetalleCliente(int id)
         {
-            var cliente = ClientesEnMemoria.FirstOrDefault(c => c.Id == id) ?? ClientesEnMemoria.First();
+            var listaClientes = ClientesEnMemoria;
+
+            try
+            {
+                var response = await _httpClient.GetAsync("api/clientes");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var apiClientes = JsonSerializer.Deserialize<List<ClienteDto>>(content, _jsonOptions);
+                    if (apiClientes != null && apiClientes.Any())
+                    {
+                        listaClientes = apiClientes;
+                    }
+                }
+            }
+            catch { }
+
+            // 1. Búsqueda directa por ID
+            var cliente = listaClientes.FirstOrDefault(c => c.Id == id);
+
+            // 2. Búsqueda por ID en lista local en memoria
+            if (cliente == null)
+            {
+                cliente = ClientesEnMemoria.FirstOrDefault(c => c.Id == id);
+            }
+
+            // 3. Búsqueda por posición en caso de no coincidir ID
+            if (cliente == null && id >= 0 && id < listaClientes.Count)
+            {
+                cliente = listaClientes[id];
+            }
+
+            if (cliente == null)
+            {
+                TempData["ErrorMessage"] = "Cliente no encontrado.";
+                return RedirectToAction(nameof(Clientes));
+            }
+
             return View("~/Views/Clientes/Detalle.cshtml", cliente);
         }
 
@@ -351,19 +477,96 @@ namespace FRFront.Controllers
         }
 
         [HttpGet]
-        public IActionResult HistorialCliente(int id)
+        public async Task<IActionResult> HistorialCliente(int id)
         {
-            var cliente = ClientesEnMemoria.FirstOrDefault(c => c.Id == id) ?? ClientesEnMemoria.First();
+            var listaClientes = ClientesEnMemoria;
+            try
+            {
+                var responseClientes = await _httpClient.GetAsync("api/clientes");
+                if (responseClientes.IsSuccessStatusCode)
+                {
+                    var content = await responseClientes.Content.ReadAsStringAsync();
+                    var apiClientes = JsonSerializer.Deserialize<List<ClienteDto>>(content, _jsonOptions);
+                    if (apiClientes != null && apiClientes.Any())
+                    {
+                        listaClientes = apiClientes;
+                    }
+                }
+            }
+            catch { }
 
-            var pedidosCliente = PedidosEnMemoria
-                .Where(p => p.Cliente.Contains(cliente.Nombre, StringComparison.OrdinalIgnoreCase) || 
-                            p.Cliente.Contains(cliente.Apellido, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            var cliente = listaClientes.FirstOrDefault(c => c.Id == id);
+
+            if (cliente == null)
+            {
+                cliente = ClientesEnMemoria.FirstOrDefault(c => c.Id == id);
+            }
+
+            if (cliente == null && id >= 0 && id < listaClientes.Count)
+            {
+                cliente = listaClientes[id];
+            }
+
+            if (cliente == null)
+            {
+                TempData["ErrorMessage"] = "No se encontró el cliente seleccionado.";
+                return RedirectToAction(nameof(Clientes));
+            }
+
+            var listaPedidos = PedidosEnMemoria;
+            try
+            {
+                var responsePedidos = await _httpClient.GetAsync("api/pedidos");
+                if (responsePedidos.IsSuccessStatusCode)
+                {
+                    var content = await responsePedidos.Content.ReadAsStringAsync();
+                    var apiPedidos = JsonSerializer.Deserialize<List<PedidoDto>>(content, _jsonOptions);
+                    if (apiPedidos != null && apiPedidos.Any())
+                    {
+                        listaPedidos = apiPedidos;
+                    }
+                }
+            }
+            catch { }
+
+            string nombreCliente = cliente.NombreCompleto?.Trim().ToUpper() ?? "";
+            string dniCliente = cliente.Dni?.Trim() ?? "";
+
+            var pedidosFiltrados = listaPedidos.Where(p =>
+            {
+                if (p == null) return false;
+
+                string clientePedido = p.Cliente?.Trim().ToUpper() ?? "";
+
+                if (!string.IsNullOrEmpty(dniCliente) && dniCliente != "S/D" && clientePedido.Contains(dniCliente))
+                {
+                    return true;
+                }
+
+                if (!string.IsNullOrEmpty(nombreCliente) && clientePedido.Equals(nombreCliente, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (!string.IsNullOrEmpty(cliente.Nombre) && !string.IsNullOrEmpty(cliente.Apellido))
+                {
+                    string nom = cliente.Nombre.Trim().ToUpper();
+                    string ape = cliente.Apellido.Trim().ToUpper();
+                    if (clientePedido.Contains(nom) && clientePedido.Contains(ape))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }).ToList();
 
             ViewBag.ClienteNombre = cliente.NombreCompleto;
-            ViewBag.ClienteId = cliente.NumeroCliente;
+            ViewBag.ClienteId = string.IsNullOrEmpty(cliente.NumeroCliente) || cliente.NumeroCliente == "CLI-000" 
+                ? $"CLI-{cliente.Id:D3}" 
+                : cliente.NumeroCliente;
 
-            return View("~/Views/Pedidos/Index.cshtml", pedidosCliente);
+            return View("~/Views/Pedidos/Index.cshtml", pedidosFiltrados);
         }
 
         // ==========================================
@@ -496,7 +699,24 @@ namespace FRFront.Controllers
         [HttpGet]
         public async Task<IActionResult> Facturas()
         {
-            return View("~/Views/Facturas/Index.cshtml", PedidosEnMemoria);
+            var pedidos = PedidosEnMemoria;
+
+            try
+            {
+                var response = await _httpClient.GetAsync("api/pedidos");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var apiPedidos = JsonSerializer.Deserialize<List<PedidoDto>>(content, _jsonOptions);
+                    if (apiPedidos != null && apiPedidos.Any())
+                    {
+                        pedidos = apiPedidos;
+                    }
+                }
+            }
+            catch { }
+
+            return View("~/Views/Facturas/Index.cshtml", pedidos);
         }
 
         [HttpGet]
