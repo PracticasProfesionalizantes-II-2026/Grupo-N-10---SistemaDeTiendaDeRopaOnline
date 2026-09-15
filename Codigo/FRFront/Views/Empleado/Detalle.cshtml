@@ -1,0 +1,182 @@
+@model FRFront.Models.EmpleadoDto
+@{
+    Layout = null;
+    ViewData["Title"] = "Información del Empleado";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F&R - Información Empleados</title>
+    
+    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .form-card {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #e9ecef;
+            padding: 35px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+
+        .form-control, .form-select {
+            border-radius: 50px;
+            padding: 12px 20px;
+            border: 1px solid #ced4da;
+            font-weight: 600;
+        }
+
+        .btn-custom-dark {
+            background-color: #000;
+            color: #fff;
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-weight: 800;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            border: none;
+        }
+
+        .btn-custom-dark:hover {
+            background-color: #212529;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Home" asp-action="Index">
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 45px; width: auto;" />
+            </a>
+            <span class="fs-5 fw-bold text-dark border-start ps-3 py-1">INFORMACIÓN EMPLEADOS</span>
+        </div>
+
+        <div>
+            <a asp-controller="Administrador" asp-action="Empleados" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
+                &lt; VOLVER
+            </a>
+        </div>
+    </header>
+
+    <div class="container py-5" style="max-width: 800px;">
+
+        <!-- MENSAJES -->
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show rounded-4 fw-bold mb-4" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <div class="mb-4 d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="fw-black text-uppercase mb-1" style="font-weight: 900;">@Model.NombreCompleto</h1>
+                <p class="text-muted mb-0">N° EMPLEADO: <strong>@Model.NumeroEmpleado</strong></p>
+            </div>
+            <div>
+                <form asp-controller="Administrador" asp-action="ResetearPasswordEmpleado" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-outline-secondary btn-sm rounded-pill fw-bold px-3" onclick="return confirm('¿Restablecer la contraseña del usuario temporalmente?');">
+                        🔑 CONTRASEÑA OLVIDADA
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <form asp-controller="Administrador" asp-action="EditarEmpleado" method="post" class="needs-validation" novalidate>
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+
+                <div class="row g-3">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold text-uppercase small">Nombre</label>
+                        <input type="text" asp-for="Nombre" class="form-control" required />
+                        <div class="invalid-feedback">Ingrese el nombre.</div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold text-uppercase small">Apellido</label>
+                        <input type="text" asp-for="Apellido" class="form-control" required />
+                        <div class="invalid-feedback">Ingrese el apellido.</div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold text-uppercase small">Email / Usuario</label>
+                        <input type="email" asp-for="Email" class="form-control" required />
+                        <div class="invalid-feedback">Ingrese un correo válido.</div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold text-uppercase small">Teléfono</label>
+                        <input type="tel" asp-for="Telefono" class="form-control" required />
+                        <div class="invalid-feedback">Ingrese un teléfono válido.</div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold text-uppercase small">Rol</label>
+                        <select asp-for="Rol" class="form-select">
+                            <option value="CAJERO">CAJERO</option>
+                            <option value="CAJERA">CAJERA</option>
+                            <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+                            <option value="SUPERVISOR">SUPERVISOR</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold text-uppercase small">Estado</label>
+                        <select asp-for="Estado" class="form-select">
+                            <option value="ACTIVO">ACTIVO</option>
+                            <option value="BLOQUEADO">BLOQUEADO</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                    <!-- BOTÓN BORRAR USUARIO -->
+                    <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold" asp-action="EliminarEmpleado" asp-controller="Administrador" asp-route-id="@Model.Id" onclick="return confirm('¿Confirma eliminar este usuario del sistema?');">
+                        BORRAR USUARIO
+                    </button>
+
+                    <div class="d-flex gap-2">
+                        <a asp-controller="Administrador" asp-action="Empleados" class="btn btn-light rounded-pill px-4 fw-bold">CANCELAR</a>
+                        <button type="submit" class="btn-custom-dark text-uppercase">EDITAR</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+</body>
+</html>

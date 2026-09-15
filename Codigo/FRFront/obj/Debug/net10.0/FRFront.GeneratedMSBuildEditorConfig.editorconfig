@@ -43,8 +43,12 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxSZWdpc3Rlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Usuario/source/repos/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Administrador/ConfigurarTienda.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5pc3RyYWRvclxDb25maWd1cmFyVGllbmRhLmNzaHRtbA==
+[C:/Users/Usuario/source/repos/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Administrador/CambiarContrasena.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5pc3RyYWRvclxDYW1iaWFyQ29udHJhc2VuYS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/source/repos/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Administrador/Configuracion.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5pc3RyYWRvclxDb25maWd1cmFjaW9uLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Usuario/source/repos/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Administrador/CrearEmpleado.cshtml]
@@ -63,6 +67,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5pc3RyYWRvclxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Usuario/source/repos/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Administrador/ReportesVentas.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5pc3RyYWRvclxSZXBvcnRlc1ZlbnRhcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Usuario/source/repos/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Clientes/Detalle.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZXNcRGV0YWxsZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -73,6 +81,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/Usuario/source/repos/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Empleado/Crear.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbGVhZG9cQ3JlYXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/source/repos/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Empleado/Detalle.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbGVhZG9cRGV0YWxsZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Usuario/source/repos/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Empleado/Index.cshtml]

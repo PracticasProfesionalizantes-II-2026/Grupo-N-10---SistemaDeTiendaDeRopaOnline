@@ -1,12 +1,28 @@
 ﻿@using Microsoft.AspNetCore.Http
 @using FRFront.Models
-@inject TiendaConfig Config
+@using FRFront.Controllers
 @{
     Layout = null;
     ViewData["Title"] = "Inicio";
     var usuarioLogueado = Context.Session.GetString("UsuarioSesion");
     var rolUsuario = Context.Session.GetString("RolSesion"); // "Administrador", "Empleado", "Cajero" o "Cliente"
     var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0] : "Usuario";
+
+    // Carga de la configuración guardada desde el panel de administración
+    var config = ViewBag.ConfigTienda as ConfiguracionTiendaDto ?? AdministradorController.ConfiguracionActual;
+
+    // Split seguro de cadenas compuestas por comas o saltos de línea
+    var menuSecciones = !string.IsNullOrWhiteSpace(config.MenuEncabezado) 
+        ? config.MenuEncabezado.Split(new[] { ',', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) 
+        : new[] { "LANZAMIENTOS", "HOMBRE", "MUJER", "OFERTAS", "PRODUCTOS" };
+
+    var listaProductosMenu = !string.IsNullOrWhiteSpace(config.CategoriasMenu) 
+        ? config.CategoriasMenu.Split(new[] { ',', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) 
+        : new[] { "BUZOS", "CAMISAS", "SWEATER", "REMERAS", "PANTALONES" };
+
+    var listaMediosPago = !string.IsNullOrWhiteSpace(config.MediosPago) 
+        ? config.MediosPago.Split(new[] { ',', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) 
+        : new[] { "EFECTIVO", "TARJETA DE DEBITO", "TARJETA DE CREDITO", "TRANSFERENCIA" };
 }
 
 <!DOCTYPE html>
@@ -14,13 +30,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F&R - Inicio</title>
+    <title>@config.NombreTienda - Inicio</title>
     
     <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
+    <!-- Carga dinámica de la tipografía elegida desde Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=@(config.TipografiaSeleccionada.Replace(" ", "+")):wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
     <style>
+        body {
+            /* Sincronización del color de fondo y tipografía general */
+            background-color: @config.ColorFondo !important;
+            font-family: '@config.TipografiaSeleccionada', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        }
+
         .ticker-fyr {
             background-color: #000;
             color: #fff;
@@ -85,20 +112,20 @@
     <!-- ========================================================= -->
     <!-- HEADER / BARRA DE NAVEGACIÓN -->
     <!-- ========================================================= -->
-    <header class="bg-white border-bottom py-4 px-4 d-flex justify-content-between align-items-center">
+    <header class="bg-white border-bottom py-4 px-4 d-flex justify-content-between align-items-center shadow-sm">
         
         <div>
             <a asp-controller="Home" asp-action="Index">
-                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 65px; width: auto;" />
+                <img src="@config.LogoUrl" alt="@config.NombreTienda Logo" style="height: 65px; width: auto;" />
             </a>
         </div>
 
+        <!-- MENÚ DE SECCIONES DINÁMICO -->
         <nav class="d-none d-md-flex gap-4 fw-bold text-uppercase fs-6">
-            <a href="#" class="text-dark text-decoration-none">LANZAMIENTOS</a>
-            <a href="#" class="text-dark text-decoration-none">HOMBRE</a>
-            <a href="#" class="text-dark text-decoration-none">MUJER</a>
-            <a href="#" class="text-dark text-decoration-none">OFERTAS</a>
-            <a href="#" class="text-dark text-decoration-none">PRODUCTOS</a>
+            @foreach (var seccion in menuSecciones)
+            {
+                <a href="#" class="text-dark text-decoration-none">@seccion.Trim()</a>
+            }
         </nav>
 
         <div class="d-flex align-items-center gap-3">
@@ -175,47 +202,49 @@
 
     </header>
 
-    <!-- MARQUESINA DINÁMICA (TICKER) -->
+    <!-- MARQUESINA DINÁMICA 1 (LÍNEA 1 DE CONFIGURACIÓN) -->
     <div class="ticker-fyr">
         <div class="ticker-track">
             <span>
-                @for (int i = 0; i < 15; i++)
+                @for (int i = 0; i < 8; i++)
                 {
-                    @Config.TickerText @:&nbsp;&nbsp;&nbsp;&nbsp;
+                    @config.Linea1 @:&nbsp;&nbsp;&nbsp;&nbsp;
                 }
             </span>
             <span>
-                @for (int i = 0; i < 15; i++)
+                @for (int i = 0; i < 8; i++)
                 {
-                    @Config.TickerText @:&nbsp;&nbsp;&nbsp;&nbsp;
+                    @config.Linea1 @:&nbsp;&nbsp;&nbsp;&nbsp;
                 }
             </span>
         </div>
     </div>
 
+    <!-- SECCIÓN HERO / BANNER PRINCIPAL -->
     <section class="hero-fyr">
-        <img src="~/images/banner.png" alt="Nueva colección F&R" class="hero-fyr-img" />
+        <img src="~/images/banner.png" alt="Nueva colección @config.NombreTienda" class="hero-fyr-img" />
     </section>
 
-    <!-- SEGUNDA MARQUESINA DINÁMICA -->
+    <!-- MARQUESINA DINÁMICA 2 (LÍNEA 2 DE CONFIGURACIÓN) -->
     <div class="ticker-fyr">
         <div class="ticker-track">
             <span>
-                @for (int i = 0; i < 15; i++)
+                @for (int i = 0; i < 8; i++)
                 {
-                    @Config.TickerText @:&nbsp;&nbsp;&nbsp;&nbsp;
+                    @config.Linea2 @:&nbsp;&nbsp;&nbsp;&nbsp;
                 }
             </span>
             <span>
-                @for (int i = 0; i < 15; i++)
+                @for (int i = 0; i < 8; i++)
                 {
-                    @Config.TickerText @:&nbsp;&nbsp;&nbsp;&nbsp;
+                    @config.Linea2 @:&nbsp;&nbsp;&nbsp;&nbsp;
                 }
             </span>
         </div>
     </div>
 
-    <section class="categories-fyr">
+    <!-- CATEGORÍAS -->
+    <section class="categories-fyr my-4">
         <div class="categories-container">
             <a href="#" class="category-card">
                 <img src="~/images/nuevo.png" alt="Nueva colección" />
@@ -232,66 +261,72 @@
         </div>
     </section>
 
-    <!-- BARRA PROMOCIONAL DINÁMICA -->
-    <section class="promo-bar">
-        <span class="promo-text">@Config.BannerText</span>
-        <div class="promo-circle">
+    <!-- BARRA PROMOCIONAL DINÁMICA (LÍNEA 3 DE CONFIGURACIÓN) -->
+    <section class="promo-bar py-3 bg-dark text-white text-center fw-bold text-uppercase d-flex align-items-center justify-content-center gap-3">
+        <span class="promo-text fs-5">@config.Linea3</span>
+        <div class="promo-circle bg-warning text-dark rounded-circle px-3 py-1 fw-black small">
             <span>OFERTAS!</span>
         </div>
     </section>
 
-    <section class="featured-products">
+    <!-- PRODUCTOS DESTACADOS -->
+    <section class="featured-products my-5">
         <div class="products-container">
             <a href="#" class="product-card">
-                <img src="~/images/hombres2.png" alt="Producto F&R" />
+                <img src="~/images/hombres2.png" alt="Producto @config.NombreTienda" />
             </a>
             <a href="#" class="product-card">
-                <img src="~/images/mujeres2.png" alt="Producto F&R" />
+                <img src="~/images/mujeres2.png" alt="Producto @config.NombreTienda" />
             </a>
             <a href="#" class="product-card">
-                <img src="~/images/hombres3.png" alt="Producto F&R" />
+                <img src="~/images/hombres3.png" alt="Producto @config.NombreTienda" />
             </a>
         </div>
     </section>
 
-    <section class="sale-section">
-        <div class="sale-banner">
+    <!-- SECCIÓN DE OFERTAS / SALE (LÍNEA 4 DE CONFIGURACIÓN) -->
+    <section class="sale-section my-5">
+        <div class="sale-banner d-flex align-items-center justify-content-center gap-4">
             <img src="~/images/sale.png" alt="Sale" class="sale-image sale-image-left" />
-            <h2 class="sale-title">¡¡ SALE !!</h2>
+            <h2 class="sale-title display-4 fw-black text-uppercase m-0">@config.Linea4</h2>
             <img src="~/images/off.png" alt="Ofertas" class="sale-image sale-image-right" />
         </div>
     </section>
 
-    <!-- FOOTER CON DATOS DE CONTACTO DINÁMICOS -->
+    <!-- FOOTER CON DATOS DE CONTACTO Y MENÚS DINÁMICOS -->
     <footer class="bg-light pt-5 pb-4 border-top mt-5">
         <div class="container">
             <div class="row text-uppercase small fw-bold">
+                <!-- COLUMNA 1: LISTADO DE PRODUCTOS/CATEGORÍAS DESDE CONFIGURACIÓN -->
                 <div class="col-md-4 mb-4">
-                    <h6 class="fw-bold mb-3">PRODUCTOS</h6>
+                    <h6 class="fw-bold mb-3 text-dark">PRODUCTOS</h6>
                     <ul class="list-unstyled d-flex flex-column gap-2 text-muted">
-                        <li><a href="#" class="text-decoration-none text-secondary">BUZOS</a></li>
-                        <li><a href="#" class="text-decoration-none text-secondary">CAMISAS</a></li>
-                        <li><a href="#" class="text-decoration-none text-secondary">SWEATER</a></li>
-                        <li><a href="#" class="text-decoration-none text-secondary">REMERAS</a></li>
-                        <li><a href="#" class="text-decoration-none text-secondary">PANTALONES</a></li>
+                        @foreach (var prod in listaProductosMenu)
+                        {
+                            <li><a href="#" class="text-decoration-none text-secondary">@prod.Trim()</a></li>
+                        }
                     </ul>
                 </div>
+
+                <!-- COLUMNA 2: CONTACTANOS DESDE CONFIGURACIÓN -->
                 <div class="col-md-4 mb-4">
-                    <h6 class="fw-bold mb-3">CONTACTANOS</h6>
+                    <h6 class="fw-bold mb-3 text-dark">CONTACTANOS</h6>
                     <ul class="list-unstyled d-flex flex-column gap-2 text-secondary">
-                        <li>@Config.Phone</li>
-                        <li>@Config.Email</li>
-                        <li>@Config.Location</li>
-                        <li>@Config.Social</li>
+                        <li>📞 @config.TelefonoContactanos</li>
+                        <li>✉️ @config.EmailContacto</li>
+                        <li>📍 @config.Ubicación</li>
+                        <li>📷 @config.Instagram</li>
                     </ul>
                 </div>
+
+                <!-- COLUMNA 3: MEDIOS DE PAGO DESDE CONFIGURACIÓN -->
                 <div class="col-md-4 mb-4">
-                    <h6 class="fw-bold mb-3">MEDIOS DE PAGO</h6>
+                    <h6 class="fw-bold mb-3 text-dark">MEDIOS DE PAGO</h6>
                     <ul class="list-unstyled d-flex flex-column gap-2 text-secondary">
-                        <li>EFECTIVO</li>
-                        <li>TARJETA DE DÉBITO</li>
-                        <li>TARJETA DE CRÉDITO</li>
-                        <li>TRANSFERENCIA</li>
+                        @foreach (var pago in listaMediosPago)
+                        {
+                            <li>✓ @pago.Trim()</li>
+                        }
                     </ul>
                 </div>
             </div>

@@ -71,15 +71,6 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 18px rgba(0,0,0,0.25);
         }
-
-        .requirements-box {
-            background-color: #f8f9fa;
-            border-radius: 12px;
-            border: 1px solid #e9ecef;
-            padding: 14px 18px;
-            font-size: 0.85rem;
-            color: #6c757d;
-        }
     </style>
 </head>
 <body>
@@ -94,8 +85,8 @@
         </div>
 
         <div>
-            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-dark rounded-pill fw-bold px-4 py-2" style="font-size: 0.9rem;">
-                &lt; VOLVER AL INICIO
+            <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-dark rounded-pill fw-bold px-4 py-2" style="font-size: 0.9rem;">
+                &lt; VOLVER AL PANEL
             </a>
         </div>
     </header>
@@ -111,10 +102,10 @@
         }
 
         <div class="form-card">
-            <h4 class="fw-black text-uppercase mb-2" style="font-weight: 900;">ACTUALIZAR MI CLAVE</h4>
-            <p class="text-muted small mb-4">Ingresa tu contraseña actual y define tu nueva clave de acceso.</p>
+            <h4 class="fw-black text-uppercase mb-2" style="font-weight: 900;">ACTUALIZAR CLAVE DE ACCESO</h4>
+            <p class="text-muted small mb-4">Ingresa tu contraseña actual y la nueva clave que deseas utilizar.</p>
 
-            <form asp-controller="Account" asp-action="CambiarContrasena" method="post">
+            <form asp-controller="Administrador" asp-action="CambiarContrasena" method="post">
                 @Html.AntiForgeryToken()
 
                 <div asp-validation-summary="ModelOnly" class="text-danger fw-bold small mb-3"></div>
@@ -123,39 +114,29 @@
                 <div class="mb-4">
                     <label class="form-label-custom">CONTRASEÑA ACTUAL *</label>
                     <input type="password" asp-for="ContrasenaActual" class="form-control form-control-custom" placeholder="••••••••" required />
-                    <span asp-validation-for="ContrasenaActual" class="text-danger small fw-bold d-block mt-1"></span>
+                    <span asp-validation-for="ContrasenaActual" class="text-danger small fw-bold"></span>
                 </div>
 
                 <hr class="my-4 text-muted">
 
-                <!-- REQUISITOS DE CONTRASEÑA -->
-                <div class="requirements-box mb-4">
-                    <strong class="text-dark d-block mb-1">Requisitos de la nueva contraseña:</strong>
-                    <ul class="mb-0 ps-3">
-                        <li>Mínimo 6 caracteres</li>
-                        <li>Al menos una letra mayúscula</li>
-                        <li>Al menos un número</li>
-                    </ul>
-                </div>
-
                 <!-- NUEVA CONTRASEÑA -->
                 <div class="mb-4">
                     <label class="form-label-custom">NUEVA CONTRASEÑA *</label>
-                    <input type="password" asp-for="NuevaContrasena" class="form-control form-control-custom" placeholder="Ej: NuevaClave1" required />
-                    <span asp-validation-for="NuevaContrasena" class="text-danger small fw-bold d-block mt-1"></span>
+                    <input type="password" asp-for="NuevaContrasena" class="form-control form-control-custom" placeholder="Mínimo 6 caracteres" required />
+                    <span asp-validation-for="NuevaContrasena" class="text-danger small fw-bold"></span>
                 </div>
 
                 <!-- CONFIRMAR NUEVA CONTRASEÑA -->
                 <div class="mb-4">
                     <label class="form-label-custom">CONFIRMAR NUEVA CONTRASEÑA *</label>
                     <input type="password" asp-for="ConfirmarContrasena" class="form-control form-control-custom" placeholder="Repite la nueva contraseña" required />
-                    <span asp-validation-for="ConfirmarContrasena" class="text-danger small fw-bold d-block mt-1"></span>
+                    <span asp-validation-for="ConfirmarContrasena" class="text-danger small fw-bold"></span>
                 </div>
 
-                <!-- BOTÓN SUBMIT -->
+                <!-- BOTÓN DE GUARDAR -->
                 <div class="d-flex justify-content-end mt-4 pt-2">
                     <button type="submit" class="btn-black-pill w-100">
-                        GUARDAR NUEVA CONTRASEÑA
+                        ACTUALIZAR CONTRASEÑA
                     </button>
                 </div>
             </form>

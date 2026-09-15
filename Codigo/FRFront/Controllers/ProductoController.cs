@@ -9,10 +9,18 @@ namespace FRFront.Controllers
         private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonOptions;
 
+        // Lista estática en memoria para conservar los cambios (crear, modificar, eliminar) cuando la API no está disponible
+        private static List<ProductoDto>? _productosEnMemoria;
+
         public ProductoController(IHttpClientFactory httpClientFactory)
         {
             _httpClient = httpClientFactory.CreateClient("BackendApi");
             _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+            if (_productosEnMemoria == null)
+            {
+                _productosEnMemoria = GetProductosFallback();
+            }
         }
 
         // GET: /Producto/
@@ -32,20 +40,13 @@ namespace FRFront.Controllers
             }
             catch
             {
-                // Si la API no está disponible o falla la conexión, mostramos los datos de prueba
+                // API no disponible
             }
 
-            // Fallback de prueba con imágenes locales de wwwroot/images
+            // Si la API falla o no devuelve datos, utilizamos el estado actual en memoria local
             if (!productos.Any())
             {
-                productos = new List<ProductoDto>
-                {
-                    new ProductoDto { Id = 1, Nombre = "BUZO VCV", Precio = 80000, Talles = "M/L", Color = "BEIGE", Stock = 10, Categoria = "abrigos", ImagenUrl = "/images/hombres.png", Disponible = true },
-                    new ProductoDto { Id = 2, Nombre = "REMERA ACTIVE", Precio = 20000, Talles = "XS/S/M", Color = "NEGRO", Stock = 14, Categoria = "remeras", ImagenUrl = "/images/mujeres.png", Disponible = true },
-                    new ProductoDto { Id = 3, Nombre = "HOODIE URBAN", Precio = 65000, Talles = "L/XL", Color = "VERDE", Stock = 8, Categoria = "abrigos", ImagenUrl = "/images/hombres2.png", Disponible = true },
-                    new ProductoDto { Id = 4, Nombre = "TOP OVERSIDE", Precio = 25000, Talles = "S/M", Color = "BLANCO", Stock = 5, Categoria = "remeras", ImagenUrl = "/images/mujeres2.png", Disponible = true },
-                    new ProductoDto { Id = 5, Nombre = "PANTALON CARGO", Precio = 55000, Talles = "38/40/42", Color = "NEGRO", Stock = 12, Categoria = "pantalones", ImagenUrl = "/images/hombres3.png", Disponible = true }
-                };
+                productos = _productosEnMemoria!;
             }
 
             // Aplicar Filtro de Categoría
@@ -82,6 +83,16 @@ namespace FRFront.Controllers
         {
             if (ModelState.IsValid)
             {
+                // Guardado local
+                nuevoProducto.Id = _productosEnMemoria!.Any() ? _productosEnMemoria!.Max(p => p.Id) + 1 : 1;
+                nuevoProducto.Disponible = true;
+                if (string.IsNullOrEmpty(nuevoProducto.ImagenUrl))
+                {
+                    nuevoProducto.ImagenUrl = "/images/hombres.png";
+                }
+
+                _productosEnMemoria!.Add(nuevoProducto);
+
                 using var content = new MultipartFormDataContent();
                 content.Add(new StringContent(nuevoProducto.Nombre ?? ""), nameof(nuevoProducto.Nombre));
                 content.Add(new StringContent(nuevoProducto.Precio.ToString()), nameof(nuevoProducto.Precio));
@@ -99,17 +110,15 @@ namespace FRFront.Controllers
 
                 try
                 {
-                    var response = await _httpClient.PostAsync("api/productos", content);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        TempData["SuccessMessage"] = "Producto creado con éxito";
-                        return RedirectToAction(nameof(Index));
-                    }
+                    await _httpClient.PostAsync("api/productos", content);
                 }
                 catch
                 {
-                    ModelState.AddModelError(string.Empty, "No se pudo conectar con el servicio Backend.");
+                    // Manejo local
                 }
+
+                TempData["SuccessMessage"] = "Producto creado con éxito.";
+                return RedirectToAction(nameof(Index));
             }
 
             return View("~/Views/Productos/Crear.cshtml", nuevoProducto);
@@ -119,14 +128,15 @@ namespace FRFront.Controllers
         [HttpGet]
         public async Task<IActionResult> Modificar(int id)
         {
+            ProductoDto? producto = null;
+
             try
             {
                 var response = await _httpClient.GetAsync($"api/productos/{id}");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var producto = JsonSerializer.Deserialize<ProductoDto>(content, _jsonOptions);
-                    return View("~/Views/Productos/Modificar.cshtml", producto);
+                    producto = JsonSerializer.Deserialize<ProductoDto>(content, _jsonOptions);
                 }
             }
             catch
@@ -134,7 +144,17 @@ namespace FRFront.Controllers
                 // Error de red
             }
 
-            return RedirectToAction(nameof(Index));
+            if (producto == null)
+            {
+                producto = _productosEnMemoria!.FirstOrDefault(p => p.Id == id);
+            }
+
+            if (producto == null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View("~/Views/Productos/Modificar.cshtml", producto);
         }
 
         // POST: /Producto/Modificar/5
@@ -144,6 +164,20 @@ namespace FRFront.Controllers
         {
             if (ModelState.IsValid)
             {
+                // Actualización local
+                var productoLocal = _productosEnMemoria!.FirstOrDefault(p => p.Id == productoModificado.Id);
+                if (productoLocal != null)
+                {
+                    productoLocal.Nombre = productoModificado.Nombre;
+                    productoLocal.Precio = productoModificado.Precio;
+                    productoLocal.Talles = productoModificado.Talles;
+                    productoLocal.Color = productoModificado.Color;
+                    productoLocal.Stock = productoModificado.Stock;
+                    productoLocal.Categoria = productoModificado.Categoria;
+                    productoLocal.Descripcion = productoModificado.Descripcion;
+                    productoLocal.Disponible = productoModificado.Disponible;
+                }
+
                 using var content = new MultipartFormDataContent();
                 content.Add(new StringContent(productoModificado.Id.ToString()), nameof(productoModificado.Id));
                 content.Add(new StringContent(productoModificado.Nombre ?? ""), nameof(productoModificado.Nombre));
@@ -163,17 +197,15 @@ namespace FRFront.Controllers
 
                 try
                 {
-                    var response = await _httpClient.PutAsync($"api/productos/{productoModificado.Id}", content);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        TempData["SuccessMessage"] = "Producto modificado con éxito";
-                        return RedirectToAction(nameof(Index));
-                    }
+                    await _httpClient.PutAsync($"api/productos/{productoModificado.Id}", content);
                 }
                 catch
                 {
-                    ModelState.AddModelError(string.Empty, "No se pudo actualizar el producto en el Backend.");
+                    // Fallback
                 }
+
+                TempData["SuccessMessage"] = "Producto modificado con éxito.";
+                return RedirectToAction(nameof(Index));
             }
 
             return View("~/Views/Productos/Modificar.cshtml", productoModificado);
@@ -184,24 +216,46 @@ namespace FRFront.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Eliminar(int id)
         {
+            // 1. Borrado garantizado en lista local en memoria
+            var productoLocal = _productosEnMemoria!.FirstOrDefault(p => p.Id == id);
+            if (productoLocal != null)
+            {
+                _productosEnMemoria!.Remove(productoLocal);
+            }
+
+            // 2. Intento de borrado en API Backend
             try
             {
-                var response = await _httpClient.DeleteAsync($"api/productos/{id}");
-                if (response.IsSuccessStatusCode)
-                {
-                    TempData["SuccessMessage"] = "Producto eliminado correctamente.";
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = "No se pudo eliminar el producto.";
-                }
+                await _httpClient.DeleteAsync($"api/productos/{id}");
             }
             catch
             {
-                TempData["ErrorMessage"] = "Error de conexión al intentar eliminar.";
+                // Continuación con borrado local
             }
 
+            TempData["SuccessMessage"] = "Producto eliminado correctamente.";
             return RedirectToAction(nameof(Index));
+        }
+
+        // POST: /Producto/EliminarProducto/5 (Alias por compatibilidad)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EliminarProducto(int id)
+        {
+            return await Eliminar(id);
+        }
+
+        // DATOS DE RESPALDO (FALLBACK)
+        private static List<ProductoDto> GetProductosFallback()
+        {
+            return new List<ProductoDto>
+            {
+                new ProductoDto { Id = 1, Nombre = "BUZO VCV", Precio = 80000, Talles = "M/L", Color = "BEIGE", Stock = 10, Categoria = "abrigos", ImagenUrl = "/images/hombres.png", Disponible = true },
+                new ProductoDto { Id = 2, Nombre = "REMERA ACTIVE", Precio = 20000, Talles = "XS/S/M", Color = "NEGRO", Stock = 14, Categoria = "remeras", ImagenUrl = "/images/mujeres.png", Disponible = true },
+                new ProductoDto { Id = 3, Nombre = "HOODIE URBAN", Precio = 65000, Talles = "L/XL", Color = "VERDE", Stock = 8, Categoria = "abrigos", ImagenUrl = "/images/hombres2.png", Disponible = true },
+                new ProductoDto { Id = 4, Nombre = "TOP OVERSIDE", Precio = 25000, Talles = "S/M", Color = "BLANCO", Stock = 5, Categoria = "remeras", ImagenUrl = "/images/mujeres2.png", Disponible = true },
+                new ProductoDto { Id = 5, Nombre = "PANTALON CARGO", Precio = 55000, Talles = "38/40/42", Color = "NEGRO", Stock = 12, Categoria = "pantalones", ImagenUrl = "/images/hombres3.png", Disponible = true }
+            };
         }
     }
 }

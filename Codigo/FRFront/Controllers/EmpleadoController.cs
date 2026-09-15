@@ -1,20 +1,23 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FRFront.Controllers
 {
     public class EmpleadoController : Controller
     {
-        // GET: /Empleado/
+        // GET: /Empleado
+        [HttpGet]
         public IActionResult Index()
         {
-            return View();
-        }
+            // Validar que el usuario sea Empleado / Cajero
+            string? rol = HttpContext.Session.GetString("RolSesion");
 
-        // GET: /Empleado/Crear
-        [HttpGet]
-        public IActionResult Crear()
-        {
-            return View();
+            if (string.IsNullOrEmpty(rol) || (rol != "Empleado" && rol != "Administrador"))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            return View("~/Views/Empleado/Index.cshtml");
         }
     }
 }
