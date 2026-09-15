@@ -1,6 +1,5 @@
 ﻿<!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,7 +13,6 @@
 
     @await RenderSectionAsync("Styles", required: false)
 </head>
-
 <body>
 
     <!-- ===================================================== -->
@@ -48,7 +46,7 @@
                 <div class="collapse navbar-collapse" id="menuPrincipal">
                     <ul class="navbar-nav mx-auto menu-fyr">
 
-                        <!-- MIS COMPRAS (Solo visible para Clientes Autenticados) -->
+                        <!-- MIS COMPRAS (Solo visible para Clientes Autenticados según rol) -->
                         @if (User.Identity?.IsAuthenticated == true && User.IsInRole("5"))
                         {
                             <li class="nav-item">
@@ -108,61 +106,78 @@
                     </ul>
 
                     <!-- ICONOS Y ACCESO -->
-                    <div class="navbar-icons d-flex align-items-center">
+                    <div class="navbar-icons d-flex align-items-center gap-3">
 
                         <!-- BUSCAR -->
-                        <a href="#"
-                           class="icon-link"
-                           title="Buscar"
-                           aria-label="Buscar">
-                            <svg class="icon-svg icon-search"
-                                 xmlns="http://www.w3.org/2000/svg"
-                                 viewBox="0 0 24 24"
-                                 aria-hidden="true">
+                        <a href="#" class="icon-link" title="Buscar" aria-label="Buscar">
+                            <svg class="icon-svg icon-search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
                                 <circle cx="11" cy="11" r="7"></circle>
                                 <line x1="16.5" y1="16.5" x2="22" y2="22"></line>
                             </svg>
                         </a>
 
-                        <!-- CARRITO -->
-                        <a asp-controller="Carrito"
-                           asp-action="Index"
-                           class="icon-link"
-                           title="Carrito"
-                           aria-label="Carrito">
-                            <svg class="icon-svg icon-cart"
-                                 xmlns="http://www.w3.org/2000/svg"
-                                 viewBox="0 0 24 24"
-                                 aria-hidden="true">
+                        @{
+                            // Cálculo de la cantidad total de productos en el carrito para el contador
+                            var sessionCarritoData = Context.Session.GetString("CarritoSession");
+                            int totalProductosCarrito = 0;
+                            if (!string.IsNullOrEmpty(sessionCarritoData))
+                            {
+                                var itemsTemp = System.Text.Json.JsonSerializer.Deserialize<List<FRFront.Models.ItemCarrito>>(sessionCarritoData);
+                                if (itemsTemp != null)
+                                {
+                                    totalProductosCarrito = itemsTemp.Sum(x => x.Cantidad);
+                                }
+                            }
+                        }
+
+                        <!-- CARRITO CON CONTADOR -->
+                        <a asp-controller="Carrito" asp-action="Index" class="icon-link position-relative" title="Carrito" aria-label="Carrito">
+                            <svg class="icon-svg icon-cart" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
                                 <path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 7H6"></path>
                                 <circle cx="10" cy="20" r="1.2"></circle>
                                 <circle cx="18" cy="20" r="1.2"></circle>
                             </svg>
+                            @if (totalProductosCarrito > 0)
+                            {
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                                    @totalProductosCarrito
+                                </span>
+                            }
                         </a>
 
-                        <!-- USUARIO (Si está logueado) / INICIAR SESIÓN (Si es invitado) -->
-                        @if (User.Identity?.IsAuthenticated == true)
+                        @{
+                            var usuarioLogueado = Context.Session.GetString("UsuarioSesion");
+                            var rolUsuario = Context.Session.GetString("RolSesion");
+                            var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0] : "Usuario";
+                        }
+
+                        @if (!string.IsNullOrEmpty(usuarioLogueado))
                         {
-                            <a asp-controller="Account"
-                               asp-action="Perfil"
-                               class="icon-link"
-                               title="Mi cuenta"
-                               aria-label="Mi cuenta">
-                                <svg class="icon-svg icon-user"
-                                     xmlns="http://www.w3.org/2000/svg"
-                                     viewBox="0 0 24 24"
-                                     aria-hidden="true">
-                                    <circle cx="12" cy="7" r="4"></circle>
-                                    <path d="M4 21c0-4.2 3.6-7 8-7s8 2.8 8 7"></path>
-                                </svg>
+                            <!-- Enlace rápido de Mis Compras -->
+                            <a asp-controller="Cliente" asp-action="MisCompras" class="text-dark fw-bold text-decoration-none text-uppercase small" style="letter-spacing: 0.5px;">
+                                MIS COMPRAS
                             </a>
+
+                            <!-- Menú Desplegable de Mi Cuenta -->
+                            <div class="dropdown">
+                                <button class="btn btn-dark dropdown-toggle text-uppercase fw-bold rounded-pill px-3 py-1.5" style="font-size: 0.85rem;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    MI CUENTA
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow user-dropdown-menu" style="border-radius: 12px; border: 1px solid #111; padding: 10px 0; min-width: 190px;">
+                                    <li class="user-name-header text-capitalize px-3 py-2 fw-bold border-bottom" style="font-size: 1rem; color: #000;">@nombreUsuario</li>
+                                    <li><a class="dropdown-item py-2 px-3 fw-semibold" style="font-size: 0.9rem;" asp-controller="Home" asp-action="Index">Inicio</a></li>
+                                    <li><a class="dropdown-item py-2 px-3 fw-semibold" style="font-size: 0.9rem;" asp-controller="Cliente" asp-action="Notificaciones">Notificaciones</a></li>
+                                    <li><a class="dropdown-item py-2 px-3 fw-semibold" style="font-size: 0.9rem;" asp-controller="Cliente" asp-action="MisCompras">Mis Compras</a></li>
+                                    <li><a class="dropdown-item py-2 px-3 fw-semibold" style="font-size: 0.9rem;" asp-controller="Carrito" asp-action="Index">Carrito</a></li>
+                                    <li><a class="dropdown-item py-2 px-3 fw-semibold" style="font-size: 0.9rem;" asp-controller="Cliente" asp-action="MiPerfil">Mi Cuenta</a></li>
+                                    <li><hr class="dropdown-divider my-1"></li>
+                                    <li><a class="dropdown-item py-2 px-3 text-danger fw-bold" style="font-size: 0.9rem;" asp-controller="Account" asp-action="Logout">Cerrar Sesión</a></li>
+                                </ul>
+                            </div>
                         }
                         else
                         {
-                            <a asp-controller="Account"
-                               asp-action="Login"
-                               class="nav-link text-uppercase fw-semibold ms-2"
-                               style="color: #111; font-size: 0.9rem; letter-spacing: 0.5px;">
+                            <a asp-controller="Account" asp-action="Login" class="nav-link text-uppercase fw-semibold ms-2" style="color: #111; font-size: 0.9rem; letter-spacing: 0.5px;">
                                 INICIAR SESIÓN
                             </a>
                         }

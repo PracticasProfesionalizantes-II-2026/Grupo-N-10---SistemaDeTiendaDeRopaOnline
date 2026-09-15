@@ -6,22 +6,23 @@ namespace FRFront.Controllers
 {
     public class CarritoController : Controller
     {
-        // Simulamos una lista estática de productos o tu repositorio principal
-        // (Acá deberías buscar el producto en tu lista general por nombre o ID)
-        
         public IActionResult Index()
         {
             var carrito = ObtenerCarritoSesion();
             return View(carrito);
         }
 
-        // Agregar al carrito (Funciona sin estar logueado)
+        // Agregar al carrito (Funciona sin estar logueado, ahora incluye el talle)
         [HttpPost]
-        public IActionResult Agregar(string nombre, decimal precio, string imagen, int cantidad = 1)
+        public IActionResult Agregar(string nombre, decimal precio, string imagen, string talle, int cantidad = 1)
         {
             var carrito = ObtenerCarritoSesion();
 
-            var itemExistente = carrito.FirstOrDefault(p => p.Nombre.Equals(nombre, StringComparison.OrdinalIgnoreCase));
+            // Buscamos si ya existe el producto con el MISMO NOMBRE y el MISMO TALLE
+            var itemExistente = carrito.FirstOrDefault(p => 
+                p.Nombre.Equals(nombre, StringComparison.OrdinalIgnoreCase) && 
+                p.Talle.Equals(talle, StringComparison.OrdinalIgnoreCase));
+
             if (itemExistente != null)
             {
                 itemExistente.Cantidad += cantidad;
@@ -33,6 +34,7 @@ namespace FRFront.Controllers
                     Nombre = nombre,
                     Precio = precio,
                     Imagen = imagen,
+                    Talle = talle ?? "Único",
                     Cantidad = cantidad
                 });
             }
@@ -41,26 +43,80 @@ namespace FRFront.Controllers
             return RedirectToAction("Index");
         }
 
-        // Botón "FINALIZAR COMPRA"
+        // Sumar cantidad de un ítem específico en el carrito
+        [HttpGet]
+        public IActionResult SumarCantidad(string nombre, string talle)
+        {
+            var carrito = ObtenerCarritoSesion();
+            var item = carrito.FirstOrDefault(p => 
+                p.Nombre.Equals(nombre, StringComparison.OrdinalIgnoreCase) && 
+                p.Talle.Equals(talle, StringComparison.OrdinalIgnoreCase));
+
+            if (item != null)
+            {
+                item.Cantidad++;
+                GuardarCarritoSesion(carrito);
+            }
+            return RedirectToAction("Index");
+        }
+
+        // Restar cantidad de un ítem (si llega a 0 o menos, lo elimina)
+        [HttpGet]
+        public IActionResult RestarCantidad(string nombre, string talle)
+        {
+            var carrito = ObtenerCarritoSesion();
+            var item = carrito.FirstOrDefault(p => 
+                p.Nombre.Equals(nombre, StringComparison.OrdinalIgnoreCase) && 
+                p.Talle.Equals(talle, StringComparison.OrdinalIgnoreCase));
+
+            if (item != null)
+            {
+                item.Cantidad--;
+                if (item.Cantidad <= 0)
+                {
+                    carrito.Remove(item);
+                }
+                GuardarCarritoSesion(carrito);
+            }
+            return RedirectToAction("Index");
+        }
+
+        // Eliminar por completo un ítem del carrito
+        [HttpGet]
+        public IActionResult EliminarItem(string nombre, string talle)
+        {
+            var carrito = ObtenerCarritoSesion();
+            var item = carrito.FirstOrDefault(p => 
+                p.Nombre.Equals(nombre, StringComparison.OrdinalIgnoreCase) && 
+                p.Talle.Equals(talle, StringComparison.OrdinalIgnoreCase));
+
+            if (item != null)
+            {
+                carrito.Remove(item);
+                GuardarCarritoSesion(carrito);
+            }
+            return RedirectToAction("Index");
+        }
+
+       // Botón "FINALIZAR COMPRA"
         public IActionResult FinalizarCompra()
         {
-            // REGLA: Si NO está logueado, lo mandamos al Login
-            if (User.Identity?.IsAuthenticated != true)
+            // Validamos que el usuario esté logueado mediante la sesión de la tienda
+            var usuarioLogueado = HttpContext.Session.GetString("UsuarioSesion");
+            if (string.IsNullOrEmpty(usuarioLogueado))
             {
-                // Guardamos la intención de compra o lo redirigimos al login indicando la ruta
                 return RedirectToAction("Login", "Account", new { returnUrl = Url.Action("Index", "Carrito") });
             }
 
-            // Si está logueado, lo dejamos pasar a la pasarela de pago o confirmación
             var carrito = ObtenerCarritoSesion();
             if (!carrito.Any())
             {
                 return RedirectToAction("Index");
             }
 
-            return View("Checkout", carrito);
+            // Redirige a la vista Envio.cshtml dentro de la carpeta Checkout
+            return RedirectToAction("Envio", "Checkout");
         }
-
         // Métodos auxiliares privados para leer/escribir en Session usando JSON
         private List<ItemCarrito> ObtenerCarritoSesion()
         {

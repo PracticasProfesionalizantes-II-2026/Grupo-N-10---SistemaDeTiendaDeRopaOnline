@@ -91,12 +91,24 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZXNcaW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Cliente/EditarPerfil.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZVxFZGl0YXJQZXJmaWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Cliente/MiPerfil.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZVxNaVBlcmZpbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Cliente/MisCompras.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZVxNaXNDb21wcmFzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Cliente/Notificaciones.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZVxOb3RpZmljYWNpb25lcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Cliente/SeguirEnvio.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZVxTZWd1aXJFbnZpby5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Usuario/Documents/GitHub/Grupo-N-10---SistemaDeTiendaDeRopaOnline/Codigo/FRFront/Views/Empleado/Crear.cshtml]

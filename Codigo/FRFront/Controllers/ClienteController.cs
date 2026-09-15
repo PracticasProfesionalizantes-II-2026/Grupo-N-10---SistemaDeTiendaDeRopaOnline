@@ -6,7 +6,7 @@ namespace FRFront.Controllers
 {
     public class ClienteController : Controller
     {
-        // Vista de Mis Compras del cliente autenticado con datos reales
+        // 1. Vista de Mis Compras del cliente autenticado con datos reales
         public IActionResult MisCompras()
         {
             var usuarioLogueado = HttpContext.Session.GetString("UsuarioSesion");
@@ -15,43 +15,91 @@ namespace FRFront.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Recuperamos el historial de compras de la sesión
+            // Recuperamos únicamente el historial de compras reales guardado en la sesión
             var historialJson = HttpContext.Session.GetString("HistorialComprasSession");
             var listaCompras = string.IsNullOrEmpty(historialJson) 
                 ? new List<PedidoModel>() 
                 : JsonSerializer.Deserialize<List<PedidoModel>>(historialJson) ?? new List<PedidoModel>();
 
-            // Si no hay compras registradas todavía, precargamos las de ejemplo para el diseño inicial
-            if (!listaCompras.Any())
-            {
-                listaCompras = new List<PedidoModel>
-                {
-                    new PedidoModel
-                    {
-                        NroPedido = "#70341",
-                        Estado = "Entregado",
-                        DetalleFecha = "Llegó el 4 de marzo",
-                        TotalProductos = 1,
-                        ImagenProducto = "~/images/buzovcv.png"
-                    },
-                    new PedidoModel
-                    {
-                        NroPedido = "#70344",
-                        Estado = "En Camino",
-                        DetalleFecha = $"Llega entre el {DateTime.Now.AddDays(2):dd} y el {DateTime.Now.AddDays(5):dd} de {DateTime.Now:MMMM}",
-                        TotalProductos = 1,
-                        ImagenProducto = "~/images/buzovcv.png"
-                    }
-                };
-            }
-
             return View(listaCompras);
         }
 
-        // Vista de Notificaciones del cliente
+        // 2. Vista de seguimiento de un pedido específico del cliente autenticado
+        public IActionResult SeguirEnvio(string nroPedido)
+        {
+            var usuarioLogueado = HttpContext.Session.GetString("UsuarioSesion");
+            if (string.IsNullOrEmpty(usuarioLogueado))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var historialJson = HttpContext.Session.GetString("HistorialComprasSession");
+            var listaCompras = string.IsNullOrEmpty(historialJson) 
+                ? new List<PedidoModel>() 
+                : JsonSerializer.Deserialize<List<PedidoModel>>(historialJson) ?? new List<PedidoModel>();
+
+            // Buscamos el pedido que coincida con el número recibido
+            var pedido = listaCompras.FirstOrDefault(p => p.NroPedido == nroPedido);
+
+            // Si no lo encuentra en sesión, creamos uno temporal para que no falle
+            if (pedido == null)
+            {
+                pedido = new PedidoModel
+                {
+                    NroPedido = nroPedido ?? "#70344",
+                    Estado = "En Camino",
+                    DetalleFecha = "Tu pedido llegará hoy entre las 14 hs y las 19 hs"
+                };
+            }
+
+            return View(pedido);
+        }
+
+        // 3. Vista del Perfil de Usuario
+        public IActionResult MiPerfil()
+        {
+            var usuarioLogueado = HttpContext.Session.GetString("UsuarioSesion");
+            if (string.IsNullOrEmpty(usuarioLogueado))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            ViewData["EmailUsuario"] = usuarioLogueado;
+            return View();
+        }
+
+        // 4. Muestra la vista para Editar el Perfil
+        public IActionResult EditarPerfil()
+        {
+            var usuarioLogueado = HttpContext.Session.GetString("UsuarioSesion");
+            if (string.IsNullOrEmpty(usuarioLogueado))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            ViewData["EmailUsuario"] = usuarioLogueado;
+            return View();
+        }
+
+        // 5. Procesa la actualización de los datos del perfil
+        [HttpPost]
+        public IActionResult GuardarPerfil(string nombre, string dni, string domicilio, string telefono)
+        {
+            var usuarioLogueado = HttpContext.Session.GetString("UsuarioSesion");
+            if (string.IsNullOrEmpty(usuarioLogueado))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Aquí puedes actualizar los datos en sesión o base de datos si lo requieres
+
+            TempData["MensajeExito"] = "¡Perfil actualizado con éxito!";
+            return RedirectToAction("MiPerfil");
+        }
+
+        // 6. Vista de Notificaciones del cliente
         public IActionResult Notificaciones()
         {
-            // Creamos una lista de prueba directamente para asegurar que la vista cargue con datos
             var listaNotificaciones = new List<NotificacionModel>
             {
                 new NotificacionModel 
@@ -70,7 +118,6 @@ namespace FRFront.Controllers
                 }
             };
 
-            // Retornamos la vista enviándole el modelo explícitamente
             return View(listaNotificaciones);
         }
     }

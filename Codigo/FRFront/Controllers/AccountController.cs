@@ -7,16 +7,18 @@ namespace FRFront.Controllers
     public class AccountController : Controller
     {
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl = null)
         {
+            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
             if (!ModelState.IsValid)
             {
+                ViewData["ReturnUrl"] = returnUrl;
                 return View(model);
             }
 
@@ -39,7 +41,13 @@ namespace FRFront.Controllers
                 HttpContext.Session.SetString("RolSesion", "Cliente");
             }
 
-            // Redirige al inicio
+            // Si hay una ruta de retorno válida (ej. el carrito), volvemos ahí
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+
+            // Si no hay ruta previa, redirige al inicio por defecto
             return RedirectToAction("Index", "Home");
         }
 

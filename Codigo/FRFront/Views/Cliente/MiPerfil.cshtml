@@ -1,0 +1,78 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Perfil de Usuario";
+    string emailUser = ViewData["EmailUsuario"]?.ToString() ?? "usuario@fyr.com";
+    string nombreBase = emailUser.Split('@')[0];
+}
+
+<div class="container my-5" style="max-width: 750px;">
+    
+    <!-- Botón Volver -->
+    <a asp-controller="Home" asp-action="Index" class="text-dark fw-bold text-uppercase text-decoration-none small mb-4 d-inline-block" style="letter-spacing: 1px;">
+        &lt; Volver
+    </a>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+        
+        <!-- Cabecera del Perfil -->
+        <div class="d-flex align-items-center mb-4 pb-4 border-bottom gap-3">
+            <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-3" style="width: 65px; height: 65px;">
+                @nombreBase.Substring(0, 1).ToUpper()
+            </div>
+            <div>
+                <h3 class="fw-bold text-uppercase m-0" style="letter-spacing: 1px; font-size: 1.3rem;">@nombreBase</h3>
+                <span class="text-muted small">Cliente F&R Online</span>
+            </div>
+        </div>
+
+        <div class="d-flex flex-column gap-4">
+            
+            <!-- Tarjeta 1: Información Personal -->
+            <div class="p-3 border rounded-4 bg-light">
+                <h6 class="fw-bold text-uppercase text-primary small mb-3" style="letter-spacing: 1px;">Información Personal</h6>
+                <div class="row g-2 text-secondary small">
+                    <div class="col-sm-6"><strong>Usuario:</strong> <span class="text-dark">@nombreBase</span></div>
+                    <div class="col-sm-6"><strong>Nombre y Apellido:</strong> <span class="text-dark text-capitalize">@nombreBase</span></div>
+                    <div class="col-sm-6 mt-2"><strong>DNI:</strong> <span class="text-dark">45666782</span></div>
+                </div>
+            </div>
+
+            <!-- Tarjeta 2: Datos Fiscales -->
+            <div class="p-3 border rounded-4 bg-light">
+                <h6 class="fw-bold text-uppercase text-primary small mb-3" style="letter-spacing: 1px;">Datos Fiscales</h6>
+                <div class="row g-2 text-secondary small">
+                    <div class="col-sm-6"><strong>Condición Fiscal:</strong> <span class="text-dark">Consumidor Final</span></div>
+                    <div class="col-sm-6"><strong>Domicilio:</strong> <span class="text-dark">Mitre 443</span></div>
+                </div>
+            </div>
+
+            <!-- Tarjeta 3: Datos de la Cuenta -->
+            <div class="p-3 border rounded-4 bg-light">
+                <h6 class="fw-bold text-uppercase text-primary small mb-3" style="letter-spacing: 1px;">Datos de la Cuenta</h6>
+                <div class="row g-2 text-secondary small">
+                    <div class="col-sm-6"><strong>Gmail:</strong> <span class="text-dark">@emailUser</span></div>
+                    <div class="col-sm-6"><strong>Teléfono:</strong> <span class="text-dark">+54 3493 665467</span></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Botones de Acción Inferiores -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mt-5 pt-4 border-top gap-3">
+            <div class="d-flex gap-2">
+                <!-- Enlace conectado a EditarPerfil -->
+                <a asp-controller="Cliente" asp-action="EditarPerfil" class="btn btn-outline-dark rounded-pill px-4 py-2 small fw-bold text-uppercase">
+                    Editar Perfil
+                </a>
+                <a href="#" class="btn btn-outline-secondary rounded-pill px-4 py-2 small fw-bold text-uppercase">
+                    Cambiar Contraseña
+                </a>
+            </div>
+
+            <a asp-controller="Account" asp-action="Logout" class="btn btn-danger rounded-pill px-4 py-2 small fw-bold text-uppercase shadow-sm">
+                Cerrar Sesión
+            </a>
+        </div>
+
+    </div>
+</div>

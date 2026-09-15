@@ -18,13 +18,13 @@ namespace FRFront.Controllers
             {
                 Nombre = "BUZO VCV",
                 Codigo = "VCV-001",
-                Precio = 1000000,
+                Precio = 100000,
                 PrecioAnterior = 150000,
                 EsOferta = true,
                 Genero = "Hombre",
                 Categoria = "Abrigos",
                 Descripcion = "Este buzo está hecho para la gente elegante.",
-                Imagen = "~/images/buzovcv.png",
+                Imagen = "~/images/hombres2.png",
                 Talles = new string[] { "S", "M", "L", "XL" },
                 SinStock = false
             },
@@ -38,7 +38,7 @@ namespace FRFront.Controllers
                 Genero = "Mujer",
                 Categoria = "Pantalones",
                 Descripcion = "Jogging urbano de algodón cómodo, diseñado con la estética streetwear del proyecto.",
-                Imagen = "~/images/joggingaddis.png",
+                Imagen = "~/images/mujeres.png",
                 Talles = new string[] { "S", "M", "L", "XL" },
                 SinStock = false
             },
@@ -47,27 +47,13 @@ namespace FRFront.Controllers
                 Nombre = "REMERA FIT FRIENDS",
                 Codigo = "REM-003",
                 Precio = 50000,
-                PrecioAnterior = 70000,
-                EsOferta = true,
-                Genero = "Hombre",
-                Categoria = "Remeras",
-                Descripcion = "Remera de algodón premium con calce fit ideal para cualquier ocasión urbana.",
-                Imagen = "~/images/remerafitfriends.png",
-                Talles = new string[] { "S", "M", "L", "XL" },
-                SinStock = false
-            },
-            new Producto
-            {
-                Nombre = "PANTALON CARGO",
-                Codigo = "H-PC-01",
-                Precio = 85000,
                 PrecioAnterior = null,
                 EsOferta = false,
                 Genero = "Hombre",
-                Categoria = "Pantalones",
-                Descripcion = "Pantalón cargo de hombre con múltiples bolsillos y excelente calce urbano.",
-                Imagen = "~/images/pantaloncargo.png",
-                Talles = new string[] { "38", "40", "42", "44" },
+                Categoria = "Remeras",
+                Descripcion = "Remera de algodón premium con calce fit ideal para cualquier ocasión urbana.",
+                Imagen = "~/images/hombres.png",
+                Talles = new string[] { "S", "M", "L", "XL" },
                 SinStock = false
             },
             new Producto
@@ -75,12 +61,12 @@ namespace FRFront.Controllers
                 Nombre = "BUZO SEEKERS",
                 Codigo = "M-BS-01",
                 Precio = 78000,
-                PrecioAnterior = 95000,
-                EsOferta = true,
+                PrecioAnterior = null,
+                EsOferta = false,
                 Genero = "Mujer",
                 Categoria = "Abrigos",
                 Descripcion = "Buzo urbano de algodón rústico para mujer, diseño cómodo y moderno.",
-                Imagen = "~/images/buzoseekers.png",
+                Imagen = "~/images/mujeres2.png",
                 Talles = new string[] { "S", "M", "L" },
                 SinStock = false
             },
@@ -89,12 +75,12 @@ namespace FRFront.Controllers
                 Nombre = "CAMISA TRAMAS",
                 Codigo = "CA-004",
                 Precio = 80000,
-                PrecioAnterior = 95000,
-                EsOferta = true,
+                PrecioAnterior = null,
+                EsOferta = false,
                 Genero = "Hombre",
                 Categoria = "Remeras",
                 Descripcion = "Camisa de tejido tramado de alta calidad para la temporada verano.",
-                Imagen = "~/images/camisatramas.png",
+                Imagen = "~/images/hombres3.png",
                 Talles = new string[] { "M", "L", "XL" },
                 SinStock = false
             },
@@ -103,12 +89,12 @@ namespace FRFront.Controllers
                 Nombre = "Remera Arrow",
                 Codigo = "R-AR-01",
                 Precio = 78000,
-                PrecioAnterior  = null,
+                PrecioAnterior = null,
                 EsOferta = false,
                 Genero = "Mujer",
                 Categoria = "Remeras",
                 Descripcion = "Remera urbana de algodón elegante para mujer, diseño cómodo y moderno.",
-                Imagen = "~/images/remeraarrow.png",
+                Imagen = "~/images/nuevo.png",
                 Talles = new string[] { "S", "M", "L" },
                 SinStock = true
             }
@@ -120,13 +106,12 @@ namespace FRFront.Controllers
         }
 
         public IActionResult Index()
-       {
-           return View(_productos); // Ahora enviamos la lista a la página de inicio
+        {
+            return View(_productos);
         }
 
         public IActionResult Lanzamientos()
         {
-            // Envía la lista de productos o los que consideres lanzamientos a la vista Views/Home/Lanzamientos.cshtml
             return View(_productos);
         }
 
@@ -185,6 +170,7 @@ namespace FRFront.Controllers
             ViewData["Nombre"] = productoEncontrado.Nombre;
             ViewData["Codigo"] = productoEncontrado.Codigo;
             ViewData["Precio"] = $"$ {productoEncontrado.Precio:N2}";
+            ViewData["PrecioNumerico"] = productoEncontrado.Precio; // <--- AQUÍ SE AGREGA EL VALOR NUMÉRICO PARA EL CARRITO
             ViewData["PrecioAnterior"] = productoEncontrado.PrecioAnterior.HasValue ? $"$ {productoEncontrado.PrecioAnterior.Value:N2}" : "";
             ViewData["EsOferta"] = productoEncontrado.EsOferta;
             ViewData["Genero"] = productoEncontrado.Genero;

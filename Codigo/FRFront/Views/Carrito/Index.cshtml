@@ -1,54 +1,63 @@
 @model IEnumerable<FRFront.Models.ItemCarrito>
 
 @{
-    ViewData["Title"] = "CARRITO";
-    decimal totalGeneral = Model?.Sum(x => x.Total) ?? 0;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Carrito de Compras";
+    decimal totalGeneral = Model != null ? Model.Sum(x => x.Precio * x.Cantidad) : 0;
 }
 
-<div class="container my-5">
-    
-    <!-- ENCABEZADO Y VOLVER -->
-    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-        <a asp-controller="Home" asp-action="Index" class="text-decoration-none text-dark fw-bold small">&lt; VOLVER</a>
-        <h3 class="fw-bold text-uppercase mb-0" style="letter-spacing: 2px;">CARRITO</h3>
-        <div style="width: 70px;"></div>
-    </div>
+<div class="container my-5" style="max-width: 1100px;">
+    <a href="javascript:history.back()" class="text-dark fw-bold text-decoration-none mb-4 d-inline-block">&lt; VOLVER</a>
 
-    <div class="card border-0 shadow-sm p-4">
-        @if (Model != null && Model.Any())
-        {
+    <h2 class="fw-bold text-uppercase mb-4 text-center fs-2" style="letter-spacing: 1px;">CARRITO DE COMPRAS</h2>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
             <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                        <tr class="text-uppercase small text-muted border-bottom">
-                            <th scope="col">Producto</th>
-                            <th scope="col" class="text-center">Precio</th>
-                            <th scope="col" class="text-center">Cantidad</th>
-                            <th scope="col" class="text-end">Total</th>
-                            <th scope="col" class="text-end"></th>
+                <table class="table align-middle mb-0">
+                    <thead class="border-bottom text-uppercase text-muted fs-6">
+                        <tr>
+                            <th scope="col" class="py-3">Producto</th>
+                            <th scope="col" class="py-3 text-center">Precio Unitario</th>
+                            <th scope="col" class="py-3 text-center">Cantidad</th>
+                            <th scope="col" class="py-3 text-end">Total</th>
+                            <th scope="col" class="py-3 text-center">Acción</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in Model)
                         {
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="bg-light p-2 rounded" style="width: 70px; height: 70px;">
-                                            <img src="@Url.Content(item.Imagen)" alt="@item.Nombre" class="img-fluid h-100 object-fit-cover">
+                            <tr class="border-bottom">
+                                <td class="py-4">
+                                    <div class="d-flex align-items-center gap-4">
+                                        <div class="bg-light p-2 rounded border d-flex align-items-center justify-content-center" style="width: 90px; height: 90px;">
+                                            <img src="@Url.Content(item.Imagen)" alt="@item.Nombre" class="img-fluid h-100 object-fit-contain" />
                                         </div>
-                                        <span class="fw-bold text-dark small">@item.Nombre</span>
+                                        <div>
+                                            <h5 class="fw-bold text-uppercase mb-1 fs-5">@item.Nombre</h5>
+                                            <span class="badge bg-dark text-white fw-bold px-3 py-1 rounded-pill" style="font-size: 0.8rem;">Talle: @item.Talle</span>
+                                        </div>
                                     </div>
                                 </td>
-                                <td class="text-center fw-semibold">$@item.Precio.ToString("N0")</td>
+                                <td class="text-center fw-semibold fs-5 text-secondary">
+                                    $ @item.Precio.ToString("N0")
+                                </td>
                                 <td class="text-center">
-                                    <div class="d-inline-flex align-items-center border rounded px-2 py-1">
-                                        <span class="fw-bold px-2">@item.Cantidad</span>
+                                    <!-- Controles de cantidad más grandes e interactivos -->
+                                    <div class="input-group justify-content-center" style="width: 140px; margin: 0 auto;">
+                                        <a asp-action="RestarCantidad" asp-route-nombre="@item.Nombre" asp-route-talle="@item.Talle" class="btn btn-outline-dark fw-bold px-3">-</a>
+                                        <input type="text" class="form-control text-center fw-bold bg-white fs-5" value="@item.Cantidad" readonly style="max-width: 50px;">
+                                        <a asp-action="SumarCantidad" asp-route-nombre="@item.Nombre" asp-route-talle="@item.Talle" class="btn btn-outline-dark fw-bold px-3">+</a>
                                     </div>
                                 </td>
-                                <td class="text-end fw-bold">$@item.Total.ToString("N0")</td>
-                                <td class="text-end">
-                                    <!-- Botón eliminar ítem (opcional) -->
+                                <td class="text-end fw-bold fs-5 text-dark">
+                                    $ @((item.Precio * item.Cantidad).ToString("N0"))
+                                </td>
+                                <td class="text-center">
+                                    <a asp-action="EliminarItem" asp-route-nombre="@item.Nombre" asp-route-talle="@item.Talle" class="text-danger text-decoration-none fw-bold fs-5" title="Eliminar producto">
+                                        &times;
+                                    </a>
                                 </td>
                             </tr>
                         }
@@ -56,26 +65,26 @@
                 </table>
             </div>
 
-            <!-- TOTALES Y BOTÓN FINALIZAR -->
-            <div class="d-flex flex-column align-items-end mt-4 pt-3 border-top">
-                <h4 class="fw-bold mb-3">Total General: $@totalGeneral.ToString("N0")</h4>
+            <!-- Resumen y Total General -->
+            <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top">
+                <a asp-controller="Home" asp-action="Catalogo" class="text-dark fw-bold text-decoration-none text-uppercase">&lt; Seguir comprando</a>
                 
-                <div class="d-flex gap-3 align-items-center">
-                    <a asp-controller="Home" asp-action="Index" class="text-decoration-none text-muted small">Seguir comprando</a>
-                    
-                    <!-- Al hacer clic acá, el controlador evalúa si está logueado -->
-                    <a asp-controller="Carrito" asp-action="FinalizarCompra" class="btn btn-primary text-uppercase fw-bold px-4 py-2" style="background-color: #3b6ef3; border: none;">
-                        FINALIZAR COMPRA
+                <div class="text-end">
+                    <h3 class="fw-bold fs-2 mb-3 text-dark">Total General: <span class="text-primary">$ @totalGeneral.ToString("N0")</span></h3>
+                    <a asp-action="FinalizarCompra" class="btn btn-primary btn-lg fw-bold text-uppercase px-5 py-3 rounded-pill shadow" style="background-color: #3b55ff; border: none; font-size: 1.1rem;">
+                        Finalizar Compra
                     </a>
                 </div>
             </div>
-        }
-        else
-        {
-            <div class="text-center py-5">
-                <p class="text-muted fs-5">Tu carrito está vacío.</p>
-                <a asp-controller="Home" asp-action="Index" class="btn btn-dark text-uppercase fw-bold mt-2">Ver Productos</a>
-            </div>
-        }
-    </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5 bg-white rounded-4 shadow-sm p-5">
+            <h4 class="text-muted mb-4 fs-4">Tu carrito está vacío.</h4>
+            <a asp-controller="Home" asp-action="Catalogo" class="btn btn-dark btn-lg text-uppercase fw-bold px-5 py-3 rounded-pill">
+                Ver Catálogo
+            </a>
+        </div>
+    }
 </div>

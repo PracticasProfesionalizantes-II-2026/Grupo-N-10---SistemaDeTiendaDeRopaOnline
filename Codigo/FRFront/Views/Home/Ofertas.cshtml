@@ -1,82 +1,70 @@
 @model IEnumerable<FRFront.Models.Producto>
 
 @{
+    Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Ofertas";
 }
 
-<div class="container my-4">
-
-    <!-- BANNER DE LIQUIDACIÓN -->
-    <div class="p-5 mb-4 bg-secondary text-white rounded-3 position-relative overflow-hidden" style="background: linear-gradient(to right, #9ca3af, #6b7280, #4b5563);">
-        <div class="container-fluid py-2">
-            <span class="text-uppercase tracking-wide small text-light fw-semibold">Ofertas imperdibles</span>
-            <h1 class="display-5 fw-light my-2">liquidación <span class="fw-bold">moda</span></h1>
-            <div class="d-flex flex-wrap gap-2 mt-3">
-                <span class="badge bg-dark text-white p-2 text-uppercase">Hasta <span class="fs-6 fw-bold">50% OFF</span></span>
-                <span class="badge bg-dark text-white p-2 text-uppercase">Hasta <span class="fs-6 fw-bold">9</span> cuotas <span class="d-block fw-light" style="font-size: 9px;">sin interés</span></span>
-            </div>
-            <p class="text-white-50 mt-3 mb-0" style="font-size: 11px;">Hasta el 03/06/25. Ver más en Ropa & Accesorios.</p>
+<!-- Banner Estilo General (Negro con imagen a la derecha) -->
+<div class="banner-ofertas d-flex justify-content-between align-items-center bg-black text-white p-4 mx-4 my-3 rounded" style="background-color: #111 !important;">
+    <div>
+        <h6 class="text-uppercase mb-1" style="font-size: 0.75rem; color: #adb5bd;">F&R TIENDA ONLINE</h6>
+        <h1 class="fw-bold text-uppercase fs-3 m-0">¡OFERTAS IMPERDIBLES!</h1>
+        <div class="mt-3 d-flex gap-2">
+            <span class="badge bg-light text-dark fw-bold px-3 py-2 rounded-pill" style="font-size: 0.7rem;">HASTA 50% OFF</span>
+            <span class="badge bg-secondary text-white fw-bold px-3 py-2 rounded-pill" style="font-size: 0.7rem;">HASTA 9 CUOTAS SIN INTERÉS</span>
         </div>
     </div>
+    <div class="d-none d-md-block">
+        <img src="~/images/banner.png" alt="Banner" style="max-height: 120px; border-radius: 4px;" />
+    </div>
+</div>
 
+<div class="container-fluid px-4 my-4">
     <div class="row">
-        <!-- SIDEBAR DE CATEGORÍAS -->
-        <div class="col-md-3 border-end pb-4">
-            <h5 class="fw-bold text-uppercase pb-2 border-bottom border-dark mb-3" style="font-size: 0.9rem; letter-spacing: 1px;">Categorías</h5>
-            
-            <div class="mb-3">
-                <h6 class="fw-bold text-dark small">MUJER</h6>
-                <ul class="list-unstyled ps-2 small text-secondary">
-                    <li><a asp-action="Mujer" class="text-decoration-none text-muted">Abrigos</a></li>
-                    <li><a asp-action="Mujer" class="text-decoration-none text-muted">Pantalones</a></li>
-                    <li><a asp-action="Mujer" class="text-decoration-none text-muted">Vestidos</a></li>
-                    <li><a asp-action="Mujer" class="text-decoration-none text-muted">Remeras</a></li>
-                    <li><a asp-action="Mujer" class="text-decoration-none text-muted">Polleras</a></li>
-                </ul>
-            </div>
-
-            <div>
-                <h6 class="fw-bold text-dark small">HOMBRE</h6>
-                <ul class="list-unstyled ps-2 small text-secondary">
-                    <li><a asp-action="Hombre" class="text-decoration-none text-muted">Pantalones</a></li>
-                    <li><a asp-action="Hombre" class="text-decoration-none text-muted">Remeras</a></li>
-                    <li><a asp-action="Hombre" class="text-decoration-none text-muted">Abrigos</a></li>
-                </ul>
-            </div>
+        <!-- Sidebar Izquierdo Unificado -->
+        <div class="col-lg-3 pe-4 mb-4">
+            <h6 class="fw-bold text-uppercase mb-3" style="font-size: 0.85rem; color: #6c757d; letter-spacing: 1px;">Categorías</h6>
+            <ul class="list-unstyled d-flex flex-column gap-2">
+                <li><a asp-controller="Home" asp-action="Mujer" class="text-dark text-decoration-none">MUJER</a></li>
+                <li><a asp-controller="Home" asp-action="Hombre" class="text-dark text-decoration-none">HOMBRE</a></li>
+                <li><a asp-controller="Home" asp-action="Ofertas" class="text-danger text-decoration-none fw-bold"><strong>OFERTAS</strong></a></li>
+                <li><a asp-controller="Home" asp-action="Catalogo" class="text-dark text-decoration-none">VER TODO</a></li>
+            </ul>
         </div>
 
-        <!-- GRILLA DE PRODUCTOS -->
-        <div class="col-md-9">
-            <div class="d-flex justify-content-between align-items-center mb-4 position-relative">
-                <h4 class="fw-bold text-uppercase mb-0" style="font-size: 1.1rem;">¡Aprovecha las ofertas!</h4>
-                <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow position-absolute end-0" style="width: 45px; height: 45px; transform: rotate(15deg); font-size: 1.2rem;">
-                    %
-                </div>
-            </div>
-
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+        <!-- Grilla de Productos (Derecha) -->
+        <div class="col-lg-9">
+            <div class="row g-4">
                 @if (Model != null && Model.Any())
                 {
                     @foreach (var prod in Model)
                     {
-                        <div class="col">
-                            <a asp-action="DetalleProducto" asp-route-nombre="@prod.Nombre" class="card h-100 text-decoration-none text-dark border-light shadow-sm">
-                                <div class="bg-light p-3 text-center position-relative" style="height: 250px;">
+                        <div class="col-md-4">
+                            <a asp-controller="Home" asp-action="DetalleProducto" asp-route-nombre="@prod.Nombre" class="card h-100 text-decoration-none text-dark border shadow-sm bg-light" style="border-radius: 10px; overflow: hidden;">
+                                <div class="bg-light p-3 text-center position-relative" style="height: 250px; display: flex; align-items: center; justify-content: center;">
                                     @if (prod.SinStock)
                                     {
-                                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 text-white fw-bold text-uppercase" style="letter-spacing: 2px; z-index: 2;">
+                                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-75 text-white fw-bold text-uppercase" style="letter-spacing: 2px; z-index: 2;">
                                             SIN STOCK
                                         </div>
                                     }
-                                    <img src="@Url.Content(prod.Imagen)" alt="@prod.Nombre" class="img-fluid h-100 object-fit-cover">
+                                    <img src="@Url.Content(prod.Imagen)" alt="@prod.Nombre" class="img-fluid h-100 object-fit-contain" />
                                 </div>
-                                <div class="card-body text-center">
-                                    <h6 class="card-title fw-semibold small">@prod.Nombre</h6>
-                                    @if (prod.PrecioAnterior.HasValue)
-                                    {
-                                        <p class="text-danger text-decoration-line-through small mb-1">Antes $@prod.PrecioAnterior.Value.ToString("N0")</p>
-                                    }
-                                    <p class="fw-bold text-dark mb-0">Ahora $@prod.Precio.ToString("N0")</p>
+                                <div class="card-body text-center bg-white border-top">
+                                    <h6 class="card-title fw-semibold small text-uppercase">@prod.Nombre</h6>
+                                    
+                                    <div class="d-flex justify-content-center gap-2 align-items-center mt-2">
+                                        @if (prod.PrecioAnterior.HasValue && prod.PrecioAnterior.Value > prod.Precio)
+                                        {
+                                            <span class="text-muted text-decoration-line-through small" style="font-size: 0.8rem;">$@prod.PrecioAnterior.Value.ToString("N0")</span>
+                                            <span class="fw-bold text-danger mb-0" style="font-size: 0.95rem;">$@prod.Precio.ToString("N0")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">$@prod.Precio.ToString("N0")</span>
+                                        }
+                                    </div>
                                 </div>
                             </a>
                         </div>
@@ -85,7 +73,7 @@
                 else
                 {
                     <div class="col-12 text-center py-5">
-                        <p class="text-muted">No hay ofertas disponibles en este momento.</p>
+                        <p class="text-muted">No hay productos en oferta disponibles.</p>
                     </div>
                 }
             </div>

@@ -1,158 +1,169 @@
-@model List<FRFront.Models.ItemCarrito>
-
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Detalle de Envío";
 }
 
 <div class="container my-5" style="max-width: 800px;">
-    
-    <!-- Encabezado de Progreso / Volver -->
-    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
-        <a asp-controller="Carrito" asp-action="Index" class="text-dark fw-bold text-uppercase text-decoration-none small" style="letter-spacing: 1px;">
-            &lt; Volver al Carrito
-        </a>
-        <span class="text-muted fw-bold small text-uppercase">Paso 1 de 3: Envío</span>
-    </div>
+    <a asp-controller="Carrito" asp-action="Index" class="text-dark fw-bold text-decoration-none mb-4 d-inline-block">&lt; VOLVER AL CARRITO</a>
 
-    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
-        <h3 class="fw-bold text-uppercase mb-4" style="letter-spacing: 1.5px; font-size: 1.4rem;">Detalle de envío</h3>
+    <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+            <h2 class="fw-bold text-uppercase fs-3 m-0">Detalle de envío</h2>
+            <span class="text-muted fw-semibold small">PASO 1 DE 3: ENVÍO</span>
+        </div>
 
-        <form asp-controller="Checkout" asp-action="ProcesarEnvio" method="post">
+        <form asp-controller="Checkout" asp-action="ProcesarEnvio" method="post" id="formEnvio">
             
-            <!-- Opciones de Envío -->
-            <div class="border rounded-4 p-3 mb-4 bg-light">
-                <div class="form-check mb-3 py-1 border-bottom pb-3" id="opcionEnvioNormal">
-                    <input class="form-check-input envio-option" type="radio" name="tipoEnvio" id="envioNormal" value="Normal">
-                    <label class="form-check-label d-flex justify-content-between w-100 fw-semibold ps-2 cursor-pointer" for="envioNormal">
-                        <span id="labelNormalText">Envío a domicilio (7 días hábiles)</span>
-                        <span id="labelNormalPrecio" class="text-dark">$ 10.000,00</span>
-                    </label>
-                </div>
-
-                <div class="form-check mb-3 py-1 border-bottom pb-3">
-                    <input class="form-check-input envio-option" type="radio" name="tipoEnvio" id="envioPremium" value="Premium" checked>
-                    <label class="form-check-label d-flex justify-content-between w-100 fw-semibold ps-2 cursor-pointer" for="envioPremium">
-                        <span id="labelPremiumText">Envío a domicilio premium (2 días hábiles)</span>
-                        <span id="labelPremiumPrecio" class="text-dark">$ 6.000,00</span>
-                    </label>
-                </div>
-
-                <div class="form-check py-1">
-                    <input class="form-check-input envio-option" type="radio" name="tipoEnvio" id="retiroLocal" value="Retiro">
-                    <label class="form-check-label d-flex justify-content-between w-100 fw-semibold ps-2 cursor-pointer" for="retiroLocal">
-                        <span>Retiro en el local (Sunchales, Santa Fe)</span>
-                        <span class="text-success fw-bold">Gratis</span>
-                    </label>
+            <!-- Opciones de Envío Modernas y Dinámicas -->
+            <div class="mb-4">
+                <label class="form-label fw-bold text-uppercase small text-muted mb-3">Método de entrega:</label>
+                <div id="contenedorOpcionesEnvio" class="d-flex flex-column gap-3">
+                    <!-- Se llena dinámicamente con JavaScript -->
                 </div>
             </div>
 
-            <!-- Formulario de Dirección (Se oculta si elige Retiro en el local) -->
-            <div id="seccionDireccion" class="row g-3 transition-all">
+            <!-- Formulario de Dirección (Se oculta si elige Retiro en el Local) -->
+            <div id="seccionDireccion" class="row g-3">
                 <div class="col-md-4">
-                    <label class="form-label text-muted small fw-bold">Código postal*</label>
-                    <input type="text" name="codigoPostal" id="inputCp" class="form-control rounded-pill px-3 campo-requerido" placeholder="Ej. 2322" value="2322" required>
+                    <label class="form-label fw-bold small">Código postal*</label>
+                    <input type="text" id="txtCodigoPostal" name="codigoPostal" class="form-control campo-numerico" placeholder="Ej. 2322" maxlength="5" required value="2322">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label text-muted small fw-bold">Ciudad*</label>
-                    <input type="text" name="ciudad" id="inputCiudad" class="form-control rounded-pill px-3 campo-requerido" placeholder="Ej. Sunchales" required>
+                    <label class="form-label fw-bold small">Ciudad*</label>
+                    <input type="text" name="ciudad" class="form-control campo-texto" placeholder="Ej. Sunchales" required>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label text-muted small fw-bold">Provincia*</label>
-                    <input type="text" name="provincia" id="inputProvincia" class="form-control rounded-pill px-3 campo-requerido" placeholder="Ej. Santa Fe" required>
+                    <label class="form-label fw-bold small">Provincia*</label>
+                    <input type="text" name="provincia" class="form-control campo-texto" placeholder="Ej. Santa Fe" required>
                 </div>
 
-                <div class="col-md-6">
-                    <label class="form-label text-muted small fw-bold">Calle*</label>
-                    <input type="text" name="calle" id="inputCalle" class="form-control rounded-pill px-3 campo-requerido" placeholder="Ej. Alberdi" required>
+                <div class="col-md-8">
+                    <label class="form-label fw-bold small">Calle*</label>
+                    <input type="text" name="domicilio" class="form-control" placeholder="Ej. Alberdi" required>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label text-muted small fw-bold">Número*</label>
-                    <input type="text" name="numero" id="inputNumero" class="form-control rounded-pill px-3 campo-requerido" placeholder="Ej. 760" required>
-                </div>
-
-                <div class="col-12">
-                    <label class="form-label text-muted small fw-bold">Destinatario*</label>
-                    <input type="text" name="destinatario" id="inputDestinatario" class="form-control rounded-pill px-3 campo-requerido" placeholder="Ej. Francisco Aguirre" required>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small">Número*</label>
+                    <input type="text" name="numero" class="form-control campo-numerico" placeholder="Ej. 760" maxlength="6" required>
                 </div>
 
                 <div class="col-12">
-                    <label class="form-label text-muted small fw-bold">Comentarios</label>
-                    <textarea name="comentarios" class="form-control rounded-4 p-3" rows="3" placeholder="Ej. Si no llego a estar déjala al vecino"></textarea>
+                    <label class="form-label fw-bold small">Destinatario*</label>
+                    <input type="text" name="destinatario" class="form-control campo-texto" placeholder="Ej. Francisco Aguirre" required>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-bold small">Comentarios</label>
+                    <textarea name="comentarios" class="form-control" rows="2" placeholder="Ej. Si no llego a estar déjala al vecino"></textarea>
                 </div>
             </div>
 
-            <!-- Botón Siguiente -->
-            <div class="text-end mt-5">
-                <button type="submit" class="btn btn-primary rounded-pill px-5 py-3 text-uppercase fw-bold shadow-sm" style="background-color: #4b6bfb; border: none; letter-spacing: 1.5px;">
-                    Siguiente &rarr;
+            <div class="col-12 text-end mt-4">
+                <button type="submit" class="btn btn-primary btn-lg fw-bold text-uppercase px-5 py-3 rounded-pill shadow" style="background-color: #3b55ff; border: none;">
+                    Siguiente
                 </button>
             </div>
-
         </form>
     </div>
 </div>
 
-<!-- Script unificado para mostrar/ocultar dirección y actualizar tarifas por CP -->
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const radiosEnvio = document.querySelectorAll('.envio-option');
-        const seccionDireccion = document.getElementById('seccionDireccion');
-        const camposRequeridos = document.querySelectorAll('.campo-requerido');
-        
-        const inputCp = document.getElementById('inputCp');
-        const opcionEnvioNormal = document.getElementById('opcionEnvioNormal');
-        const labelPremiumPrecio = document.getElementById('labelPremiumPrecio');
-        const labelNormalPrecio = document.getElementById('labelNormalPrecio');
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            function actualizarOpcionesEnvio() {
+                let cp = $('#txtCodigoPostal').val().trim();
+                let contenedor = $('#contenedorOpcionesEnvio');
+                let html = '';
 
-        function actualizarFormularioEnvio() {
-            const esRetiroLocal = document.getElementById('retiroLocal').checked;
+                let opcionRetiro = `
+                    <div class="envio-card p-3 border rounded-3 bg-light d-flex justify-content-between align-items-center position-relative" style="cursor: pointer; transition: all 0.2s;">
+                        <div>
+                            <input class="form-check-input me-2" type="radio" name="tipoEnvio" id="retiroLocal" value="RetiroLocal">
+                            <label class="form-check-label fw-semibold stretched-link" for="retiroLocal" style="cursor: pointer;">
+                                Retiro en el local <small class="text-muted d-block fw-normal">Sunchales, Santa Fe</small>
+                            </label>
+                        </div>
+                        <span class="fw-bold text-success fs-5">Gratis</span>
+                    </div>
+                `;
 
-            if (esRetiroLocal) {
-                seccionDireccion.style.opacity = '0';
-                seccionDireccion.style.display = 'none';
-                camposRequeridos.forEach(campo => campo.removeAttribute('required'));
-            } else {
-                seccionDireccion.style.display = 'flex';
-                setTimeout(() => { seccionDireccion.style.opacity = '1'; }, 50);
-                camposRequeridos.forEach(campo => campo.setAttribute('required', 'true'));
-            }
-        }
-
-        function actualizarTarifasPorCP() {
-            const cp = inputCp ? inputCp.value.trim() : "";
-            if (cp === "2322") {
-                opcionEnvioNormal.style.display = 'none';
-                labelPremiumPrecio.textContent = "$ 6.000,00";
-                // Si estaba seleccionado el normal y se oculta, pasamos al premium por defecto
-                if (document.getElementById('envioNormal').checked) {
-                    document.getElementById('envioPremium').checked = true;
+                if (cp === "2322") {
+                    html += `
+                        <div class="envio-card p-3 border rounded-3 bg-light d-flex justify-content-between align-items-center position-relative active-card" style="cursor: pointer; border-color: #3b55ff !important; background-color: #f8f9fa !important; transition: all 0.2s;">
+                            <div>
+                                <input class="form-check-input me-2" type="radio" name="tipoEnvio" id="envioPremium" value="Premium" checked>
+                                <label class="form-check-label fw-semibold stretched-link" for="envioPremium" style="cursor: pointer;">
+                                    Envío a domicilio premium <small class="text-muted d-block fw-normal">1 día hábil</small>
+                                </label>
+                            </div>
+                            <span class="fw-bold text-dark fs-5">$ 3.000,00</span>
+                        </div>
+                    `;
+                    html += opcionRetiro;
+                } else {
+                    html += `
+                        <div class="envio-card p-3 border rounded-3 bg-light d-flex justify-content-between align-items-center position-relative active-card" style="cursor: pointer; border-color: #3b55ff !important; transition: all 0.2s;">
+                            <div>
+                                <input class="form-check-input me-2" type="radio" name="tipoEnvio" id="envioEstandar" value="Estandar" checked>
+                                <label class="form-check-label fw-semibold stretched-link" for="envioEstandar" style="cursor: pointer;">
+                                    Envío a domicilio estándar <small class="text-muted d-block fw-normal">7 días hábiles</small>
+                                </label>
+                            </div>
+                            <span class="fw-bold text-dark fs-5">$ 15.000,00</span>
+                        </div>
+                        <div class="envio-card p-3 border rounded-3 bg-light d-flex justify-content-between align-items-center position-relative" style="cursor: pointer; transition: all 0.2s;">
+                            <div>
+                                <input class="form-check-input me-2" type="radio" name="tipoEnvio" id="envioPremiumNacional" value="PremiumNacional">
+                                <label class="form-check-label fw-semibold stretched-link" for="envioPremiumNacional" style="cursor: pointer;">
+                                    Envío a domicilio premium <small class="text-muted d-block fw-normal">2 días hábiles</small>
+                                </label>
+                            </div>
+                            <span class="fw-bold text-dark fs-5">$ 22.000,00</span>
+                        </div>
+                    `;
+                    html += opcionRetiro;
                 }
-            } else {
-                opcionEnvioNormal.style.display = 'block';
-                labelNormalPrecio.textContent = "$ 10.000,00";
-                labelPremiumPrecio.textContent = "$ 20.000,00";
+
+                contenedor.html(html);
+                verificarSiEsRetiroEnLocal();
             }
-        }
 
-        radiosEnvio.forEach(radio => {
-            radio.addEventListener('change', actualizarFormularioEnvio);
+            function verificarSiEsRetiroEnLocal() {
+                let esRetiro = $('#retiroLocal').is(':checked');
+                if (esRetiro) {
+                    $('#seccionDireccion').slideUp(300);
+                    // Quitamos la obligación de rellenar los inputs de dirección al retirar en local
+                    $('#seccionDireccion input').removeAttr('required');
+                } else {
+                    $('#seccionDireccion').slideDown(300);
+                    // Volvemos a hacer obligatorios los campos de dirección
+                    $('#seccionDireccion input:not([name="comentarios"])').attr('required', 'required');
+                }
+            }
+
+            // Ejecutar al cargar
+            actualizarOpcionesEnvio();
+
+            // Cambiar opciones al modificar el CP
+            $('#txtCodigoPostal').on('input keyup', function () {
+                actualizarOpcionesEnvio();
+            });
+
+            // Detectar cuando selecciona otra opción de envío
+            $(document).on('change', 'input[name="tipoEnvio"]', function () {
+                $('.envio-card').removeClass('border-primary bg-white shadow-sm').css('border-color', '#dee2e6');
+                $(this).closest('.envio-card').addClass('border-primary bg-white shadow-sm').css('border-color', '#3b55ff !important');
+                verificarSiEsRetiroEnLocal();
+            });
+
+            // VALIDACIÓN: Solo letras y espacios en Ciudad, Provincia y Destinatario
+            $(document).on('input', '.campo-texto', function () {
+                this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+            });
+
+            // VALIDACIÓN: Solo números en Código Postal y Número de dirección
+            $(document).on('input', '.campo-numerico', function () {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
         });
-
-        if (inputCp) {
-            inputCp.addEventListener('input', actualizarTarifasPorCP);
-            actualizarTarifasPorCP();
-        }
-
-        actualizarFormularioEnvio();
-    });
-</script>
-
-<style>
-    .transition-all {
-        transition: opacity 0.3s ease-in-out;
-    }
-    .cursor-pointer {
-        cursor: pointer;
-    }
-</style>
+    </script>
+}

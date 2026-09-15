@@ -4,7 +4,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Método de Pago";
 
-    decimal subtotal = Model.Sum(i => i.Total);
+    decimal subtotal = Model != null && Model.Any() ? Model.Sum(i => i.Total) : 0;
 
     decimal costoEnvio = 0;
     var costoEnvioStr = Context.Session.GetString("CostoEnvio");
@@ -13,7 +13,8 @@
         decimal.TryParse(costoEnvioStr, out costoEnvio);
     }
     
-    var nombreEnvio = Context.Session.GetString("TipoEnvio") ?? "Envío estándar";
+    // Leemos correctamente el nombre del envío guardado en el CheckoutController
+    var nombreEnvio = Context.Session.GetString("NombreEnvio") ?? Context.Session.GetString("TipoEnvio") ?? "Envío estándar";
     
     // Verificamos si eligió retiro en el local en el paso anterior
     bool esRetiroLocal = nombreEnvio.Contains("Retiro", StringComparison.OrdinalIgnoreCase);
@@ -77,7 +78,7 @@
 
             </div>
 
-            <!-- SECCIÓN DINÁMICA: Formulario de Tarjeta (Aparece para Débito y Crédito) -->
+            <!-- SECCIÓN DINÁMICA: Formulario de Tarjeta -->
             <div id="seccionFormTarjeta" class="border rounded-4 p-4 mb-4 bg-white shadow-sm d-none">
                 <h5 class="fw-bold text-uppercase mb-3" style="font-size: 0.90rem; letter-spacing: 1px;">Datos de la Tarjeta</h5>
                 
@@ -100,7 +101,7 @@
                     </div>
                 </div>
 
-                <!-- Selector de Cuotas (Únicamente para Tarjeta de Crédito) -->
+                <!-- Selector de Cuotas -->
                 <div id="seccionCuotas" class="mt-4 pt-3 border-top d-none">
                     <h5 class="fw-bold text-uppercase mb-2" style="font-size: 0.85rem; letter-spacing: 1px;">Seleccioná las cuotas</h5>
                     <select name="cuotas" id="selectCuotas" class="form-select rounded-pill px-3 py-2 fw-semibold">
@@ -131,7 +132,9 @@
                 
                 <div class="d-flex justify-content-between mb-2 text-secondary">
                     <span>Envío <small class="text-muted">(@nombreEnvio)</small></span>
-                    <span id="txtEnvio" class="fw-bold text-dark" data-valor="@costoEnvio">$ @costoEnvio.ToString("N2")</span>
+                    <span id="txtEnvio" class="fw-bold text-dark" data-valor="@costoEnvio">
+                        @(costoEnvio > 0 ? $"$ {costoEnvio:N2}" : "Gratis")
+                    </span>
                 </div>
 
                 <!-- Línea de Descuento (Efectivo) -->
@@ -154,7 +157,7 @@
                 </div>
             </div>
 
-            <!-- Botones de Acción (Pagar con éxito o Simular Rechazo) -->
+            <!-- Botones de Acción -->
             <div class="d-flex justify-content-between align-items-center">
                 <a asp-controller="Checkout" asp-action="PagoRechazado" class="btn btn-outline-danger rounded-pill px-4 py-3 text-uppercase fw-bold small shadow-sm" style="letter-spacing: 1px;">
                     Simular Pago Rechazado
@@ -169,7 +172,6 @@
     </div>
 </div>
 
-<!-- Script de control para formato de tarjeta, cuotas, transferencias y cálculos -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const radiosPago = document.querySelectorAll('.metodo-pago');
@@ -178,7 +180,6 @@
         const seccionTransferencia = document.getElementById('seccionTransferencia');
         const selectCuotas = document.getElementById('selectCuotas');
 
-        // Inputs de tarjeta para formato automático
         const inputNumeroTarjeta = document.getElementById('inputNumeroTarjeta');
         const inputVencimiento = document.getElementById('inputVencimiento');
         const inputCvv = document.getElementById('inputCvv');
@@ -194,17 +195,15 @@
         const subtotalBase = parseFloat(txtSubtotal.getAttribute('data-valor')) || 0;
         const costoEnvio = parseFloat(txtEnvio.getAttribute('data-valor')) || 0;
 
-        // Formato automático de número de tarjeta (Espacios cada 4 dígitos, máximo 16)
         if (inputNumeroTarjeta) {
             inputNumeroTarjeta.addEventListener('input', function (e) {
-                let valor = e.target.value.replace(/\D/g, ''); // Solo números
-                if (valor.length > 16) valor = valor.slice(0, 16); // Máximo 16 dígitos
+                let valor = e.target.value.replace(/\D/g, '');
+                if (valor.length > 16) valor = valor.slice(0, 16);
                 let formateado = valor.match(/.{1,4}/g);
                 e.target.value = formateado ? formateado.join(' ') : '';
             });
         }
 
-        // Formato automático de vencimiento (MM/AA con barra automática)
         if (inputVencimiento) {
             inputVencimiento.addEventListener('input', function (e) {
                 let valor = e.target.value.replace(/\D/g, '');
@@ -217,7 +216,6 @@
             });
         }
 
-        // CVV solo números (máximo 4)
         if (inputCvv) {
             inputCvv.addEventListener('input', function (e) {
                 e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
