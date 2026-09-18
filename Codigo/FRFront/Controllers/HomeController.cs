@@ -112,7 +112,8 @@ namespace FRFront.Controllers
 
         public IActionResult Lanzamientos()
         {
-            return View(_productos);
+            // Puedes retornar una lista de productos destacados o nuevos aquí si lo deseas
+            return View();
         }
 
         // Acción para la sección de HOMBRE

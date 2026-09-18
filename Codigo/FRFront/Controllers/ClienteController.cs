@@ -91,9 +91,11 @@ namespace FRFront.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Aquí puedes actualizar los datos en sesión o base de datos si lo requieres
+            // Aquí puedes guardar los datos en tu sesión o base de datos si lo deseas
 
-            TempData["MensajeExito"] = "¡Perfil actualizado con éxito!";
+            // Guardamos un mensaje de éxito temporal
+            TempData["MensajeExito"] = "¡Los cambios se han guardado con éxito!";
+
             return RedirectToAction("MiPerfil");
         }
 
