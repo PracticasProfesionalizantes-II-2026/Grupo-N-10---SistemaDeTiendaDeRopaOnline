@@ -45,6 +45,33 @@ namespace FRFront.Controllers
             return View("~/Views/Empleado/NuevaVenta.cshtml");
         }
 
+        // ==========================================
+        // REDIRECCIONES DE PEDIDOS PARA EVITAR 404
+        // ==========================================
+
+        [HttpGet]
+        public async Task<IActionResult> Pedidos()
+        {
+            return RedirectToAction("Pedidos", "Administrador");
+        }
+
+        [HttpGet]
+        public IActionResult DetallePedido(int id)
+        {
+            return RedirectToAction("DetallePedido", "Administrador", new { id = id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ActualizarEstadoPedido(int id, string nuevoEstado)
+        {
+            return RedirectToAction("ActualizarEstadoPedido", "Administrador", new { id = id, nuevoEstado = nuevoEstado });
+        }
+
+        // ==========================================
+        // BÚSQUEDA Y PROCESAMIENTO DE VENTAS
+        // ==========================================
+
         // GET: /Empleado/BuscarClientePorDni?dni=...
         [HttpGet]
         public async Task<IActionResult> BuscarClientePorDni(string dni)
@@ -133,34 +160,45 @@ namespace FRFront.Controllers
                 Detalle = detalles
             };
 
-            // Registro garantizado en memoria local asignando el DNI y Teléfono real
+            // 1. Guardar en memoria local para respuesta rápida en interfaz
             AdministradorController.RegistrarNuevoPedido(nuevoPedido, dniLimpio, clienteEmail, telefonoLimpio);
 
-            // Persistencia en la API Backend (FYR_DB)
+            // 2. Enviar a la API (FYR_DB)
             try
             {
                 var bodyApi = new
                 {
-                    Dni = dniLimpio,
-                    Nombre = clienteNombre.Trim().ToUpper(),
-                    Apellido = clienteApellido.Trim().ToUpper(),
-                    ClienteNombre = nombreClienteCompleto,
-                    Email = clienteEmail,
-                    Telefono = telefonoLimpio,
-                    Phone = telefonoLimpio,
+                    Cliente = nombreClienteCompleto,
+                    Email = string.IsNullOrEmpty(clienteEmail) ? $"{clienteNombre.Trim().ToLower()}@mail.com" : clienteEmail,
                     Total = totalVenta,
-                    MetodoPago = metodoPago,
-                    Estado = "ENTREGADO",
-                    Detalles = detalles
+                    TipoEntrega = metodoPago,
+                    Detalle = detalles.Select(d => new
+                    {
+                        ProductoId = d.ProductoId > 0 ? d.ProductoId : 7,
+                        Cantidad = d.Cantidad > 0 ? d.Cantidad : 1,
+                        PrecioUnitario = d.PrecioUnitario > 0 ? d.PrecioUnitario : totalVenta
+                    }).ToList()
                 };
 
                 var jsonBody = JsonSerializer.Serialize(bodyApi);
                 var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
-                await _httpClient.PostAsync("api/pedidos", content);
-            }
-            catch { }
 
-            TempData["SuccessMessage"] = $"¡Venta registrada con éxito! Factura #{nuevoId} creada para {nombreClienteCompleto}.";
+                var response = await _httpClient.PostAsync("api/pedidos", content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorResponse = await response.Content.ReadAsStringAsync();
+                    TempData["ErrorMessage"] = $"Atención: La venta figurará en pantalla, pero la API respondió: {response.StatusCode}";
+                }
+                else
+                {
+                    TempData["SuccessMessage"] = $"¡Venta registrada con éxito! Factura #{nuevoId} guardada en FYR_DB para {nombreClienteCompleto}.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Excepción de conexión con la API: {ex.Message}";
+            }
 
             return RedirectToAction("Index");
         }

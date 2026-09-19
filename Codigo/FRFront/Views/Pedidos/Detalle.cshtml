@@ -4,14 +4,6 @@
     Layout = null;
     ViewData["Title"] = "Detalle del Pedido";
 
-    var rolSesion = Context.Session.GetString("RolSesion") 
-                 ?? Context.Session.GetString("RolUsuario") 
-                 ?? "Administrador";
-
-    string controladorVolver = (rolSesion.Equals("Empleado", StringComparison.OrdinalIgnoreCase) || rolSesion.Equals("Cajero", StringComparison.OrdinalIgnoreCase)) 
-        ? "Empleado" 
-        : "Administrador";
-
     var successMessage = TempData["SuccessMessage"] as string;
     var errorMessage = TempData["ErrorMessage"] as string;
 }
@@ -95,7 +87,7 @@
         </div>
 
         <div>
-            <a asp-controller="@controladorVolver" asp-action="Pedidos" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
+            <a asp-controller="Administrador" asp-action="Pedidos" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
                 &lt; VOLVER
             </a>
         </div>
@@ -125,7 +117,7 @@
                 <h2 class="fw-black text-uppercase" style="font-weight: 900;">RESUMEN PEDIDO</h2>
             </div>
 
-            <form asp-controller="@controladorVolver" asp-action="ActualizarEstadoPedido" method="post" id="formPedido">
+            <form asp-controller="Administrador" asp-action="ActualizarEstadoPedido" method="post" id="formPedido">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="id" value="@Model.Id" />
 
@@ -213,7 +205,6 @@
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Desaparición progresiva de las alertas luego de 3.5 segundos
         setTimeout(() => {
             let alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {

@@ -10,10 +10,10 @@ namespace FRFront.Controllers
         private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonOptions;
 
-        public static List<ProductoDto> ProductosEnMemoria { get; set; } = GetProductosFallback();
-        public static List<PedidoDto> PedidosEnMemoria { get; set; } = GetPedidosIniciales();
-        public static List<ClienteDto> ClientesEnMemoria { get; set; } = GetClientesIniciales();
-        public static List<EmpleadoDto> EmpleadosEnMemoria { get; set; } = GetEmpleadosIniciales();
+        public static List<ProductoDto> ProductosEnMemoria { get; set; } = new List<ProductoDto>();
+        public static List<PedidoDto> PedidosEnMemoria { get; set; } = new List<PedidoDto>();
+        public static List<ClienteDto> ClientesEnMemoria { get; set; } = new List<ClienteDto>();
+        public static List<EmpleadoDto> EmpleadosEnMemoria { get; set; } = new List<EmpleadoDto>();
         
         public static ConfiguracionTiendaDto ConfiguracionActual { get; set; } = new ConfiguracionTiendaDto();
 
@@ -25,14 +25,17 @@ namespace FRFront.Controllers
 
         public static void RegistrarNuevoPedido(PedidoDto nuevoPedido, string dni, string email, string telefono)
         {
+            // 1. Insertar pedido en la colección local
             PedidosEnMemoria.Insert(0, nuevoPedido);
 
             string dniBuscado = string.IsNullOrEmpty(dni) ? "S/D" : dni.Trim();
             string telBuscado = string.IsNullOrEmpty(telefono) ? "Sin registrar" : telefono.Trim();
+            string emailBuscado = string.IsNullOrEmpty(email) ? "" : email.Trim().ToLower();
 
-            // Verificar si el cliente ya existe por DNI o Nombre Completo
+            // 2. Buscar si el cliente ya existe en la lista local de clientes
             var clienteExistente = ClientesEnMemoria.FirstOrDefault(c => 
                 (c.Dni != "S/D" && c.Dni == dniBuscado) || 
+                (!string.IsNullOrEmpty(emailBuscado) && c.Email.Equals(emailBuscado, StringComparison.OrdinalIgnoreCase)) ||
                 c.NombreCompleto.Equals(nuevoPedido.Cliente, StringComparison.OrdinalIgnoreCase));
 
             if (clienteExistente == null)
@@ -41,15 +44,16 @@ namespace FRFront.Controllers
                 string nom = partesNombre.Length > 0 ? partesNombre[0] : nuevoPedido.Cliente;
                 string ape = partesNombre.Length > 1 ? string.Join(" ", partesNombre.Skip(1)) : "";
 
-                int nuevoId = ClientesEnMemoria.Any() ? ClientesEnMemoria.Max(c => c.Id) + 1 : 1;
+                int nuevoId = ClientesEnMemoria.Any() ? ClientesEnMemoria.Max(c => c.Id) + 1 : 100;
 
+                // 3. Agregar nuevo cliente a la lista para que figure en la Gestión de Clientes
                 ClientesEnMemoria.Add(new ClienteDto
                 {
                     Id = nuevoId,
                     Dni = dniBuscado,
                     Nombre = nom,
                     Apellido = ape,
-                    Email = email ?? "",
+                    Email = emailBuscado,
                     Telefono = telBuscado,
                     FechaAlta = DateTime.Now,
                     Estado = "ACTIVO"
@@ -247,22 +251,29 @@ namespace FRFront.Controllers
         {
             if (ModelState.IsValid)
             {
-                nuevoProducto.Id = ProductosEnMemoria.Any() ? ProductosEnMemoria.Max(p => p.Id) + 1 : 1;
                 nuevoProducto.Disponible = true;
                 if (string.IsNullOrEmpty(nuevoProducto.ImagenUrl))
                 {
                     nuevoProducto.ImagenUrl = "/images/hombres.png";
                 }
 
-                ProductosEnMemoria.Add(nuevoProducto);
-
                 try
                 {
                     var json = JsonSerializer.Serialize(nuevoProducto);
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    await _httpClient.PostAsync("api/productos", content);
+                    var res = await _httpClient.PostAsync("api/productos", content);
+                    
+                    if (!res.IsSuccessStatusCode)
+                    {
+                        nuevoProducto.Id = ProductosEnMemoria.Any() ? ProductosEnMemoria.Max(p => p.Id) + 1 : 1;
+                        ProductosEnMemoria.Add(nuevoProducto);
+                    }
                 }
-                catch { }
+                catch 
+                {
+                    nuevoProducto.Id = ProductosEnMemoria.Any() ? ProductosEnMemoria.Max(p => p.Id) + 1 : 1;
+                    ProductosEnMemoria.Add(nuevoProducto);
+                }
 
                 TempData["SuccessMessage"] = "Producto creado con éxito.";
                 return RedirectToAction(nameof(Productos));
@@ -353,7 +364,7 @@ namespace FRFront.Controllers
         [HttpGet]
         public async Task<IActionResult> DetallePedido(int id)
         {
-            var pedido = PedidosEnMemoria.FirstOrDefault(p => p.Id == id) ?? PedidosEnMemoria.First();
+            var pedido = PedidosEnMemoria.FirstOrDefault(p => p.Id == id) ?? PedidosEnMemoria.FirstOrDefault();
             return View("~/Views/Pedidos/Detalle.cshtml", pedido);
         }
 
@@ -383,11 +394,16 @@ namespace FRFront.Controllers
         [HttpGet]
         public async Task<IActionResult> Clientes(string? busqueda)
         {
-            var clientes = ClientesEnMemoria;
+            var clientes = new List<ClienteDto>();
 
             try
             {
-                var response = await _httpClient.GetAsync("api/clientes");
+                var response = await _httpClient.GetAsync("api/usuarios");
+                if (!response.IsSuccessStatusCode)
+                {
+                    response = await _httpClient.GetAsync("api/clientes");
+                }
+
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -399,6 +415,15 @@ namespace FRFront.Controllers
                 }
             }
             catch { }
+
+            // Unificar con los clientes registrados desde el POS
+            foreach (var localCli in ClientesEnMemoria)
+            {
+                if (!clientes.Any(c => c.Id == localCli.Id || (!string.IsNullOrEmpty(c.Email) && c.Email.Equals(localCli.Email, StringComparison.OrdinalIgnoreCase))))
+                {
+                    clientes.Add(localCli);
+                }
+            }
 
             if (!string.IsNullOrEmpty(busqueda))
             {
@@ -417,14 +442,30 @@ namespace FRFront.Controllers
         [HttpGet]
         public async Task<IActionResult> DetalleCliente(int id)
         {
-            var listaClientes = ClientesEnMemoria;
+            var listaClientes = new List<ClienteDto>();
 
             try
             {
-                var response = await _httpClient.GetAsync("api/clientes");
+                var response = await _httpClient.GetAsync($"api/usuarios/{id}");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
+                    var clienteApi = JsonSerializer.Deserialize<ClienteDto>(content, _jsonOptions);
+                    if (clienteApi != null)
+                    {
+                        return View("~/Views/Clientes/Detalle.cshtml", clienteApi);
+                    }
+                }
+
+                var responseLista = await _httpClient.GetAsync("api/usuarios");
+                if (!responseLista.IsSuccessStatusCode)
+                {
+                    responseLista = await _httpClient.GetAsync("api/clientes");
+                }
+
+                if (responseLista.IsSuccessStatusCode)
+                {
+                    var content = await responseLista.Content.ReadAsStringAsync();
                     var apiClientes = JsonSerializer.Deserialize<List<ClienteDto>>(content, _jsonOptions);
                     if (apiClientes != null && apiClientes.Any())
                     {
@@ -434,20 +475,15 @@ namespace FRFront.Controllers
             }
             catch { }
 
-            // 1. Búsqueda directa por ID
+            foreach (var localCli in ClientesEnMemoria)
+            {
+                if (!listaClientes.Any(c => c.Id == localCli.Id))
+                {
+                    listaClientes.Add(localCli);
+                }
+            }
+
             var cliente = listaClientes.FirstOrDefault(c => c.Id == id);
-
-            // 2. Búsqueda por ID en lista local en memoria
-            if (cliente == null)
-            {
-                cliente = ClientesEnMemoria.FirstOrDefault(c => c.Id == id);
-            }
-
-            // 3. Búsqueda por posición en caso de no coincidir ID
-            if (cliente == null && id >= 0 && id < listaClientes.Count)
-            {
-                cliente = listaClientes[id];
-            }
 
             if (cliente == null)
             {
@@ -479,10 +515,15 @@ namespace FRFront.Controllers
         [HttpGet]
         public async Task<IActionResult> HistorialCliente(int id)
         {
-            var listaClientes = ClientesEnMemoria;
+            var listaClientes = new List<ClienteDto>();
             try
             {
-                var responseClientes = await _httpClient.GetAsync("api/clientes");
+                var responseClientes = await _httpClient.GetAsync("api/usuarios");
+                if (!responseClientes.IsSuccessStatusCode)
+                {
+                    responseClientes = await _httpClient.GetAsync("api/clientes");
+                }
+
                 if (responseClientes.IsSuccessStatusCode)
                 {
                     var content = await responseClientes.Content.ReadAsStringAsync();
@@ -495,17 +536,15 @@ namespace FRFront.Controllers
             }
             catch { }
 
+            foreach (var localCli in ClientesEnMemoria)
+            {
+                if (!listaClientes.Any(c => c.Id == localCli.Id))
+                {
+                    listaClientes.Add(localCli);
+                }
+            }
+
             var cliente = listaClientes.FirstOrDefault(c => c.Id == id);
-
-            if (cliente == null)
-            {
-                cliente = ClientesEnMemoria.FirstOrDefault(c => c.Id == id);
-            }
-
-            if (cliente == null && id >= 0 && id < listaClientes.Count)
-            {
-                cliente = listaClientes[id];
-            }
 
             if (cliente == null)
             {
@@ -530,7 +569,7 @@ namespace FRFront.Controllers
             catch { }
 
             string nombreCliente = cliente.NombreCompleto?.Trim().ToUpper() ?? "";
-            string dniCliente = cliente.Dni?.Trim() ?? "";
+            string emailCliente = cliente.Email?.Trim().ToLower() ?? "";
 
             var pedidosFiltrados = listaPedidos.Where(p =>
             {
@@ -538,27 +577,8 @@ namespace FRFront.Controllers
 
                 string clientePedido = p.Cliente?.Trim().ToUpper() ?? "";
 
-                if (!string.IsNullOrEmpty(dniCliente) && dniCliente != "S/D" && clientePedido.Contains(dniCliente))
-                {
-                    return true;
-                }
-
-                if (!string.IsNullOrEmpty(nombreCliente) && clientePedido.Equals(nombreCliente, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-
-                if (!string.IsNullOrEmpty(cliente.Nombre) && !string.IsNullOrEmpty(cliente.Apellido))
-                {
-                    string nom = cliente.Nombre.Trim().ToUpper();
-                    string ape = cliente.Apellido.Trim().ToUpper();
-                    if (clientePedido.Contains(nom) && clientePedido.Contains(ape))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
+                return clientePedido.Equals(nombreCliente, StringComparison.OrdinalIgnoreCase) ||
+                       (!string.IsNullOrEmpty(emailCliente) && clientePedido.ToLower().Contains(emailCliente));
             }).ToList();
 
             ViewBag.ClienteNombre = cliente.NombreCompleto;
@@ -583,6 +603,21 @@ namespace FRFront.Controllers
             }
 
             var empleados = EmpleadosEnMemoria;
+
+            try
+            {
+                var response = await _httpClient.GetAsync("api/usuarios");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var apiUsuarios = JsonSerializer.Deserialize<List<EmpleadoDto>>(content, _jsonOptions);
+                    if (apiUsuarios != null && apiUsuarios.Any())
+                    {
+                        empleados = apiUsuarios;
+                    }
+                }
+            }
+            catch { }
 
             if (!string.IsNullOrEmpty(busqueda))
             {
@@ -640,7 +675,7 @@ namespace FRFront.Controllers
         [HttpGet]
         public IActionResult DetalleEmpleado(int id)
         {
-            var empleado = EmpleadosEnMemoria.FirstOrDefault(e => e.Id == id) ?? EmpleadosEnMemoria.First();
+            var empleado = EmpleadosEnMemoria.FirstOrDefault(e => e.Id == id) ?? EmpleadosEnMemoria.FirstOrDefault();
             return View("~/Views/Empleados/Detalle.cshtml", empleado);
         }
 
@@ -722,7 +757,7 @@ namespace FRFront.Controllers
         [HttpGet]
         public IActionResult VerFactura(int id)
         {
-            var pedido = PedidosEnMemoria.FirstOrDefault(p => p.Id == id) ?? PedidosEnMemoria.First();
+            var pedido = PedidosEnMemoria.FirstOrDefault(p => p.Id == id) ?? PedidosEnMemoria.FirstOrDefault();
             return View("~/Views/Facturas/Detalle.cshtml", pedido);
         }
 
@@ -749,71 +784,6 @@ namespace FRFront.Controllers
 
             TempData["SuccessMessage"] = "Tu contraseña ha sido actualizada con éxito.";
             return RedirectToAction("CambiarContrasena");
-        }
-
-        // ==========================================
-        // DATOS DE RESPALDO (INITIALIZERS)
-        // ==========================================
-
-        private static List<EmpleadoDto> GetEmpleadosIniciales()
-        {
-            return new List<EmpleadoDto>
-            {
-                new EmpleadoDto { Id = 1, Nombre = "FRANCISCO", Apellido = "AGUIRRE", Email = "franciscoaguirre@gmail.com", Rol = "CAJERO", Telefono = "03493 456789", Estado = "ACTIVO" },
-                new EmpleadoDto { Id = 2, Nombre = "ROCIO", Apellido = "MILANESE", Email = "rocimilanese@gmail.com", Rol = "CAJERA", Telefono = "03493 667173", Estado = "ACTIVO" }
-            };
-        }
-
-        private static List<ProductoDto> GetProductosFallback()
-        {
-            return new List<ProductoDto>
-            {
-                new ProductoDto { Id = 1, Nombre = "BUZO VCV", Precio = 80000, Talles = "M/L", Color = "BEIGE", Stock = 10, Categoria = "abrigos", ImagenUrl = "/images/hombres.png", Disponible = true },
-                new ProductoDto { Id = 2, Nombre = "REMERA ACTIVE", Precio = 20000, Talles = "XS/S/M", Color = "NEGRO", Stock = 14, Categoria = "remeras", ImagenUrl = "/images/mujeres.png", Disponible = true },
-                new ProductoDto { Id = 3, Nombre = "HOODIE URBAN", Precio = 65000, Talles = "L/XL", Color = "VERDE", Stock = 8, Categoria = "abrigos", ImagenUrl = "/images/hombres2.png", Disponible = true }
-            };
-        }
-
-        private static List<PedidoDto> GetPedidosIniciales()
-        {
-            return new List<PedidoDto>
-            {
-                new PedidoDto
-                {
-                    Id = 1,
-                    Cliente = "FRANCISCO AGUIRRE",
-                    Fecha = new DateTime(2025, 07, 25),
-                    Total = 26890,
-                    Estado = "ENTREGADO",
-                    TipoEntrega = "RETIRO LOCAL",
-                    Detalle = new List<DetallePedidoDto>
-                    {
-                        new DetallePedidoDto { ProductoId = 1, ProductoNombre = "Pollera maite", Cantidad = 1, PrecioUnitario = 25000 }
-                    }
-                },
-                new PedidoDto
-                {
-                    Id = 2,
-                    Cliente = "ROCIO MILANESE",
-                    Fecha = new DateTime(2025, 07, 29),
-                    Total = 100000,
-                    Estado = "EN CAMINO",
-                    TipoEntrega = "ENVÍO A DOMICILIO",
-                    Detalle = new List<DetallePedidoDto>
-                    {
-                        new DetallePedidoDto { ProductoId = 2, ProductoNombre = "REMERA ACTIVE", Cantidad = 2, PrecioUnitario = 20000 }
-                    }
-                }
-            };
-        }
-
-        private static List<ClienteDto> GetClientesIniciales()
-        {
-            return new List<ClienteDto>
-            {
-                new ClienteDto { Id = 1, Dni = "38456789", Nombre = "FRANCISCO", Apellido = "AGUIRRE", FechaAlta = new DateTime(2025, 07, 25), Email = "franciscoaguirre@gmail.com", Telefono = "03493 456789", Estado = "ACTIVO" },
-                new ClienteDto { Id = 2, Dni = "39667173", Nombre = "ROCIO", Apellido = "MILANESE", FechaAlta = new DateTime(2025, 07, 29), Email = "rocimilanese@gmail.com", Telefono = "03493 667173", Estado = "ACTIVO" }
-            };
         }
     }
 }
