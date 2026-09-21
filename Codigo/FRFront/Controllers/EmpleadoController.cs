@@ -23,28 +23,39 @@ namespace FRFront.Controllers
         private async Task<Dictionary<int, string>> ObtenerDiccionarioUsuariosAsync()
         {
             var mapaUsuarios = new Dictionary<int, string>();
+
             try
             {
-                var response = await _httpClient.GetAsync("api/usuarios");
-                if (!response.IsSuccessStatusCode)
-                {
-                    response = await _httpClient.GetAsync("api/clientes");
-                }
+                var endpoints = new[] { "api/usuarios", "api/clientes" };
 
-                if (response.IsSuccessStatusCode)
+                foreach (var endpoint in endpoints)
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var listaUsuarios = JsonSerializer.Deserialize<List<UsuarioSimpleDto>>(content, _jsonOptions);
-                    
-                    if (listaUsuarios != null)
+                    var response = await _httpClient.GetAsync(endpoint);
+                    if (!response.IsSuccessStatusCode)
                     {
-                        foreach (var user in listaUsuarios)
+                        continue;
+                    }
+
+                    var content = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrWhiteSpace(content))
+                    {
+                        continue;
+                    }
+
+                    var listaUsuarios = JsonSerializer.Deserialize<List<UsuarioSimpleDto>>(content, _jsonOptions);
+                    if (listaUsuarios == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (var user in listaUsuarios)
+                    {
+                        var userId = user.ResolveId();
+                        var nombreCompleto = $"{user.Nombre} {user.Apellido}".Trim();
+
+                        if (userId > 0 && !string.IsNullOrWhiteSpace(nombreCompleto))
                         {
-                            string nombreCompleto = $"{user.Nombre} {user.Apellido}".Trim();
-                            if (user.Id > 0 && !string.IsNullOrWhiteSpace(nombreCompleto))
-                            {
-                                mapaUsuarios[user.Id] = nombreCompleto;
-                            }
+                            mapaUsuarios[userId] = nombreCompleto;
                         }
                     }
                 }
@@ -55,6 +66,32 @@ namespace FRFront.Controllers
             }
 
             return mapaUsuarios;
+        }
+
+        private static int ObtenerIdPedido(JsonElement elemento, string propiedadPrincipal, params string[] aliases)
+        {
+            var nombres = new[] { propiedadPrincipal }.Concat(aliases).ToArray();
+
+            foreach (var nombre in nombres)
+            {
+                if (elemento.TryGetProperty(nombre, out var valor) && valor.ValueKind != JsonValueKind.Null)
+                {
+                    var entero = valor.GetInt32();
+                    return entero;
+                }
+            }
+
+            return 0;
+        }
+
+        private static string ObtenerNombreCliente(Dictionary<int, string> mapaUsuarios, int usuarioId)
+        {
+            if (usuarioId > 0 && mapaUsuarios.TryGetValue(usuarioId, out var nombre) && !string.IsNullOrWhiteSpace(nombre))
+            {
+                return nombre;
+            }
+
+            return usuarioId > 0 ? $"Cliente #{usuarioId}" : "Cliente Mostrador";
         }
 
         [HttpGet]
@@ -68,7 +105,7 @@ namespace FRFront.Controllers
         // ==========================================
 
         [HttpGet]
-        public async Task<IActionResult> PuntoVenta()
+        public async Task<IActionResult> NuevaVenta()
         {
             var productos = new List<ProductoDto>();
             try
@@ -86,10 +123,16 @@ namespace FRFront.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR EN PUNTO DE VENTA]: {ex.Message}");
+                Console.WriteLine($"[ERROR EN NUEVA VENTA]: {ex.Message}");
             }
 
-            return View("~/Views/Empleado/PuntoVenta.cshtml", productos);
+            return View("~/Views/Empleado/NuevaVenta.cshtml", productos);
+        }
+
+        [HttpGet]
+        public Task<IActionResult> PuntoVenta()
+        {
+            return NuevaVenta();
         }
 
         [HttpPost]
@@ -139,15 +182,13 @@ namespace FRFront.Controllers
                     {
                         foreach (var item in doc.RootElement.EnumerateArray())
                         {
-                            int idPedido = item.TryGetProperty("id", out var idProp) ? idProp.GetInt32() : 0;
-                            int usuarioId = item.TryGetProperty("usuarioId", out var uProp) ? uProp.GetInt32() : 0;
+                            int idPedido = ObtenerIdPedido(item, "id");
+                            int usuarioId = ObtenerIdPedido(item, "usuarioId", "UsuarioId");
                             decimal totalPedido = item.TryGetProperty("total", out var totalProp) ? totalProp.GetDecimal() : 0;
                             string metodoPago = item.TryGetProperty("metodoPago", out var pagoProp) ? pagoProp.GetString() ?? "EFECTIVO" : "EFECTIVO";
                             DateTime fechaPedido = item.TryGetProperty("fechaPedido", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
 
-                            string nombreCliente = mapaUsuarios.TryGetValue(usuarioId, out var nombre) && !string.IsNullOrWhiteSpace(nombre) 
-                                ? nombre 
-                                : $"Cliente #{usuarioId}";
+                            string nombreCliente = ObtenerNombreCliente(mapaUsuarios, usuarioId);
 
                             listaPedidos.Add(new PedidoDto
                             {
@@ -194,8 +235,8 @@ namespace FRFront.Controllers
                     {
                         foreach (var itemP in docP.RootElement.EnumerateArray())
                         {
-                            int pId = itemP.TryGetProperty("id", out var pProp) ? pProp.GetInt32() : 0;
-                            int uId = itemP.TryGetProperty("usuarioId", out var uProp) ? uProp.GetInt32() : 0;
+                            int pId = ObtenerIdPedido(itemP, "id");
+                            int uId = ObtenerIdPedido(itemP, "usuarioId", "UsuarioId");
                             if (pId > 0) mapaPedidosUsuario[pId] = uId;
                         }
                     }
@@ -209,15 +250,13 @@ namespace FRFront.Controllers
                     {
                         foreach (var elemento in docF.RootElement.EnumerateArray())
                         {
-                            int idFactura = elemento.TryGetProperty("id", out var idProp) ? idProp.GetInt32() : 0;
-                            int pedidoId = elemento.TryGetProperty("pedidoId", out var pProp) ? pProp.GetInt32() : 0;
+                            int idFactura = ObtenerIdPedido(elemento, "id");
+                            int pedidoId = ObtenerIdPedido(elemento, "pedidoId", "PedidoId");
                             decimal totalFactura = elemento.TryGetProperty("total", out var totalProp) ? totalProp.GetDecimal() : 0;
                             DateTime fechaFactura = elemento.TryGetProperty("fecha", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
 
                             int usuarioId = mapaPedidosUsuario.TryGetValue(pedidoId, out var uid) ? uid : 0;
-                            string nombreCliente = mapaUsuarios.TryGetValue(usuarioId, out var nombre) && !string.IsNullOrWhiteSpace(nombre) 
-                                ? nombre 
-                                : $"Cliente #{usuarioId}";
+                            string nombreCliente = ObtenerNombreCliente(mapaUsuarios, usuarioId);
 
                             listaFacturas.Add(new PedidoDto
                             {
