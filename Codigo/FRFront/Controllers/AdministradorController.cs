@@ -20,56 +20,48 @@ namespace FRFront.Controllers
         public AdministradorController(IHttpClientFactory httpClientFactory)
         {
             _httpClient = httpClientFactory.CreateClient("BackendApi");
-            _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            _jsonOptions = new JsonSerializerOptions 
+            { 
+                PropertyNameCaseInsensitive = true,
+                AllowTrailingCommas = true
+            };
         }
 
-        public static void RegistrarNuevoPedido(PedidoDto nuevoPedido, string dni, string email, string telefono)
+        private async Task<Dictionary<int, string>> ObtenerDiccionarioUsuariosAsync()
         {
-            // 1. Insertar pedido en la colección local
-            PedidosEnMemoria.Insert(0, nuevoPedido);
-
-            string dniBuscado = string.IsNullOrEmpty(dni) ? "S/D" : dni.Trim();
-            string telBuscado = string.IsNullOrEmpty(telefono) ? "Sin registrar" : telefono.Trim();
-            string emailBuscado = string.IsNullOrEmpty(email) ? "" : email.Trim().ToLower();
-
-            // 2. Buscar si el cliente ya existe en la lista local de clientes
-            var clienteExistente = ClientesEnMemoria.FirstOrDefault(c => 
-                (c.Dni != "S/D" && c.Dni == dniBuscado) || 
-                (!string.IsNullOrEmpty(emailBuscado) && c.Email.Equals(emailBuscado, StringComparison.OrdinalIgnoreCase)) ||
-                c.NombreCompleto.Equals(nuevoPedido.Cliente, StringComparison.OrdinalIgnoreCase));
-
-            if (clienteExistente == null)
+            var mapaUsuarios = new Dictionary<int, string>();
+            try
             {
-                string[] partesNombre = nuevoPedido.Cliente.Split(' ');
-                string nom = partesNombre.Length > 0 ? partesNombre[0] : nuevoPedido.Cliente;
-                string ape = partesNombre.Length > 1 ? string.Join(" ", partesNombre.Skip(1)) : "";
-
-                int nuevoId = ClientesEnMemoria.Any() ? ClientesEnMemoria.Max(c => c.Id) + 1 : 100;
-
-                // 3. Agregar nuevo cliente a la lista para que figure en la Gestión de Clientes
-                ClientesEnMemoria.Add(new ClienteDto
+                var response = await _httpClient.GetAsync("api/usuarios");
+                if (!response.IsSuccessStatusCode)
                 {
-                    Id = nuevoId,
-                    Dni = dniBuscado,
-                    Nombre = nom,
-                    Apellido = ape,
-                    Email = emailBuscado,
-                    Telefono = telBuscado,
-                    FechaAlta = DateTime.Now,
-                    Estado = "ACTIVO"
-                });
-            }
-            else
-            {
-                if (clienteExistente.Dni == "S/D" && dniBuscado != "S/D")
-                {
-                    clienteExistente.Dni = dniBuscado;
+                    response = await _httpClient.GetAsync("api/clientes");
                 }
-                if ((string.IsNullOrEmpty(clienteExistente.Telefono) || clienteExistente.Telefono == "Sin registrar") && telBuscado != "Sin registrar")
+
+                if (response.IsSuccessStatusCode)
                 {
-                    clienteExistente.Telefono = telBuscado;
+                    var content = await response.Content.ReadAsStringAsync();
+                    var listaUsuarios = JsonSerializer.Deserialize<List<UsuarioSimpleDto>>(content, _jsonOptions);
+                    
+                    if (listaUsuarios != null)
+                    {
+                        foreach (var user in listaUsuarios)
+                        {
+                            string nombreCompleto = $"{user.Nombre} {user.Apellido}".Trim();
+                            if (user.Id > 0 && !string.IsNullOrWhiteSpace(nombreCompleto))
+                            {
+                                mapaUsuarios[user.Id] = nombreCompleto;
+                            }
+                        }
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR AL CONSULTAR USUARIOS]: {ex.Message}");
+            }
+
+            return mapaUsuarios;
         }
 
         [HttpGet]
@@ -147,22 +139,46 @@ namespace FRFront.Controllers
             DateTime fechaInicio = desde ?? DateTime.Today.AddDays(-30);
             DateTime fechaFin = hasta ?? DateTime.Today.AddDays(1).AddSeconds(-1);
 
-            var listaPedidos = PedidosEnMemoria;
+            var listaPedidos = new List<PedidoDto>();
 
             try
             {
+                var mapaUsuarios = await ObtenerDiccionarioUsuariosAsync();
                 var response = await _httpClient.GetAsync("api/pedidos");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var apiPedidos = JsonSerializer.Deserialize<List<PedidoDto>>(content, _jsonOptions);
-                    if (apiPedidos != null && apiPedidos.Any())
+                    using (var doc = JsonDocument.Parse(content))
                     {
-                        listaPedidos = apiPedidos;
+                        foreach (var item in doc.RootElement.EnumerateArray())
+                        {
+                            int idPedido = item.TryGetProperty("id", out var idProp) ? idProp.GetInt32() : 0;
+                            int usuarioId = item.TryGetProperty("usuarioId", out var uProp) ? uProp.GetInt32() : 0;
+                            decimal totalPedido = item.TryGetProperty("total", out var totalProp) ? totalProp.GetDecimal() : 0;
+                            string metodoPago = item.TryGetProperty("metodoPago", out var pagoProp) ? pagoProp.GetString() ?? "EFECTIVO" : "EFECTIVO";
+                            DateTime fechaPedido = item.TryGetProperty("fechaPedido", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
+
+                            string clienteNombre = mapaUsuarios.TryGetValue(usuarioId, out var nombre) && !string.IsNullOrWhiteSpace(nombre) 
+                                ? nombre 
+                                : $"Cliente #{usuarioId}";
+
+                            listaPedidos.Add(new PedidoDto
+                            {
+                                Id = idPedido,
+                                Cliente = clienteNombre,
+                                Fecha = fechaPedido,
+                                Total = totalPedido,
+                                Estado = "CONFIRMADO",
+                                TipoEntrega = metodoPago
+                            });
+                        }
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR EN REPORTES API]: {ex.Message}");
+            }
 
             var ventasFiltradas = listaPedidos
                 .Where(p => p.Fecha.Date >= fechaInicio.Date && p.Fecha.Date <= fechaFin.Date)
@@ -204,7 +220,7 @@ namespace FRFront.Controllers
         [HttpGet]
         public async Task<IActionResult> Productos(string? categoria, string? busqueda)
         {
-            var productos = ProductosEnMemoria;
+            var productos = new List<ProductoDto>();
 
             try
             {
@@ -213,13 +229,16 @@ namespace FRFront.Controllers
                 {
                     var content = await response.Content.ReadAsStringAsync();
                     var apiProds = JsonSerializer.Deserialize<List<ProductoDto>>(content, _jsonOptions);
-                    if (apiProds != null && apiProds.Any())
+                    if (apiProds != null)
                     {
                         productos = apiProds;
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR EN PRODUCTOS API]: {ex.Message}");
+            }
 
             if (!string.IsNullOrEmpty(categoria) && !categoria.Equals("Todos", StringComparison.OrdinalIgnoreCase))
             {
@@ -261,19 +280,9 @@ namespace FRFront.Controllers
                 {
                     var json = JsonSerializer.Serialize(nuevoProducto);
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    var res = await _httpClient.PostAsync("api/productos", content);
-                    
-                    if (!res.IsSuccessStatusCode)
-                    {
-                        nuevoProducto.Id = ProductosEnMemoria.Any() ? ProductosEnMemoria.Max(p => p.Id) + 1 : 1;
-                        ProductosEnMemoria.Add(nuevoProducto);
-                    }
+                    await _httpClient.PostAsync("api/productos", content);
                 }
-                catch 
-                {
-                    nuevoProducto.Id = ProductosEnMemoria.Any() ? ProductosEnMemoria.Max(p => p.Id) + 1 : 1;
-                    ProductosEnMemoria.Add(nuevoProducto);
-                }
+                catch { }
 
                 TempData["SuccessMessage"] = "Producto creado con éxito.";
                 return RedirectToAction(nameof(Productos));
@@ -286,11 +295,6 @@ namespace FRFront.Controllers
         public async Task<IActionResult> EditarProducto(int id)
         {
             var producto = ProductosEnMemoria.FirstOrDefault(p => p.Id == id);
-            if (producto == null)
-            {
-                return RedirectToAction(nameof(Productos));
-            }
-
             return View("~/Views/Productos/Modificar.cshtml", producto);
         }
 
@@ -298,73 +302,128 @@ namespace FRFront.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditarProducto(ProductoDto productoModificado, IFormFile? imagenFile)
         {
-            if (ModelState.IsValid)
-            {
-                var productoLocal = ProductosEnMemoria.FirstOrDefault(p => p.Id == productoModificado.Id);
-                if (productoLocal != null)
-                {
-                    productoLocal.Nombre = productoModificado.Nombre;
-                    productoLocal.Precio = productoModificado.Precio;
-                    productoLocal.Talles = productoModificado.Talles;
-                    productoLocal.Color = productoModificado.Color;
-                    productoLocal.Stock = productoModificado.Stock;
-                    productoLocal.Categoria = productoModificado.Categoria;
-                    productoLocal.Descripcion = productoModificado.Descripcion;
-                    productoLocal.Disponible = productoModificado.Disponible;
-                }
-
-                TempData["SuccessMessage"] = "Producto modificado correctamente.";
-                return RedirectToAction(nameof(Productos));
-            }
-
-            return View("~/Views/Productos/Modificar.cshtml", productoModificado);
+            return RedirectToAction(nameof(Productos));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EliminarProducto(int id)
         {
-            var productoLocal = ProductosEnMemoria.FirstOrDefault(p => p.Id == id);
-            if (productoLocal != null)
-            {
-                ProductosEnMemoria.Remove(productoLocal);
-            }
-
-            TempData["SuccessMessage"] = "Producto eliminado correctamente.";
             return RedirectToAction(nameof(Productos));
         }
 
         // ==========================================
-        // GESTIÓN DE PEDIDOS
+        // GESTIÓN DE PEDIDOS Y DETALLE
         // ==========================================
 
         [HttpGet]
         public async Task<IActionResult> Pedidos()
         {
-            var pedidos = PedidosEnMemoria;
+            var listaPedidos = new List<PedidoDto>();
 
             try
             {
+                var mapaUsuarios = await ObtenerDiccionarioUsuariosAsync();
                 var response = await _httpClient.GetAsync("api/pedidos");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var apiPedidos = JsonSerializer.Deserialize<List<PedidoDto>>(content, _jsonOptions);
-                    if (apiPedidos != null && apiPedidos.Any())
+                    
+                    using (var doc = JsonDocument.Parse(content))
                     {
-                        pedidos = apiPedidos;
+                        foreach (var item in doc.RootElement.EnumerateArray())
+                        {
+                            int idPedido = item.TryGetProperty("id", out var idProp) ? idProp.GetInt32() : 0;
+                            int usuarioId = item.TryGetProperty("usuarioId", out var uProp) ? uProp.GetInt32() : 0;
+                            decimal totalPedido = item.TryGetProperty("total", out var totalProp) ? totalProp.GetDecimal() : 0;
+                            string metodoPago = item.TryGetProperty("metodoPago", out var pagoProp) ? pagoProp.GetString() ?? "EFECTIVO" : "EFECTIVO";
+                            DateTime fechaPedido = item.TryGetProperty("fechaPedido", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
+
+                            string nombreCliente = mapaUsuarios.TryGetValue(usuarioId, out var nombre) && !string.IsNullOrWhiteSpace(nombre) 
+                                ? nombre 
+                                : $"Cliente #{usuarioId}";
+
+                            listaPedidos.Add(new PedidoDto
+                            {
+                                Id = idPedido,
+                                Cliente = nombreCliente,
+                                Fecha = fechaPedido,
+                                Total = totalPedido,
+                                Estado = "CONFIRMADO",
+                                TipoEntrega = metodoPago
+                            });
+                        }
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR EN PEDIDOS API]: {ex.Message}");
+            }
 
-            return View("~/Views/Pedidos/Index.cshtml", pedidos);
+            listaPedidos = listaPedidos.OrderByDescending(p => p.Fecha).ThenByDescending(p => p.Id).ToList();
+
+            return View("~/Views/Pedidos/Index.cshtml", listaPedidos);
         }
 
         [HttpGet]
         public async Task<IActionResult> DetallePedido(int id)
         {
-            var pedido = PedidosEnMemoria.FirstOrDefault(p => p.Id == id) ?? PedidosEnMemoria.FirstOrDefault();
+            PedidoDto? pedido = null;
+
+            try
+            {
+                var mapaUsuarios = await ObtenerDiccionarioUsuariosAsync();
+                var response = await _httpClient.GetAsync($"api/pedidos/{id}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    response = await _httpClient.GetAsync("api/pedidos");
+                }
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    using (var doc = JsonDocument.Parse(content))
+                    {
+                        var elemento = doc.RootElement.ValueKind == JsonValueKind.Array 
+                            ? doc.RootElement.EnumerateArray().FirstOrDefault(x => x.TryGetProperty("id", out var p) && p.GetInt32() == id)
+                            : doc.RootElement;
+
+                        if (elemento.ValueKind != JsonValueKind.Undefined)
+                        {
+                            int idItem = elemento.TryGetProperty("id", out var idProp) ? idProp.GetInt32() : id;
+                            int usuarioId = elemento.TryGetProperty("usuarioId", out var uProp) ? uProp.GetInt32() : 0;
+                            decimal total = elemento.TryGetProperty("total", out var totalProp) ? totalProp.GetDecimal() : 0;
+                            string metodo = elemento.TryGetProperty("metodoPago", out var pagoProp) ? pagoProp.GetString() ?? "EFECTIVO" : "EFECTIVO";
+                            DateTime fecha = elemento.TryGetProperty("fechaPedido", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
+
+                            string nombreCliente = mapaUsuarios.TryGetValue(usuarioId, out var nombre) && !string.IsNullOrWhiteSpace(nombre) 
+                                ? nombre 
+                                : $"Cliente #{usuarioId}";
+
+                            pedido = new PedidoDto
+                            {
+                                Id = idItem,
+                                Cliente = nombreCliente,
+                                Fecha = fecha,
+                                Total = total,
+                                Estado = "CONFIRMADO",
+                                TipoEntrega = metodo
+                            };
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR EN DETALLE PEDIDO API]: {ex.Message}");
+            }
+
+            if (pedido == null)
+            {
+                pedido = new PedidoDto { Id = id, Cliente = "Cliente Desconocido", Total = 0, Fecha = DateTime.Now, Estado = "CONFIRMADO", TipoEntrega = "EFECTIVO" };
+            }
+
             return View("~/Views/Pedidos/Detalle.cshtml", pedido);
         }
 
@@ -372,23 +431,11 @@ namespace FRFront.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ActualizarEstadoPedido(int id, string nuevoEstado)
         {
-            var estadosValidos = new[] { "CONFIRMADO", "EN CAMINO", "ENTREGADO", "CANCELADO" };
-            if (!string.IsNullOrEmpty(nuevoEstado) && estadosValidos.Contains(nuevoEstado.ToUpper()))
-            {
-                var pedidoLocal = PedidosEnMemoria.FirstOrDefault(p => p.Id == id);
-                if (pedidoLocal != null)
-                {
-                    pedidoLocal.Estado = nuevoEstado.ToUpper();
-                }
-
-                TempData["SuccessMessage"] = "Estado del pedido actualizado correctamente.";
-            }
-
             return RedirectToAction(nameof(Pedidos));
         }
 
         // ==========================================
-        // GESTIÓN DE CLIENTES Y DETALLE
+        // GESTIÓN DE CLIENTES
         // ==========================================
 
         [HttpGet]
@@ -398,31 +445,25 @@ namespace FRFront.Controllers
 
             try
             {
-                var response = await _httpClient.GetAsync("api/usuarios");
+                var response = await _httpClient.GetAsync("api/clientes");
                 if (!response.IsSuccessStatusCode)
                 {
-                    response = await _httpClient.GetAsync("api/clientes");
+                    response = await _httpClient.GetAsync("api/usuarios");
                 }
 
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
                     var apiClientes = JsonSerializer.Deserialize<List<ClienteDto>>(content, _jsonOptions);
-                    if (apiClientes != null && apiClientes.Any())
+                    if (apiClientes != null)
                     {
                         clientes = apiClientes;
                     }
                 }
             }
-            catch { }
-
-            // Unificar con los clientes registrados desde el POS
-            foreach (var localCli in ClientesEnMemoria)
+            catch (Exception ex)
             {
-                if (!clientes.Any(c => c.Id == localCli.Id || (!string.IsNullOrEmpty(c.Email) && c.Email.Equals(localCli.Email, StringComparison.OrdinalIgnoreCase))))
-                {
-                    clientes.Add(localCli);
-                }
+                Console.WriteLine($"[ERROR EN CLIENTES API]: {ex.Message}");
             }
 
             if (!string.IsNullOrEmpty(busqueda))
@@ -446,28 +487,17 @@ namespace FRFront.Controllers
 
             try
             {
-                var response = await _httpClient.GetAsync($"api/usuarios/{id}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var clienteApi = JsonSerializer.Deserialize<ClienteDto>(content, _jsonOptions);
-                    if (clienteApi != null)
-                    {
-                        return View("~/Views/Clientes/Detalle.cshtml", clienteApi);
-                    }
-                }
-
-                var responseLista = await _httpClient.GetAsync("api/usuarios");
+                var responseLista = await _httpClient.GetAsync("api/clientes");
                 if (!responseLista.IsSuccessStatusCode)
                 {
-                    responseLista = await _httpClient.GetAsync("api/clientes");
+                    responseLista = await _httpClient.GetAsync("api/usuarios");
                 }
 
                 if (responseLista.IsSuccessStatusCode)
                 {
                     var content = await responseLista.Content.ReadAsStringAsync();
                     var apiClientes = JsonSerializer.Deserialize<List<ClienteDto>>(content, _jsonOptions);
-                    if (apiClientes != null && apiClientes.Any())
+                    if (apiClientes != null)
                     {
                         listaClientes = apiClientes;
                     }
@@ -475,16 +505,7 @@ namespace FRFront.Controllers
             }
             catch { }
 
-            foreach (var localCli in ClientesEnMemoria)
-            {
-                if (!listaClientes.Any(c => c.Id == localCli.Id))
-                {
-                    listaClientes.Add(localCli);
-                }
-            }
-
             var cliente = listaClientes.FirstOrDefault(c => c.Id == id);
-
             if (cliente == null)
             {
                 TempData["ErrorMessage"] = "Cliente no encontrado.";
@@ -498,17 +519,6 @@ namespace FRFront.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditarCliente(ClienteDto clienteModificado)
         {
-            var clienteLocal = ClientesEnMemoria.FirstOrDefault(c => c.Id == clienteModificado.Id);
-            if (clienteLocal != null)
-            {
-                clienteLocal.Dni = clienteModificado.Dni;
-                clienteLocal.Nombre = clienteModificado.Nombre;
-                clienteLocal.Apellido = clienteModificado.Apellido;
-                clienteLocal.Email = clienteModificado.Email;
-                clienteLocal.Telefono = clienteModificado.Telefono;
-                clienteLocal.Estado = clienteModificado.Estado.ToUpper();
-            }
-
             return RedirectToAction(nameof(Clientes));
         }
 
@@ -518,17 +528,17 @@ namespace FRFront.Controllers
             var listaClientes = new List<ClienteDto>();
             try
             {
-                var responseClientes = await _httpClient.GetAsync("api/usuarios");
+                var responseClientes = await _httpClient.GetAsync("api/clientes");
                 if (!responseClientes.IsSuccessStatusCode)
                 {
-                    responseClientes = await _httpClient.GetAsync("api/clientes");
+                    responseClientes = await _httpClient.GetAsync("api/usuarios");
                 }
 
                 if (responseClientes.IsSuccessStatusCode)
                 {
                     var content = await responseClientes.Content.ReadAsStringAsync();
                     var apiClientes = JsonSerializer.Deserialize<List<ClienteDto>>(content, _jsonOptions);
-                    if (apiClientes != null && apiClientes.Any())
+                    if (apiClientes != null)
                     {
                         listaClientes = apiClientes;
                     }
@@ -536,50 +546,60 @@ namespace FRFront.Controllers
             }
             catch { }
 
-            foreach (var localCli in ClientesEnMemoria)
-            {
-                if (!listaClientes.Any(c => c.Id == localCli.Id))
-                {
-                    listaClientes.Add(localCli);
-                }
-            }
-
             var cliente = listaClientes.FirstOrDefault(c => c.Id == id);
-
             if (cliente == null)
             {
                 TempData["ErrorMessage"] = "No se encontró el cliente seleccionado.";
                 return RedirectToAction(nameof(Clientes));
             }
 
-            var listaPedidos = PedidosEnMemoria;
+            var listaPedidos = new List<PedidoDto>();
             try
             {
+                var mapaUsuarios = await ObtenerDiccionarioUsuariosAsync();
                 var responsePedidos = await _httpClient.GetAsync("api/pedidos");
                 if (responsePedidos.IsSuccessStatusCode)
                 {
                     var content = await responsePedidos.Content.ReadAsStringAsync();
-                    var apiPedidos = JsonSerializer.Deserialize<List<PedidoDto>>(content, _jsonOptions);
-                    if (apiPedidos != null && apiPedidos.Any())
+                    using (var doc = JsonDocument.Parse(content))
                     {
-                        listaPedidos = apiPedidos;
+                        foreach (var item in doc.RootElement.EnumerateArray())
+                        {
+                            int idPedido = item.TryGetProperty("id", out var idProp) ? idProp.GetInt32() : 0;
+                            int usuarioId = item.TryGetProperty("usuarioId", out var uProp) ? uProp.GetInt32() : 0;
+                            decimal totalPedido = item.TryGetProperty("total", out var totalProp) ? totalProp.GetDecimal() : 0;
+                            string metodoPago = item.TryGetProperty("metodoPago", out var pagoProp) ? pagoProp.GetString() ?? "EFECTIVO" : "EFECTIVO";
+                            DateTime fechaPedido = item.TryGetProperty("fechaPedido", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
+
+                            string nombreCliente = mapaUsuarios.TryGetValue(usuarioId, out var n) && !string.IsNullOrWhiteSpace(n) 
+                                ? n 
+                                : $"Cliente #{usuarioId}";
+
+                            listaPedidos.Add(new PedidoDto
+                            {
+                                Id = idPedido,
+                                Cliente = nombreCliente,
+                                Fecha = fechaPedido,
+                                Total = totalPedido,
+                                Estado = "CONFIRMADO",
+                                TipoEntrega = metodoPago
+                            });
+                        }
                     }
                 }
             }
             catch { }
 
-            string nombreCliente = cliente.NombreCompleto?.Trim().ToUpper() ?? "";
-            string emailCliente = cliente.Email?.Trim().ToLower() ?? "";
+            string nombreClienteBuscado = cliente.NombreCompleto?.Trim().ToUpper() ?? "";
+            string emailClienteBuscado = cliente.Email?.Trim().ToLower() ?? "";
 
             var pedidosFiltrados = listaPedidos.Where(p =>
             {
                 if (p == null) return false;
-
                 string clientePedido = p.Cliente?.Trim().ToUpper() ?? "";
-
-                return clientePedido.Equals(nombreCliente, StringComparison.OrdinalIgnoreCase) ||
-                       (!string.IsNullOrEmpty(emailCliente) && clientePedido.ToLower().Contains(emailCliente));
-            }).ToList();
+                return clientePedido.Contains(nombreClienteBuscado) || clientePedido.Equals(nombreClienteBuscado) ||
+                       (!string.IsNullOrEmpty(emailClienteBuscado) && clientePedido.ToLower().Contains(emailClienteBuscado));
+            }).OrderByDescending(p => p.Fecha).ToList();
 
             ViewBag.ClienteNombre = cliente.NombreCompleto;
             ViewBag.ClienteId = string.IsNullOrEmpty(cliente.NumeroCliente) || cliente.NumeroCliente == "CLI-000" 
@@ -602,7 +622,7 @@ namespace FRFront.Controllers
                 return RedirectToAction("Index", "Empleado");
             }
 
-            var empleados = EmpleadosEnMemoria;
+            var empleados = new List<EmpleadoDto>();
 
             try
             {
@@ -611,13 +631,19 @@ namespace FRFront.Controllers
                 {
                     var content = await response.Content.ReadAsStringAsync();
                     var apiUsuarios = JsonSerializer.Deserialize<List<EmpleadoDto>>(content, _jsonOptions);
-                    if (apiUsuarios != null && apiUsuarios.Any())
+                    if (apiUsuarios != null)
                     {
-                        empleados = apiUsuarios;
+                        empleados = apiUsuarios.Where(e => 
+                            (e.Rol == null || !e.Rol.Equals("Cliente", StringComparison.OrdinalIgnoreCase)) &&
+                            (e.NombreCompleto == null || (!e.NombreCompleto.ToUpper().Contains("CLIENTE") && !e.NombreCompleto.ToUpper().Contains("JAVIER MILEI")))
+                        ).ToList();
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR EN EMPLEADOS API]: {ex.Message}");
+            }
 
             if (!string.IsNullOrEmpty(busqueda))
             {
@@ -635,12 +661,6 @@ namespace FRFront.Controllers
         [HttpGet]
         public IActionResult CrearEmpleado()
         {
-            string? rol = HttpContext.Session.GetString("RolSesion");
-            if (rol != "Administrador")
-            {
-                return RedirectToAction("Index", "Empleado");
-            }
-
             return View("~/Views/Empleados/Crear.cshtml");
         }
 
@@ -648,54 +668,19 @@ namespace FRFront.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CrearEmpleado(string Dni, string Email, string Nombre, string Apellido, string Usuario, string Rol, string Password, string? Telefono)
         {
-            if (!string.IsNullOrEmpty(Nombre) && !string.IsNullOrEmpty(Apellido) && !string.IsNullOrEmpty(Email))
-            {
-                int nuevoId = EmpleadosEnMemoria.Any() ? EmpleadosEnMemoria.Max(e => e.Id) + 1 : 1;
-
-                var nuevoEmpleado = new EmpleadoDto
-                {
-                    Id = nuevoId,
-                    Nombre = Nombre.ToUpper(),
-                    Apellido = Apellido.ToUpper(),
-                    Email = Email.ToLower(),
-                    Telefono = string.IsNullOrEmpty(Telefono) ? "Sin registrar" : Telefono,
-                    Rol = string.IsNullOrEmpty(Rol) ? "CAJERO" : Rol.ToUpper(),
-                    Estado = "ACTIVO"
-                };
-
-                EmpleadosEnMemoria.Add(nuevoEmpleado);
-
-                TempData["SuccessMessage"] = $"Empleado {Nombre.ToUpper()} {Apellido.ToUpper()} registrado correctamente.";
-                return RedirectToAction(nameof(Empleados));
-            }
-
-            return View("~/Views/Empleados/Crear.cshtml");
+            return RedirectToAction(nameof(Empleados));
         }
 
         [HttpGet]
         public IActionResult DetalleEmpleado(int id)
         {
-            var empleado = EmpleadosEnMemoria.FirstOrDefault(e => e.Id == id) ?? EmpleadosEnMemoria.FirstOrDefault();
-            return View("~/Views/Empleados/Detalle.cshtml", empleado);
+            return View("~/Views/Empleados/Detalle.cshtml", new EmpleadoDto());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditarEmpleado(EmpleadoDto empleadoModificado)
         {
-            var empLocal = EmpleadosEnMemoria.FirstOrDefault(e => e.Id == empleadoModificado.Id);
-            if (empLocal != null)
-            {
-                empLocal.Nombre = empleadoModificado.Nombre;
-                empLocal.Apellido = empleadoModificado.Apellido;
-                empLocal.Email = empleadoModificado.Email;
-                empLocal.Telefono = empleadoModificado.Telefono;
-                empLocal.Rol = empleadoModificado.Rol?.ToUpper();
-                empLocal.Estado = empleadoModificado.Estado?.ToUpper();
-
-                TempData["SuccessMessage"] = "Información del empleado actualizada.";
-            }
-
             return RedirectToAction(nameof(Empleados));
         }
 
@@ -703,13 +688,6 @@ namespace FRFront.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CambiarEstadoEmpleado(int id, string nuevoEstado)
         {
-            var empLocal = EmpleadosEnMemoria.FirstOrDefault(e => e.Id == id);
-            if (empLocal != null)
-            {
-                empLocal.Estado = nuevoEstado.ToUpper();
-                TempData["SuccessMessage"] = $"Estado cambiado a {nuevoEstado.ToUpper()}.";
-            }
-
             return RedirectToAction(nameof(Empleados));
         }
 
@@ -717,13 +695,6 @@ namespace FRFront.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EliminarEmpleado(int id)
         {
-            var empLocal = EmpleadosEnMemoria.FirstOrDefault(e => e.Id == id);
-            if (empLocal != null)
-            {
-                EmpleadosEnMemoria.Remove(empLocal);
-                TempData["SuccessMessage"] = "Empleado eliminado correctamente.";
-            }
-
             return RedirectToAction(nameof(Empleados));
         }
 
@@ -734,35 +705,147 @@ namespace FRFront.Controllers
         [HttpGet]
         public async Task<IActionResult> Facturas()
         {
-            var pedidos = PedidosEnMemoria;
+            var listaFacturas = new List<PedidoDto>();
 
             try
             {
-                var response = await _httpClient.GetAsync("api/pedidos");
-                if (response.IsSuccessStatusCode)
+                var mapaUsuarios = await ObtenerDiccionarioUsuariosAsync();
+                
+                var mapaPedidosUsuario = new Dictionary<int, int>();
+                var responsePedidos = await _httpClient.GetAsync("api/pedidos");
+                if (responsePedidos.IsSuccessStatusCode)
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var apiPedidos = JsonSerializer.Deserialize<List<PedidoDto>>(content, _jsonOptions);
-                    if (apiPedidos != null && apiPedidos.Any())
+                    var contentP = await responsePedidos.Content.ReadAsStringAsync();
+                    using (var docP = JsonDocument.Parse(contentP))
                     {
-                        pedidos = apiPedidos;
+                        foreach (var itemP in docP.RootElement.EnumerateArray())
+                        {
+                            int pId = itemP.TryGetProperty("id", out var pProp) ? pProp.GetInt32() : 0;
+                            int uId = itemP.TryGetProperty("usuarioId", out var uProp) ? uProp.GetInt32() : 0;
+                            if (pId > 0)
+                            {
+                                mapaPedidosUsuario[pId] = uId;
+                            }
+                        }
+                    }
+                }
+
+                var responseFacturas = await _httpClient.GetAsync("api/facturas");
+                if (responseFacturas.IsSuccessStatusCode)
+                {
+                    var contentF = await responseFacturas.Content.ReadAsStringAsync();
+                    using (var docF = JsonDocument.Parse(contentF))
+                    {
+                        foreach (var elemento in docF.RootElement.EnumerateArray())
+                        {
+                            int idFactura = elemento.TryGetProperty("id", out var idProp) ? idProp.GetInt32() : 0;
+                            int pedidoId = elemento.TryGetProperty("pedidoId", out var pProp) ? pProp.GetInt32() : 0;
+                            decimal totalFactura = elemento.TryGetProperty("total", out var totalProp) ? totalProp.GetDecimal() : 0;
+                            DateTime fechaFactura = elemento.TryGetProperty("fecha", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
+
+                            int usuarioId = mapaPedidosUsuario.TryGetValue(pedidoId, out var uid) ? uid : 0;
+                            string nombreCliente = mapaUsuarios.TryGetValue(usuarioId, out var nombre) && !string.IsNullOrWhiteSpace(nombre) 
+                                ? nombre 
+                                : $"Cliente #{usuarioId}";
+
+                            listaFacturas.Add(new PedidoDto
+                            {
+                                Id = idFactura,
+                                Cliente = nombreCliente,
+                                Fecha = fechaFactura,
+                                Total = totalFactura,
+                                Estado = "PENDIENTE",
+                                TipoEntrega = "EFECTIVO"
+                            });
+                        }
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR EN FACTURAS API]: {ex.Message}");
+            }
 
-            return View("~/Views/Facturas/Index.cshtml", pedidos);
+            return View("~/Views/Facturas/Index.cshtml", listaFacturas.OrderByDescending(f => f.Fecha).ThenByDescending(f => f.Id).ToList());
         }
 
         [HttpGet]
-        public IActionResult VerFactura(int id)
+        public async Task<IActionResult> VerFactura(int id)
         {
-            var pedido = PedidosEnMemoria.FirstOrDefault(p => p.Id == id) ?? PedidosEnMemoria.FirstOrDefault();
+            PedidoDto? pedido = null;
+
+            try
+            {
+                var mapaUsuarios = await ObtenerDiccionarioUsuariosAsync();
+                
+                var mapaPedidosUsuario = new Dictionary<int, int>();
+                var responsePedidos = await _httpClient.GetAsync("api/pedidos");
+                if (responsePedidos.IsSuccessStatusCode)
+                {
+                    var contentP = await responsePedidos.Content.ReadAsStringAsync();
+                    using (var docP = JsonDocument.Parse(contentP))
+                    {
+                        foreach (var itemP in docP.RootElement.EnumerateArray())
+                        {
+                            int pId = itemP.TryGetProperty("id", out var pProp) ? pProp.GetInt32() : 0;
+                            int uId = itemP.TryGetProperty("usuarioId", out var uProp) ? uProp.GetInt32() : 0;
+                            if (pId > 0) mapaPedidosUsuario[pId] = uId;
+                        }
+                    }
+                }
+
+                var response = await _httpClient.GetAsync("api/facturas");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    using (var doc = JsonDocument.Parse(content))
+                    {
+                        foreach (var elemento in doc.RootElement.EnumerateArray())
+                        {
+                            int idFactura = elemento.TryGetProperty("id", out var idProp) ? idProp.GetInt32() : 0;
+                            if (idFactura == id)
+                            {
+                                decimal totalFactura = elemento.TryGetProperty("total", out var totalProp) ? totalProp.GetDecimal() : 0;
+                                string tipo = elemento.TryGetProperty("tipo", out var tipoProp) ? tipoProp.GetString() ?? "B" : "B";
+                                int numero = elemento.TryGetProperty("numero", out var numProp) ? numProp.GetInt32() : 0;
+                                int pedidoId = elemento.TryGetProperty("pedidoId", out var pProp) ? pProp.GetInt32() : 0;
+                                DateTime fechaFactura = elemento.TryGetProperty("fecha", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
+
+                                int usuarioId = mapaPedidosUsuario.TryGetValue(pedidoId, out var uid) ? uid : 0;
+                                string nombreCliente = mapaUsuarios.TryGetValue(usuarioId, out var nombre) && !string.IsNullOrWhiteSpace(nombre) 
+                                    ? nombre 
+                                    : $"Cliente #{usuarioId}";
+
+                                pedido = new PedidoDto
+                                {
+                                    Id = idFactura,
+                                    Cliente = nombreCliente,
+                                    Fecha = fechaFactura,
+                                    Total = totalFactura,
+                                    Estado = "APROBADO",
+                                    TipoEntrega = "EFECTIVO"
+                                };
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR EN VER FACTURA API]: {ex.Message}");
+            }
+
+            if (pedido == null)
+            {
+                pedido = new PedidoDto { Id = id, Cliente = "Cliente Desconocido", Total = 0, Fecha = DateTime.Now, Estado = "APROBADO", TipoEntrega = "EFECTIVO" };
+            }
+
             return View("~/Views/Facturas/Detalle.cshtml", pedido);
         }
 
         // ==========================================
-        // CAMBIAR CONTRASEÑA ADMINISTRADOR
+        // CAMBIAR CONTRASEÑA
         // ==========================================
 
         [HttpGet]
@@ -785,5 +868,12 @@ namespace FRFront.Controllers
             TempData["SuccessMessage"] = "Tu contraseña ha sido actualizada con éxito.";
             return RedirectToAction("CambiarContrasena");
         }
+    }
+
+    public class UsuarioSimpleDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public string Apellido { get; set; } = string.Empty;
     }
 }

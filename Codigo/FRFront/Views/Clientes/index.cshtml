@@ -3,6 +3,9 @@
 @{
     ViewData["Title"] = "F&R - Gestión de Clientes";
     Layout = null;
+
+    string? rol = Context.Session.GetString("RolSesion");
+    string controllerVolver = (rol == "Empleado" || rol == "CAJERO") ? "Empleado" : "Administrador";
 }
 
 <!DOCTYPE html>
@@ -177,7 +180,7 @@
     <header class="admin-navbar">
         <a href="#" class="admin-brand">F&R</a>
         <h2 class="admin-page-title">Gestión de Clientes</h2>
-        <a href="@Url.Action("Index", "Empleado")" class="btn-volver-panel">&lt; Volver</a>
+        <a href="@Url.Action("Index", controllerVolver)" class="btn-volver-panel">&lt; Volver</a>
     </header>
 
     <!-- Contenido Principal -->
@@ -195,7 +198,7 @@
 
         <!-- Barra de Búsqueda -->
         <div class="search-box-container mb-4">
-            <form method="get" action="@Url.Action("Clientes", "Administrador")">
+            <form method="get" action="@Url.Action("Clientes", controllerVolver)">
                 <div class="d-flex align-items-center">
                     <input type="text" name="busqueda" value="@ViewBag.BusquedaActual" 
                            class="form-control search-input w-100" 
@@ -232,8 +235,8 @@
                                     ? $"CLI-{cliente.Id:D3}"
                                     : cliente.NumeroCliente;
 
-                                string telefonoMostrar = string.IsNullOrWhiteSpace(cliente.Telefono) ? "Sin registrar" : cliente.Telefono;
-                                string dniMostrar = string.IsNullOrWhiteSpace(cliente.Dni) ? "S/D" : cliente.Dni;
+                                string telefonoMostrar = string.IsNullOrWhiteSpace(cliente.Telefono) || cliente.Telefono == "Sin registrar" ? "Sin registrar" : cliente.Telefono;
+                                string dniMostrar = string.IsNullOrWhiteSpace(cliente.Dni) || cliente.Dni == "S/D" ? "S/D" : cliente.Dni;
 
                                 <tr class="text-center">
                                     <td class="fw-bold text-start">@codigoCliente</td>
@@ -254,12 +257,12 @@
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom">
                                                 <li>
-                                                    <a class="dropdown-item" href="@Url.Action("DetalleCliente", "Administrador", new { id = cliente.Id })">
+                                                    <a class="dropdown-item" href="@Url.Action("DetalleCliente", controllerVolver, new { id = cliente.Id })">
                                                         Ver Ficha
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a class="dropdown-item" href="@Url.Action("HistorialCliente", "Administrador", new { id = cliente.Id })">
+                                                    <a class="dropdown-item" href="@Url.Action("HistorialCliente", controllerVolver, new { id = cliente.Id })">
                                                         Historial de Compras
                                                     </a>
                                                 </li>
