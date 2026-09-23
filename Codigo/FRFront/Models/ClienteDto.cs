@@ -5,6 +5,7 @@ namespace FRFront.Models
     public class ClienteDto
     {
         public int Id { get; set; }
+        public int IdUsuario { get; set; }
         public string Dni { get; set; } = string.Empty;
         public string Nombre { get; set; } = string.Empty;
         public string Apellido { get; set; } = string.Empty;

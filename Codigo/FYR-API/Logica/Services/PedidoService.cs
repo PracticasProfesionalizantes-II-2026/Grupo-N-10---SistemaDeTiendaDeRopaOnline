@@ -50,6 +50,7 @@ public class PedidoService : IPedidoService
         FechaPedido = DateTime.UtcNow,
         DireccionEntrega = request.DireccionEntrega,
         MetodoPago = request.MetodoPago,
+        Total = request.Total,
         UsuarioId = request.UsuarioId,
         Estado = Enum.Parse<EstadoPedido>(request.Estado, true)
     };

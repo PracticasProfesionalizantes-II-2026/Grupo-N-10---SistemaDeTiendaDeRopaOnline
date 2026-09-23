@@ -257,12 +257,12 @@
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom">
                                                 <li>
-                                                    <a class="dropdown-item" href="@Url.Action("DetalleCliente", controllerVolver, new { id = cliente.Id })">
+                                                    <a class="dropdown-item" href="@Url.Action("DetalleCliente", "Administrador", new { id = cliente.Id })">
                                                         Ver Ficha
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a class="dropdown-item" href="@Url.Action("HistorialCliente", controllerVolver, new { id = cliente.Id })">
+                                                    <a class="dropdown-item" href="@Url.Action("HistorialCliente", "Administrador", new { id = cliente.Id })">
                                                         Historial de Compras
                                                     </a>
                                                 </li>

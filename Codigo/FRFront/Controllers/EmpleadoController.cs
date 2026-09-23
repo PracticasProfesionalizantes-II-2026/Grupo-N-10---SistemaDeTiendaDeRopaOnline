@@ -136,6 +136,53 @@ namespace FRFront.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ProcesarVenta(
+            string clienteDni,
+            string clienteNombre,
+            string clienteApellido,
+            string clienteEmail,
+            string clienteTelefono,
+            decimal totalVenta,
+            string metodoPago,
+            string jsonDetalle)
+        {
+            try
+            {
+                var pedidoRequest = new
+                {
+                    Cliente = $"{clienteNombre} {clienteApellido}".Trim(),
+                    Dni = clienteDni,
+                    Email = clienteEmail,
+                    Telefono = clienteTelefono,
+                    Total = totalVenta,
+                    TipoEntrega = metodoPago,
+                    Detalle = JsonSerializer.Deserialize<List<DetallePedidoVentaRequest>>(jsonDetalle, _jsonOptions) ?? new()
+                };
+
+                var pedidoContent = new StringContent(
+                    JsonSerializer.Serialize(pedidoRequest),
+                    Encoding.UTF8,
+                    "application/json");
+                var pedidoResponse = await _httpClient.PostAsync("api/pedidos", pedidoContent);
+
+                if (!pedidoResponse.IsSuccessStatusCode)
+                {
+                    TempData["ErrorVenta"] = "No se pudo registrar el pedido en la API.";
+                    return RedirectToAction(nameof(NuevaVenta));
+                }
+
+                return RedirectToAction(nameof(Facturas));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR AL PROCESAR VENTA]: {ex.Message}");
+                TempData["ErrorVenta"] = "Ocurrió un error al procesar la venta.";
+                return RedirectToAction(nameof(NuevaVenta));
+            }
+        }
+
+        [HttpPost]
         public async Task<IActionResult> RegistrarVenta([FromBody] PedidoVentaRequest request)
         {
             try
@@ -182,7 +229,7 @@ namespace FRFront.Controllers
                     {
                         foreach (var item in doc.RootElement.EnumerateArray())
                         {
-                            int idPedido = ObtenerIdPedido(item, "id");
+                            int idPedido = ObtenerIdPedido(item, "id", "idPedido");
                             int usuarioId = ObtenerIdPedido(item, "usuarioId", "UsuarioId");
                             decimal totalPedido = item.TryGetProperty("total", out var totalProp) ? totalProp.GetDecimal() : 0;
                             string metodoPago = item.TryGetProperty("metodoPago", out var pagoProp) ? pagoProp.GetString() ?? "EFECTIVO" : "EFECTIVO";
@@ -196,7 +243,7 @@ namespace FRFront.Controllers
                                 Cliente = nombreCliente,
                                 Fecha = fechaPedido,
                                 Total = totalPedido,
-                                Estado = "CONFIRMADO",
+                                Estado = "PAGADO",
                                 TipoEntrega = metodoPago
                             });
                         }
@@ -235,7 +282,7 @@ namespace FRFront.Controllers
                     {
                         foreach (var itemP in docP.RootElement.EnumerateArray())
                         {
-                            int pId = ObtenerIdPedido(itemP, "id");
+                            int pId = ObtenerIdPedido(itemP, "id", "idPedido");
                             int uId = ObtenerIdPedido(itemP, "usuarioId", "UsuarioId");
                             if (pId > 0) mapaPedidosUsuario[pId] = uId;
                         }
@@ -264,7 +311,7 @@ namespace FRFront.Controllers
                                 Cliente = nombreCliente,
                                 Fecha = fechaFactura,
                                 Total = totalFactura,
-                                Estado = "PENDIENTE",
+                                Estado = "PAGADO",
                                 TipoEntrega = "EFECTIVO"
                             });
                         }
@@ -302,7 +349,15 @@ namespace FRFront.Controllers
                     var apiClientes = JsonSerializer.Deserialize<List<ClienteDto>>(content, _jsonOptions);
                     if (apiClientes != null)
                     {
-                        clientes = apiClientes;
+                        clientes = apiClientes.Select(cliente =>
+                        {
+                            if (cliente.Id <= 0 && cliente.IdUsuario > 0)
+                            {
+                                cliente.Id = cliente.IdUsuario;
+                            }
+
+                            return cliente;
+                        }).ToList();
                     }
                 }
             }

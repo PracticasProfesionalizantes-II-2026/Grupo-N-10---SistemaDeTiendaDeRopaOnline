@@ -118,6 +118,36 @@ app.MapGet("/api/pedidos", async (AppDbContext db) =>
     }
 });
 
+// Limpieza puntual de ventas creadas sin cliente válido o sin importe.
+app.MapDelete("/api/pedidos/invalidos", async (AppDbContext db) =>
+{
+    var pedidosInvalidos = await db.Pedidos
+        .Include(p => p.Usuario)
+        .Where(p => p.Total <= 0 ||
+                EF.Functions.Like(p.Usuario.Nombre, "%MOSTRADOR%") ||
+                EF.Functions.Like(p.Usuario.Apellido, "%MOSTRADOR%"))
+        .ToListAsync();
+
+    db.Pedidos.RemoveRange(pedidosInvalidos);
+    await db.SaveChangesAsync();
+
+    var clientesHuerfanos = await db.Usuarios
+        .Where(u => u.Rol == Rol.Cliente &&
+                    (EF.Functions.Like(u.Nombre, "%MOSTRADOR%") ||
+                     EF.Functions.Like(u.Apellido, "%MOSTRADOR%")) &&
+                    !u.Pedidos.Any())
+        .ToListAsync();
+
+    db.Usuarios.RemoveRange(clientesHuerfanos);
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        pedidosEliminados = pedidosInvalidos.Count,
+        clientesEliminados = clientesHuerfanos.Count
+    });
+});
+
 // 2. Obtener pedido por ID
 app.MapGet("/api/pedidos/{id:int}", async (int id, AppDbContext db) =>
 {
@@ -151,6 +181,7 @@ app.MapPost("/api/pedidos", async (AppDbContext db, PedidoRequest pedidoDto) =>
             {
                 Nombre = nom,
                 Apellido = ape,
+                Dni = string.IsNullOrWhiteSpace(pedidoDto.Dni) ? null : pedidoDto.Dni.Trim(),
                 Email = emailBuscado,
                 Telefono = string.IsNullOrWhiteSpace(pedidoDto.Telefono) ? "Sin registrar" : pedidoDto.Telefono.Trim(),
                 PasswordHash = "123456",
@@ -162,11 +193,19 @@ app.MapPost("/api/pedidos", async (AppDbContext db, PedidoRequest pedidoDto) =>
         }
         else
         {
+            usuario.Nombre = clienteNombre.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? usuario.Nombre;
+            usuario.Apellido = string.Join(" ", clienteNombre.Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1));
+            if (!string.IsNullOrWhiteSpace(pedidoDto.Dni))
+            {
+                usuario.Dni = pedidoDto.Dni.Trim();
+            }
+
             if (!string.IsNullOrWhiteSpace(pedidoDto.Telefono))
             {
                 usuario.Telefono = pedidoDto.Telefono.Trim();
-                await db.SaveChangesAsync();
             }
+
+            await db.SaveChangesAsync();
         }
 
         // Crear Pedido
@@ -175,9 +214,9 @@ app.MapPost("/api/pedidos", async (AppDbContext db, PedidoRequest pedidoDto) =>
             UsuarioId = usuario.Id,
             FechaPedido = DateTime.Now,
             Total = pedidoDto.Total,
-            Estado = (Entidades.Enums.EstadoPedido)1,
+            Estado = Entidades.Enums.EstadoPedido.Pagado,
             MetodoPago = string.IsNullOrWhiteSpace(pedidoDto.TipoEntrega) ? "EFECTIVO" : pedidoDto.TipoEntrega,
-            DireccionEntrega = "VENTA MOSTRADOR",
+            DireccionEntrega = $"Cliente: {clienteNombre} - DNI: {pedidoDto.Dni} - Email: {pedidoDto.Email} - Tel: {pedidoDto.Telefono}",
             NumeroSeguimiento = $"SEG-{Random.Shared.Next(10000, 99999)}"
         };
 

@@ -101,6 +101,20 @@ namespace FRFront.Controllers
             return usuarioId > 0 ? $"Cliente #{usuarioId}" : "Cliente Mostrador";
         }
 
+        private static List<ClienteDto> NormalizarClientes(IEnumerable<ClienteDto> clientes)
+        {
+            var lista = clientes.ToList();
+            foreach (var cliente in lista)
+            {
+                if (cliente.Id <= 0 && cliente.IdUsuario > 0)
+                {
+                    cliente.Id = cliente.IdUsuario;
+                }
+            }
+
+            return lista;
+        }
+
         [HttpGet]
         public IActionResult Index()
         {
@@ -381,10 +395,11 @@ namespace FRFront.Controllers
                             listaPedidos.Add(new PedidoDto
                             {
                                 Id = idPedido,
+                                UsuarioId = usuarioId,
                                 Cliente = nombreCliente,
                                 Fecha = fechaPedido,
                                 Total = totalPedido,
-                                Estado = "CONFIRMADO",
+                                Estado = "PAGADO",
                                 TipoEntrega = metodoPago
                             });
                         }
@@ -436,13 +451,22 @@ namespace FRFront.Controllers
                                 ? nombre 
                                 : $"Cliente #{usuarioId}";
 
+                            var estadoPedido = elemento.TryGetProperty("estado", out var estadoProp)
+                                ? estadoProp.ToString()
+                                : string.Empty;
+                            if (string.IsNullOrWhiteSpace(estadoPedido) || metodo.Equals("EFECTIVO", StringComparison.OrdinalIgnoreCase))
+                            {
+                                estadoPedido = "PAGADO";
+                            }
+
                             pedido = new PedidoDto
                             {
                                 Id = idItem,
+                                UsuarioId = usuarioId,
                                 Cliente = nombreCliente,
                                 Fecha = fecha,
                                 Total = total,
-                                Estado = "CONFIRMADO",
+                                Estado = estadoPedido,
                                 TipoEntrega = metodo
                             };
                         }
@@ -466,6 +490,19 @@ namespace FRFront.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ActualizarEstadoPedido(int id, string nuevoEstado)
         {
+            try
+            {
+                var estadoRequest = new StringContent(
+                    JsonSerializer.Serialize(new { Estado = nuevoEstado }),
+                    Encoding.UTF8,
+                    "application/json");
+                await _httpClient.PatchAsync($"api/pedidos/{id}/estado", estadoRequest);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR AL ACTUALIZAR ESTADO DEL PEDIDO]: {ex.Message}");
+            }
+
             return RedirectToAction(nameof(Pedidos));
         }
 
@@ -492,7 +529,7 @@ namespace FRFront.Controllers
                     var apiClientes = JsonSerializer.Deserialize<List<ClienteDto>>(content, _jsonOptions);
                     if (apiClientes != null)
                     {
-                        clientes = apiClientes;
+                        clientes = NormalizarClientes(apiClientes);
                     }
                 }
             }
@@ -534,7 +571,7 @@ namespace FRFront.Controllers
                     var apiClientes = JsonSerializer.Deserialize<List<ClienteDto>>(content, _jsonOptions);
                     if (apiClientes != null)
                     {
-                        listaClientes = apiClientes;
+                        listaClientes = NormalizarClientes(apiClientes);
                     }
                 }
             }
@@ -575,7 +612,7 @@ namespace FRFront.Controllers
                     var apiClientes = JsonSerializer.Deserialize<List<ClienteDto>>(content, _jsonOptions);
                     if (apiClientes != null)
                     {
-                        listaClientes = apiClientes;
+                        listaClientes = NormalizarClientes(apiClientes);
                     }
                 }
             }
@@ -600,23 +637,22 @@ namespace FRFront.Controllers
                     {
                         foreach (var item in doc.RootElement.EnumerateArray())
                         {
-                            int idPedido = item.TryGetProperty("id", out var idProp) ? idProp.GetInt32() : 0;
-                            int usuarioId = item.TryGetProperty("usuarioId", out var uProp) ? uProp.GetInt32() : 0;
+                            int idPedido = ObtenerIdPedido(item, "id", "idPedido");
+                            int usuarioId = ObtenerIdPedido(item, "usuarioId", "UsuarioId");
                             decimal totalPedido = item.TryGetProperty("total", out var totalProp) ? totalProp.GetDecimal() : 0;
                             string metodoPago = item.TryGetProperty("metodoPago", out var pagoProp) ? pagoProp.GetString() ?? "EFECTIVO" : "EFECTIVO";
                             DateTime fechaPedido = item.TryGetProperty("fechaPedido", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
 
-                            string nombreCliente = mapaUsuarios.TryGetValue(usuarioId, out var n) && !string.IsNullOrWhiteSpace(n) 
-                                ? n 
-                                : $"Cliente #{usuarioId}";
+                            string nombreCliente = ObtenerNombreCliente(mapaUsuarios, usuarioId);
 
                             listaPedidos.Add(new PedidoDto
                             {
                                 Id = idPedido,
+                                UsuarioId = usuarioId,
                                 Cliente = nombreCliente,
                                 Fecha = fechaPedido,
                                 Total = totalPedido,
-                                Estado = "CONFIRMADO",
+                                Estado = "PAGADO",
                                 TipoEntrega = metodoPago
                             });
                         }
@@ -625,16 +661,10 @@ namespace FRFront.Controllers
             }
             catch { }
 
-            string nombreClienteBuscado = cliente.NombreCompleto?.Trim().ToUpper() ?? "";
-            string emailClienteBuscado = cliente.Email?.Trim().ToLower() ?? "";
-
-            var pedidosFiltrados = listaPedidos.Where(p =>
-            {
-                if (p == null) return false;
-                string clientePedido = p.Cliente?.Trim().ToUpper() ?? "";
-                return clientePedido.Contains(nombreClienteBuscado) || clientePedido.Equals(nombreClienteBuscado) ||
-                       (!string.IsNullOrEmpty(emailClienteBuscado) && clientePedido.ToLower().Contains(emailClienteBuscado));
-            }).OrderByDescending(p => p.Fecha).ToList();
+            var pedidosFiltrados = listaPedidos
+                .Where(p => p.Id > 0 && p.UsuarioId == cliente.Id)
+                .OrderByDescending(p => p.Fecha)
+                .ToList();
 
             ViewBag.ClienteNombre = cliente.NombreCompleto;
             ViewBag.ClienteId = string.IsNullOrEmpty(cliente.NumeroCliente) || cliente.NumeroCliente == "CLI-000" 
@@ -787,7 +817,7 @@ namespace FRFront.Controllers
                                 Cliente = nombreCliente,
                                 Fecha = fechaFactura,
                                 Total = totalFactura,
-                                Estado = "PENDIENTE",
+                                Estado = "PAGADO",
                                 TipoEntrega = "EFECTIVO"
                             });
                         }

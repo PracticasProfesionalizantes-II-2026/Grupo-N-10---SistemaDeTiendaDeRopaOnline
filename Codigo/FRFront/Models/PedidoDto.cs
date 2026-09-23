@@ -6,6 +6,7 @@ namespace FRFront.Models
     public class PedidoDto
     {
         public int Id { get; set; }
+        public int UsuarioId { get; set; }
         public string NumeroPedido => $"#{Id:D5}";
         public string Cliente { get; set; } = string.Empty;
         public DateTime Fecha { get; set; } = DateTime.Now;
