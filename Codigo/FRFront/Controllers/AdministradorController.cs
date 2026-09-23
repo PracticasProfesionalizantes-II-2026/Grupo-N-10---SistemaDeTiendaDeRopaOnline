@@ -780,6 +780,34 @@ namespace FRFront.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CrearEmpleado(string Dni, string Email, string Nombre, string Apellido, string Usuario, string Rol, string Password, string? Telefono)
         {
+            try
+            {
+                var request = new
+                {
+                    Dni,
+                    Nombre,
+                    Apellido,
+                    Email,
+                    Password,
+                    Rol = Rol.Equals("Administrador", StringComparison.OrdinalIgnoreCase) ? 3 : 4,
+                    Telefono,
+                    IdiomaPreferido = "es",
+                    FotoPerfil = (string?)null,
+                    EmpresaId = (int?)null,
+                    Activo = true
+                };
+                var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync("api/usuarios", content);
+                TempData[response.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] = response.IsSuccessStatusCode
+                    ? "El empleado se creó correctamente."
+                    : "No se pudo crear el empleado.";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR AL CREAR EMPLEADO]: {ex.Message}");
+                TempData["ErrorMessage"] = "Ocurrió un error al crear el empleado.";
+            }
+
             return RedirectToAction(nameof(Empleados));
         }
 

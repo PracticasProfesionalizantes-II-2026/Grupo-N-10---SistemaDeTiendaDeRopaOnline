@@ -46,6 +46,7 @@ public class UsuarioService : IUsuarioService
     {
         var usuario = new Usuario
         {
+            Dni = request.Dni,
             Nombre = request.Nombre,
             Apellido = request.Apellido,
             Email = request.Email,
