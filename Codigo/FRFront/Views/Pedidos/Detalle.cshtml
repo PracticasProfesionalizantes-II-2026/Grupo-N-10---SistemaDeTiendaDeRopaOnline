@@ -6,6 +6,10 @@
 
     var successMessage = TempData["SuccessMessage"] as string;
     var errorMessage = TempData["ErrorMessage"] as string;
+    var rolSesion = Context.Session.GetString("RolSesion") ?? string.Empty;
+    var esPanelCajero = rolSesion.Equals("Empleado", StringComparison.OrdinalIgnoreCase) ||
+                        rolSesion.Equals("CAJERO", StringComparison.OrdinalIgnoreCase) ||
+                        rolSesion.Equals("Cajero", StringComparison.OrdinalIgnoreCase);
 }
 
 <!DOCTYPE html>
@@ -145,10 +149,18 @@
                     <div class="col-12 col-md-6">
                         <label class="label-custom mb-1 text-primary">ESTADO DEL PEDIDO:</label>
                         <select name="nuevoEstado" class="form-select form-select-custom shadow-sm" required>
-                            <option value="CONFIRMADO" selected="@(Model.Estado.ToUpper() == "CONFIRMADO")">CONFIRMADO</option>
-                            <option value="EN CAMINO" selected="@(Model.Estado.ToUpper() == "EN CAMINO")">EN CAMINO</option>
-                            <option value="ENTREGADO" selected="@(Model.Estado.ToUpper() == "ENTREGADO")">ENTREGADO</option>
-                            <option value="CANCELADO" selected="@(Model.Estado.ToUpper() == "CANCELADO")">CANCELADO</option>
+                            @if (esPanelCajero)
+                            {
+                                <option value="PAGADO" selected="selected">PAGADO</option>
+                            }
+                            else
+                            {
+                                <option value="CONFIRMADO" selected="@(Model.Estado.ToUpper() == "CONFIRMADO")">CONFIRMADO</option>
+                                <option value="PAGADO" selected="@(Model.Estado.ToUpper() == "PAGADO")">PAGADO</option>
+                                <option value="EN CAMINO" selected="@(Model.Estado.ToUpper() == "EN CAMINO")">EN CAMINO</option>
+                                <option value="ENTREGADO" selected="@(Model.Estado.ToUpper() == "ENTREGADO")">ENTREGADO</option>
+                                <option value="CANCELADO" selected="@(Model.Estado.ToUpper() == "CANCELADO")">CANCELADO</option>
+                            }
                         </select>
                     </div>
 

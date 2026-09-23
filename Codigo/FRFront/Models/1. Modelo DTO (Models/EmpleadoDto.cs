@@ -5,6 +5,7 @@ namespace FRFront.Models
     public class EmpleadoDto
     {
         public int Id { get; set; }
+        public int IdUsuario { get; set; }
 
         public string NumeroEmpleado => $"#{Id:D4}";
 
@@ -23,10 +24,13 @@ namespace FRFront.Models
         [Required(ErrorMessage = "El rol es obligatorio")]
         public string Rol { get; set; } = "CAJERO";
 
+        public string TipoUsuario { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "El teléfono es obligatorio")]
         [Phone(ErrorMessage = "Formato de teléfono inválido")]
         public string Telefono { get; set; } = string.Empty;
 
         public string Estado { get; set; } = "ACTIVO";
+        public bool Activo { get; set; } = true;
     }
 }

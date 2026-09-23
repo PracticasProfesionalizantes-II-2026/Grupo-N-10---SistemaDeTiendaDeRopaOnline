@@ -1,3 +1,4 @@
+using Repositorios.Interfaces;
 public static class PedidoEndpoints
 {
     public static RouteGroupBuilder MapPedidoEndpoints(this WebApplication app)
@@ -14,9 +15,20 @@ public static class PedidoEndpoints
             return pedido is null ? Results.NotFound() : Results.Ok(pedido);
         });
 
-        group.MapPost("/", async (CreatePedidoRequest request, IPedidoService service) =>
+        group.MapPost("/", async (CreatePedidoRequest request, IPedidoService service, IFacturaRepository facturaRepository) =>
         {
             var pedido = await service.CreateAsync(request);
+
+            var facturas = await facturaRepository.GetAllAsync();
+            await facturaRepository.CreateAsync(new DTO.Factura.Request.CreateFacturaRequest
+            {
+                Tipo = "B",
+                Numero = facturas.Count == 0 ? 1 : facturas.Max(f => f.Numero) + 1,
+                Total = pedido.Total,
+                FormaPago = pedido.MetodoPago,
+                PedidoId = pedido.IdPedido
+            });
+
             return Results.Created($"/api/pedidos/{pedido.IdPedido}", pedido);
         });
 

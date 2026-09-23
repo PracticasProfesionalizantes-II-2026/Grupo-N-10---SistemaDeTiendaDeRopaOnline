@@ -5,6 +5,7 @@ public class UsuarioResponse
     public string Apellido { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string TipoUsuario { get; set; } = string.Empty;
+    public bool Activo { get; set; }
     public string? Telefono { get; set; }
     public string? IdiomaPreferido { get; set; }
 }

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FYR-API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5ba3debe876d41f7493d1141d96e529ca0b82e86")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+13a50fa4a414f37a247bf680674d195eb58a1be7")]
 [assembly: System.Reflection.AssemblyProductAttribute("FYR-API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FYR-API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

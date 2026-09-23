@@ -52,7 +52,9 @@ public class PedidoService : IPedidoService
         MetodoPago = request.MetodoPago,
         Total = request.Total,
         UsuarioId = request.UsuarioId,
-        Estado = Enum.Parse<EstadoPedido>(request.Estado, true)
+        Estado = Enum.TryParse<EstadoPedido>(request.Estado, true, out var estado)
+            ? estado
+            : EstadoPedido.Confirmado
     };
 
     await _repository.AddAsync(pedido);

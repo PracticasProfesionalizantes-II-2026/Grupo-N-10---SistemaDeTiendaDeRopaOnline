@@ -454,6 +454,10 @@ namespace FRFront.Controllers
                             var estadoPedido = elemento.TryGetProperty("estado", out var estadoProp)
                                 ? estadoProp.ToString()
                                 : string.Empty;
+                            if (estadoPedido == "5")
+                            {
+                                estadoPedido = "PAGADO";
+                            }
                             if (string.IsNullOrWhiteSpace(estadoPedido) || metodo.Equals("EFECTIVO", StringComparison.OrdinalIgnoreCase))
                             {
                                 estadoPedido = "PAGADO";
@@ -496,11 +500,15 @@ namespace FRFront.Controllers
                     JsonSerializer.Serialize(new { Estado = nuevoEstado }),
                     Encoding.UTF8,
                     "application/json");
-                await _httpClient.PatchAsync($"api/pedidos/{id}/estado", estadoRequest);
+                var response = await _httpClient.PatchAsync($"api/pedidos/{id}/estado", estadoRequest);
+                TempData[response.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] = response.IsSuccessStatusCode
+                    ? "El estado del pedido se actualizó correctamente."
+                    : "No se pudo actualizar el estado del pedido.";
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR AL ACTUALIZAR ESTADO DEL PEDIDO]: {ex.Message}");
+                TempData["ErrorMessage"] = "Ocurrió un error al actualizar el pedido.";
             }
 
             return RedirectToAction(nameof(Pedidos));
@@ -591,6 +599,32 @@ namespace FRFront.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditarCliente(ClienteDto clienteModificado)
         {
+            try
+            {
+                var request = new
+                {
+                    Nombre = clienteModificado.Nombre,
+                    Apellido = clienteModificado.Apellido,
+                    Email = clienteModificado.Email,
+                    Rol = 5,
+                    Telefono = clienteModificado.Telefono,
+                    IdiomaPreferido = "es",
+                    FotoPerfil = (string?)null,
+                    Activo = clienteModificado.Estado.Equals("ACTIVO", StringComparison.OrdinalIgnoreCase),
+                    EmpresaId = (int?)null
+                };
+                var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+                var response = await _httpClient.PutAsync($"api/usuarios/{clienteModificado.Id}", content);
+                TempData[response.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] = response.IsSuccessStatusCode
+                    ? "Los datos del cliente se guardaron correctamente."
+                    : "No se pudieron guardar los datos del cliente.";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR AL EDITAR CLIENTE]: {ex.Message}");
+                TempData["ErrorMessage"] = "Ocurrió un error al guardar el cliente.";
+            }
+
             return RedirectToAction(nameof(Clientes));
         }
 
@@ -698,10 +732,23 @@ namespace FRFront.Controllers
                     var apiUsuarios = JsonSerializer.Deserialize<List<EmpleadoDto>>(content, _jsonOptions);
                     if (apiUsuarios != null)
                     {
-                        empleados = apiUsuarios.Where(e => 
-                            (e.Rol == null || !e.Rol.Equals("Cliente", StringComparison.OrdinalIgnoreCase)) &&
-                            (e.NombreCompleto == null || (!e.NombreCompleto.ToUpper().Contains("CLIENTE") && !e.NombreCompleto.ToUpper().Contains("JAVIER MILEI")))
-                        ).ToList();
+                        foreach (var usuario in apiUsuarios)
+                        {
+                            if (usuario.Id <= 0 && usuario.IdUsuario > 0)
+                            {
+                                usuario.Id = usuario.IdUsuario;
+                            }
+
+                            var rolApi = !string.IsNullOrWhiteSpace(usuario.TipoUsuario)
+                                ? usuario.TipoUsuario
+                                : usuario.Rol;
+                            usuario.Rol = rolApi.Trim();
+                        }
+
+                        empleados = apiUsuarios
+                            .Where(e => e.Rol.Equals("Empleado", StringComparison.OrdinalIgnoreCase) ||
+                                        e.Rol.Equals("Administrador", StringComparison.OrdinalIgnoreCase))
+                            .ToList();
                     }
                 }
             }
@@ -737,15 +784,79 @@ namespace FRFront.Controllers
         }
 
         [HttpGet]
-        public IActionResult DetalleEmpleado(int id)
+        public async Task<IActionResult> DetalleEmpleado(int id)
         {
-            return View("~/Views/Empleados/Detalle.cshtml", new EmpleadoDto());
+            try
+            {
+                var response = await _httpClient.GetAsync($"api/usuarios/{id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var usuario = JsonSerializer.Deserialize<EmpleadoDto>(content, _jsonOptions);
+                    if (usuario != null)
+                    {
+                        if (usuario.Id <= 0 && usuario.IdUsuario > 0)
+                        {
+                            usuario.Id = usuario.IdUsuario;
+                        }
+
+                        usuario.Rol = !string.IsNullOrWhiteSpace(usuario.TipoUsuario)
+                            ? usuario.TipoUsuario.Trim()
+                            : usuario.Rol.Trim();
+                        usuario.Estado = usuario.Activo ? "ACTIVO" : "BLOQUEADO";
+
+                        return View("~/Views/Empleados/Detalle.cshtml", usuario);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR AL CARGAR DETALLE DE EMPLEADO]: {ex.Message}");
+            }
+
+            TempData["ErrorMessage"] = "No se encontró el usuario seleccionado.";
+            return RedirectToAction(nameof(Empleados));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditarEmpleado(EmpleadoDto empleadoModificado)
         {
+            try
+            {
+                var rol = empleadoModificado.Rol.Equals("Administrador", StringComparison.OrdinalIgnoreCase)
+                    ? 3
+                    : 4;
+                var activo = !empleadoModificado.Estado.Equals("BLOQUEADO", StringComparison.OrdinalIgnoreCase);
+                var request = new
+                {
+                    Nombre = empleadoModificado.Nombre,
+                    Apellido = empleadoModificado.Apellido,
+                    Email = empleadoModificado.Email,
+                    Rol = rol,
+                    Telefono = empleadoModificado.Telefono,
+                    IdiomaPreferido = "es",
+                    FotoPerfil = (string?)null,
+                    Activo = activo,
+                    EmpresaId = (int?)null
+                };
+
+                var content = new StringContent(
+                    JsonSerializer.Serialize(request),
+                    Encoding.UTF8,
+                    "application/json");
+                var response = await _httpClient.PutAsync($"api/usuarios/{empleadoModificado.Id}", content);
+
+                TempData[response.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] = response.IsSuccessStatusCode
+                    ? "Los datos del empleado se guardaron correctamente."
+                    : "No se pudieron guardar los datos del empleado.";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR AL EDITAR EMPLEADO]: {ex.Message}");
+                TempData["ErrorMessage"] = "Ocurrió un error al guardar los datos del empleado.";
+            }
+
             return RedirectToAction(nameof(Empleados));
         }
 
@@ -753,6 +864,41 @@ namespace FRFront.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CambiarEstadoEmpleado(int id, string nuevoEstado)
         {
+            try
+            {
+                var usuarioResponse = await _httpClient.GetAsync($"api/usuarios/{id}");
+                if (!usuarioResponse.IsSuccessStatusCode)
+                {
+                    TempData["ErrorMessage"] = "No se encontró el usuario.";
+                    return RedirectToAction(nameof(Empleados));
+                }
+
+                var usuario = JsonSerializer.Deserialize<EmpleadoDto>(await usuarioResponse.Content.ReadAsStringAsync(), _jsonOptions)!;
+                var rol = usuario.TipoUsuario.Equals("Administrador", StringComparison.OrdinalIgnoreCase) ? 3 : 4;
+                var request = new
+                {
+                    Nombre = usuario.Nombre,
+                    Apellido = usuario.Apellido,
+                    Email = usuario.Email,
+                    Rol = rol,
+                    Telefono = usuario.Telefono,
+                    IdiomaPreferido = "es",
+                    FotoPerfil = (string?)null,
+                    Activo = !nuevoEstado.Equals("BLOQUEADO", StringComparison.OrdinalIgnoreCase),
+                    EmpresaId = (int?)null
+                };
+                var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+                var response = await _httpClient.PutAsync($"api/usuarios/{id}", content);
+                TempData[response.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] = response.IsSuccessStatusCode
+                    ? "El estado del usuario se actualizó correctamente."
+                    : "No se pudo actualizar el estado del usuario.";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR AL CAMBIAR ESTADO DEL EMPLEADO]: {ex.Message}");
+                TempData["ErrorMessage"] = "Ocurrió un error al actualizar el estado.";
+            }
+
             return RedirectToAction(nameof(Empleados));
         }
 
@@ -760,6 +906,19 @@ namespace FRFront.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EliminarEmpleado(int id)
         {
+            try
+            {
+                var response = await _httpClient.DeleteAsync($"api/usuarios/{id}");
+                TempData[response.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] = response.IsSuccessStatusCode
+                    ? "El usuario se eliminó correctamente."
+                    : "No se pudo eliminar el usuario.";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR AL ELIMINAR EMPLEADO]: {ex.Message}");
+                TempData["ErrorMessage"] = "Ocurrió un error al eliminar el usuario.";
+            }
+
             return RedirectToAction(nameof(Empleados));
         }
 
