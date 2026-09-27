@@ -15,6 +15,9 @@ public class Usuario
     [MaxLength(100)]
     public string Apellido { get; set; } = string.Empty;
 
+    [MaxLength(20)]
+    public string? Dni { get; set; }
+
     [Required]
     [EmailAddress]
     [MaxLength(150)]

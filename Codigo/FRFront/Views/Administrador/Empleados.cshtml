@@ -1,0 +1,285 @@
+@model IEnumerable<FRFront.Models.Empleado>
+@using Microsoft.AspNetCore.Http
+@{
+    Layout = null;
+    ViewData["Title"] = "Gestión de Empleados";
+    var usuarioLogueado = Context.Session.GetString("UsuarioSesion");
+    var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0].ToUpper() : "ADMIN";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F&R - Gestión de Empleados</title>
+    
+    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #1e293b;
+        }
+
+        .admin-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e9ecef;
+            padding: 16px 40px;
+        }
+
+        .main-container {
+            max-width: 1300px;
+            padding-top: 40px;
+            padding-bottom: 60px;
+        }
+
+        .card-table {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .btn-add-employee {
+            background-color: #111827;
+            color: #ffffff;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-add-employee:hover {
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        .badge-role {
+            background-color: #e2e8f0;
+            color: #0f172a;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .badge-status-active {
+            background-color: #dcfce7;
+            color: #166534;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .badge-status-suspended {
+            background-color: #fef2f2;
+            color: #991b1b;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .btn-action-edit {
+            color: #2563eb;
+            background-color: #eff6ff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-action-edit:hover {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .btn-action-suspend {
+            color: #d97706;
+            background-color: #fffbeb;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-action-suspend:hover {
+            background-color: #fef3c7;
+            color: #b45309;
+        }
+
+        .btn-action-activate {
+            color: #16a34a;
+            background-color: #f0fdf4;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-action-activate:hover {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .btn-action-delete {
+            color: #dc2626;
+            background-color: #fef2f2;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-action-delete:hover {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .row-suspended {
+            background-color: #fafafa;
+            opacity: 0.75;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="admin-header d-flex justify-content-between align-items-center shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Home" asp-action="Index">
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 35px; width: auto;" />
+            </a>
+            <span class="fs-6 fw-bold text-dark border-start ps-3">GESTIÓN DE EMPLEADOS</span>
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+            <span class="small fw-bold text-uppercase" style="font-size: 0.85rem;">HOLA, @nombreUsuario</span>
+            <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
+                &lt; Volver al Panel
+            </a>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="container main-container">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="fw-black mb-1" style="font-weight: 900; font-size: 2.2rem;">EMPLEADOS REGISTRADOS</h1>
+                <p class="text-muted fs-6 mb-0">Consulta, edita, suspende o gestiona el estado del personal</p>
+            </div>
+            <a asp-controller="Administrador" asp-action="CrearEmpleado" class="btn-add-employee">
+                <i class="bi bi-person-plus-fill me-2"></i> AGREGAR EMPLEADO
+            </a>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success fs-6 mb-4 shadow-sm" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            </div>
+        }
+
+        <!-- TABLA DE EMPLEADOS -->
+        <div class="card-table">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light text-uppercase fw-bold fs-7">
+                        <tr>
+                            <th>DNI</th>
+                            <th>Nombre y Apellido</th>
+                            <th>Nº de Empleado</th>
+                            <th>Correo Electrónico</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var emp in Model)
+                        {
+                            <tr class="@(emp.Activo ? "" : "row-suspended")">
+                                <td class="fw-bold">@emp.Dni</td>
+                                <td class="fw-semibold">@emp.Nombre @emp.Apellido</td>
+                                <td class="fw-bold text-dark">EMP-@emp.Id.ToString("D3")</td>
+                                <td>@emp.Email</td>
+                                <td><span class="badge-role">@emp.Rol</span></td>
+                                <td>
+                                    @if (emp.Activo)
+                                    {
+                                        <span class="badge-status-active"><i class="bi bi-check-circle-fill me-1"></i> Activa</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-status-suspended"><i class="bi bi-slash-circle-fill me-1"></i> Suspendida</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <!-- Editar -->
+                                        <a asp-controller="Administrador" asp-action="EditarEmpleado" asp-route-id="@emp.Id" class="btn-action-edit">
+                                            <i class="bi bi-pencil-square"></i> Editar
+                                        </a>
+
+                                        <!-- Suspender / Activar -->
+                                        <form asp-controller="Administrador" asp-action="CambiarEstadoEmpleado" asp-route-id="@emp.Id" method="post" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            @if (emp.Activo)
+                                            {
+                                                <button type="submit" class="btn-action-suspend" title="Suspender acceso">
+                                                    <i class="bi bi-pause-circle-fill"></i> Suspender
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="submit" class="btn-action-activate" title="Activar acceso">
+                                                    <i class="bi bi-play-circle-fill"></i> Activar
+                                                </button>
+                                            }
+                                        </form>
+
+                                        <!-- Eliminar -->
+                                        <form asp-controller="Administrador" asp-action="EliminarEmpleado" asp-route-id="@emp.Id" method="post" onsubmit="return confirm('¿Está seguro de eliminar permanentemente a @emp.Nombre @emp.Apellido?');" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn-action-delete">
+                                                <i class="bi bi-trash-fill"></i> Eliminar
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

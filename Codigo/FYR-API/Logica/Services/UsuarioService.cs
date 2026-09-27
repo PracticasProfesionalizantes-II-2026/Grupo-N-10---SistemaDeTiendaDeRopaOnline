@@ -20,6 +20,7 @@ public class UsuarioService : IUsuarioService
             Apellido = usuario.Apellido,
             Email = usuario.Email,
             TipoUsuario = usuario.Rol.ToString(),
+            Activo = usuario.Activo,
             Telefono = usuario.Telefono,
             IdiomaPreferido = usuario.IdiomaPreferido
         };
@@ -45,6 +46,7 @@ public class UsuarioService : IUsuarioService
     {
         var usuario = new Usuario
         {
+            Dni = request.Dni,
             Nombre = request.Nombre,
             Apellido = request.Apellido,
             Email = request.Email,
@@ -76,8 +78,13 @@ public class UsuarioService : IUsuarioService
 
         usuario.Nombre = request.Nombre;
         usuario.Apellido = request.Apellido;
+        usuario.Email = request.Email;
+        usuario.Rol = request.Rol;
         usuario.Telefono = request.Telefono;
         usuario.IdiomaPreferido = request.IdiomaPreferido;
+        usuario.FotoPerfil = request.FotoPerfil;
+        usuario.Activo = request.Activo;
+        usuario.EmpresaId = request.EmpresaId;
 
         await _repository.UpdateAsync(usuario);
 

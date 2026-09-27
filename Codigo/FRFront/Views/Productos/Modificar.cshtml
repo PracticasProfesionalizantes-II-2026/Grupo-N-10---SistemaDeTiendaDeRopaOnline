@@ -1,0 +1,283 @@
+@using Microsoft.AspNetCore.Http
+@{
+    Layout = null;
+    ViewData["Title"] = "Modificar Producto";
+    var usuarioLogueado = Context.Session.GetString("UsuarioSesion");
+    var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0] : "Administrador";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F&R - Modificación de Producto</title>
+    
+    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .edit-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e9ecef;
+            padding: 35px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .form-control-custom, .form-select-custom {
+            border-radius: 50px;
+            padding: 12px 20px;
+            border: 1.5px solid #ced4da;
+            font-weight: 500;
+        }
+
+        .form-control-custom:focus, .form-select-custom:focus {
+            border-color: #212529;
+            box-shadow: 0 0 0 0.2rem rgba(33, 37, 41, 0.15);
+        }
+
+        .img-preview-container {
+            width: 100%;
+            height: 280px;
+            border-radius: 16px;
+            border: 2px dashed #ced4da;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background-color: #fafafa;
+            position: relative;
+        }
+
+        .img-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .size-checkbox {
+            display: none;
+        }
+
+        .size-label {
+            display: inline-block;
+            min-width: 45px;
+            padding: 8px 12px;
+            border: 1.5px solid #ced4da;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .size-checkbox:checked + .size-label {
+            background-color: #000;
+            color: #fff;
+            border-color: #000;
+        }
+
+        .form-switch .form-check-input {
+            width: 3em;
+            height: 1.5em;
+            cursor: pointer;
+        }
+
+        .form-switch .form-check-input:checked {
+            background-color: #198754;
+            border-color: #198754;
+        }
+
+        .btn-custom-save {
+            background-color: #000000;
+            color: #ffffff;
+            border-radius: 50px;
+            padding: 14px 50px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            border: none;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn-custom-save:hover {
+            background-color: #212529;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Home" asp-action="Index">
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 50px; width: auto;" />
+            </a>
+            <span class="fs-5 fw-bold text-muted border-start ps-3 py-1">MODIFICACIÓN DE PRODUCTO</span>
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Producto" asp-action="Index" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3">
+                &lt; Volver
+            </a>
+        </div>
+    </header>
+
+    <!-- FORMULARIO DE EDICIÓN DE PRODUCTO -->
+    <div class="container py-5" style="max-width: 950px;">
+        
+        <div class="text-center mb-5">
+            <h1 class="fw-bolder tracking-wider mb-2">MODIFICACIÓN DE PRODUCTO</h1>
+            <p class="text-muted">Actualice la información general, stock y atributos del producto</p>
+        </div>
+
+        <form id="formModificarProducto" method="post" action="#">
+            <div class="edit-card">
+                <div class="row g-4">
+                    
+                    <!-- COLUMNA IZQUIERDA: IMAGEN -->
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">IMAGEN DEL PRODUCTO</label>
+                        <div class="img-preview-container mb-3">
+                            <img src="~/images/hombres.png" alt="Buzo VCV" class="img-preview" id="previewImg" />
+                        </div>
+                        <input type="file" class="form-control form-control-custom" id="inputImg" accept="image/*" />
+                        <span class="form-text text-muted small ms-2">Formatos recomendados: .PNG, .JPG</span>
+                    </div>
+
+                    <!-- COLUMNA DERECHA: DATOS DEL PRODUCTO -->
+                    <div class="col-md-7">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">NOMBRE DEL PRODUCTO</label>
+                            <input type="text" class="form-control form-control-custom" value="BUZO VCV" placeholder="Ej: BUZO VCV" required />
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-bold">PRECIO ($)</label>
+                                <input type="text" class="form-control form-control-custom" value="80.000,00" required />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold">STOCK (UNIDADES)</label>
+                                <input type="number" class="form-control form-control-custom" value="10" min="0" required />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold d-block">TALLES DISPONIBLES</label>
+                            <div class="d-flex flex-wrap gap-2 mt-1">
+                                <div>
+                                    <input type="checkbox" id="sizeS" class="size-checkbox" />
+                                    <label for="sizeS" class="size-label">S</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="sizeM" class="size-checkbox" checked />
+                                    <label for="sizeM" class="size-label">M</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="sizeL" class="size-checkbox" checked />
+                                    <label for="sizeL" class="size-label">L</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="sizeXL" class="size-checkbox" />
+                                    <label for="sizeXL" class="size-label">XL</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">COLOR</label>
+                            <select class="form-select form-select-custom">
+                                <option value="BEIGE" selected>BEIGE</option>
+                                <option value="NEGRO">NEGRO</option>
+                                <option value="BLANCO">BLANCO</option>
+                                <option value="GRIS">GRIS</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold d-block">ESTADO DEL PRODUCTO</label>
+                            <div class="form-check form-switch d-flex align-items-center gap-2 mt-2">
+                                <input class="form-check-input" type="checkbox" id="estadoDisponible" checked />
+                                <label class="form-check-label fw-bold text-success" for="estadoDisponible" id="estadoText">DISPONIBLE</label>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="text-center border-top pt-4 mt-3">
+                    <button type="submit" class="btn btn-custom-save text-uppercase shadow">
+                        GUARDAR CAMBIOS
+                    </button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+    <!-- MODAL POPUP: PRODUCTO MODIFICADO -->
+    <div class="modal fade" id="modalModificado" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-body text-center p-5">
+                    <div class="mb-3 text-dark">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                        </svg>
+                    </div>
+                    <h3 class="fw-bold text-uppercase mb-2">PRODUCTO MODIFICADO</h3>
+                    <p class="text-muted mb-4">Los cambios se han guardado correctamente.</p>
+                    <a asp-controller="Producto" asp-action="Index" class="btn btn-dark rounded-pill fw-bold px-4 py-2 text-uppercase">
+                        &lt; VOLVER
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // LÓGICA DE ESTADO
+        document.getElementById('estadoDisponible').addEventListener('change', function () {
+            const estadoText = document.getElementById('estadoText');
+            if (this.checked) {
+                estadoText.textContent = 'DISPONIBLE';
+                estadoText.className = 'form-check-label fw-bold text-success';
+            } else {
+                estadoText.textContent = 'NO DISPONIBLE';
+                estadoText.className = 'form-check-label fw-bold text-danger';
+            }
+        });
+
+        // PREVISUALIZACIÓN DE IMAGEN
+        document.getElementById('inputImg').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // VÍNCULO DEL MODAL AL BOTÓN GUARDAR (FORMULARIO)
+        document.querySelector('form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var modal = new bootstrap.Modal(document.getElementById('modalModificado'));
+            modal.show();
+        });
+    </script>
+</body>
+</html>

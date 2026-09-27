@@ -1,0 +1,149 @@
+@model FRFront.Models.CambiarContrasenaViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Cambiar Contraseña";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F&R - Cambiar Contraseña</title>
+    
+    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 1rem;
+        }
+
+        .form-card {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #e9ecef;
+            padding: 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+
+        .form-label-custom {
+            font-weight: 800;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            color: #495057;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .form-control-custom {
+            border-radius: 14px;
+            padding: 12px 18px;
+            border: 1px solid #ced4da;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #212529;
+        }
+
+        .form-control-custom:focus {
+            border-color: #000000;
+            box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-black-pill {
+            background-color: #000000;
+            color: #ffffff;
+            border-radius: 50px;
+            padding: 14px 36px;
+            font-weight: 800;
+            font-size: 1rem;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            border: none;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+        }
+
+        .btn-black-pill:hover {
+            background-color: #212529;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Home" asp-action="Index">
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 48px; width: auto;" />
+            </a>
+            <span class="fs-4 fw-bold text-dark border-start ps-3 py-1">CAMBIAR CONTRASEÑA</span>
+        </div>
+
+        <div>
+            <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-dark rounded-pill fw-bold px-4 py-2" style="font-size: 0.9rem;">
+                &lt; VOLVER AL PANEL
+            </a>
+        </div>
+    </header>
+
+    <div class="container py-5" style="max-width: 650px;">
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show rounded-4 fw-bold fs-6 mb-4" role="alert">
+                ✓ @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <div class="form-card">
+            <h4 class="fw-black text-uppercase mb-2" style="font-weight: 900;">ACTUALIZAR CLAVE DE ACCESO</h4>
+            <p class="text-muted small mb-4">Ingresa tu contraseña actual y la nueva clave que deseas utilizar.</p>
+
+            <form asp-controller="Administrador" asp-action="CambiarContrasena" method="post">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="text-danger fw-bold small mb-3"></div>
+
+                <!-- CONTRASEÑA ACTUAL -->
+                <div class="mb-4">
+                    <label class="form-label-custom">CONTRASEÑA ACTUAL *</label>
+                    <input type="password" asp-for="ContrasenaActual" class="form-control form-control-custom" placeholder="••••••••" required />
+                    <span asp-validation-for="ContrasenaActual" class="text-danger small fw-bold"></span>
+                </div>
+
+                <hr class="my-4 text-muted">
+
+                <!-- NUEVA CONTRASEÑA -->
+                <div class="mb-4">
+                    <label class="form-label-custom">NUEVA CONTRASEÑA *</label>
+                    <input type="password" asp-for="NuevaContrasena" class="form-control form-control-custom" placeholder="Mínimo 6 caracteres" required />
+                    <span asp-validation-for="NuevaContrasena" class="text-danger small fw-bold"></span>
+                </div>
+
+                <!-- CONFIRMAR NUEVA CONTRASEÑA -->
+                <div class="mb-4">
+                    <label class="form-label-custom">CONFIRMAR NUEVA CONTRASEÑA *</label>
+                    <input type="password" asp-for="ConfirmarContrasena" class="form-control form-control-custom" placeholder="Repite la nueva contraseña" required />
+                    <span asp-validation-for="ConfirmarContrasena" class="text-danger small fw-bold"></span>
+                </div>
+
+                <!-- BOTÓN DE GUARDAR -->
+                <div class="d-flex justify-content-end mt-4 pt-2">
+                    <button type="submit" class="btn-black-pill w-100">
+                        ACTUALIZAR CONTRASEÑA
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

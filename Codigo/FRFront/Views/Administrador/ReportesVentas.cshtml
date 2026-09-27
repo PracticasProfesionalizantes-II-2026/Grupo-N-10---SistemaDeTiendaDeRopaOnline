@@ -1,0 +1,303 @@
+@model FRFront.Models.ReporteVentasDto
+@{
+    Layout = null;
+    ViewData["Title"] = "Reportes de Ventas";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F&R - Reportes de Ventas</title>
+    
+    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- Librería Chart.js para el gráfico -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 0.95rem;
+        }
+
+        .metric-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e9ecef;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            height: 100%;
+        }
+
+        .metric-title {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 2.1rem;
+            font-weight: 900;
+            color: #111111;
+        }
+
+        .report-card {
+            background: #ffffff;
+            border-radius: 18px;
+            border: 1px solid #e9ecef;
+            padding: 28px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.02);
+        }
+
+        .form-control-custom {
+            border-radius: 12px;
+            padding: 10px 16px;
+            border: 1px solid #ced4da;
+            font-weight: 600;
+        }
+
+        .badge-estado {
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .badge-entregado { background-color: #e6f4ea; color: #1e7e34; }
+        .badge-camino { background-color: #e8f0fe; color: #1a73e8; }
+        .badge-confirmado { background-color: #fff4e5; color: #b95000; }
+        .badge-cancelado { background-color: #fce8e6; color: #c5221f; }
+
+        .btn-black-pill {
+            background-color: #000;
+            color: #fff;
+            border-radius: 50px;
+            padding: 10px 24px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            text-decoration: none;
+        }
+
+        .btn-black-pill:hover {
+            background-color: #212529;
+            color: #fff;
+        }
+
+        @@media print {
+            .no-print { display: none !important; }
+            .report-card { border: none !important; box-shadow: none !important; padding: 0 !important; }
+            body { background-color: #fff !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm no-print">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Home" asp-action="Index">
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 48px; width: auto;" />
+            </a>
+            <span class="fs-4 fw-bold text-dark border-start ps-3 py-1">REPORTES DE VENTAS</span>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button onclick="exportarExcel();" class="btn btn-outline-success rounded-pill fw-bold px-3 py-2">
+                📊 EXPORTAR A EXCEL
+            </button>
+            <button onclick="window.print();" class="btn btn-outline-secondary rounded-pill fw-bold px-3 py-2">
+                🖨️ IMPRIMIR / PDF
+            </button>
+            <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-dark rounded-pill fw-bold px-4 py-2">
+                &lt; VOLVER AL PANEL
+            </a>
+        </div>
+    </header>
+
+    <div class="container py-5" style="max-width: 1280px;">
+
+        <!-- FILTROS DE FECHA (APUNTA A LA ACCIÓN "Reportes") -->
+        <div class="report-card mb-4 no-print">
+            <form asp-controller="Administrador" asp-action="Reportes" method="get" class="row g-3 align-items-end">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-bold text-uppercase small text-muted">Fecha Desde</label>
+                    <input type="date" name="desde" value="@Model.FechaDesde.ToString("yyyy-MM-dd")" class="form-control form-control-custom" />
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-bold text-uppercase small text-muted">Fecha Hasta</label>
+                    <input type="date" name="hasta" value="@Model.FechaHasta.ToString("yyyy-MM-dd")" class="form-control form-control-custom" />
+                </div>
+                <div class="col-12 col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-dark rounded-pill fw-bold w-100 py-2">
+                        FILTRAR REPORTE
+                    </button>
+                    <a asp-controller="Administrador" asp-action="Reportes" class="btn btn-outline-secondary rounded-pill fw-bold w-100 py-2">
+                        LIMPIAR
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- TARJETAS DE MÉTRICAS -->
+        <div class="row g-4 mb-4">
+            <div class="col-12 col-md-4">
+                <div class="metric-card">
+                    <div class="metric-title">TOTAL FACTURADO</div>
+                    <div class="metric-value text-success">$@Model.TotalVentas.ToString("N0")</div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="metric-card">
+                    <div class="metric-title">CANTIDAD DE PEDIDOS</div>
+                    <div class="metric-value text-dark">@Model.TotalPedidos</div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="metric-card">
+                    <div class="metric-title">TICKET PROMEDIO</div>
+                    <div class="metric-value text-primary">$@Model.TicketPromedio.ToString("N0")</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRÁFICO DE EVOLUCIÓN DE VENTAS -->
+        <div class="report-card mb-4">
+            <h5 class="fw-bold text-uppercase mb-3"> EVOLUCIÓN DIARIA DE VENTAS</h5>
+            <div style="max-height: 380px; position: relative;">
+                <canvas id="ventasChart"></canvas>
+            </div>
+        </div>
+
+        <!-- TABLA DETALLADA DE VENTAS -->
+        <div class="report-card">
+            <h5 class="fw-bold text-uppercase mb-4">Detalle de Ventas (@Model.FechaDesde.ToString("dd/MM/yyyy") - @Model.FechaHasta.ToString("dd/MM/yyyy"))</h5>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="tablaVentas">
+                    <thead class="table-light text-uppercase small fw-bold">
+                        <tr>
+                            <th>N° Pedido</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Entrega</th>
+                            <th>Estado</th>
+                            <th class="text-end">Monto Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.ListadoVentas.Any())
+                        {
+                            @foreach (var v in Model.ListadoVentas)
+                            {
+                                string badgeClass = v.Estado.ToUpper() switch
+                                {
+                                    "ENTREGADO" => "badge-entregado",
+                                    "EN CAMINO" => "badge-camino",
+                                    "CONFIRMADO" => "badge-confirmado",
+                                    _ => "badge-cancelado"
+                                };
+
+                                <tr>
+                                    <td class="fw-bold">#@v.PedidoId.ToString("D8")</td>
+                                    <td>@v.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td class="fw-bold">@v.Cliente</td>
+                                    <td>@v.TipoEntrega</td>
+                                    <td>
+                                        <span class="badge-estado @badgeClass">● @v.Estado</span>
+                                    </td>
+                                    <td class="text-end fw-black fs-6">$@v.Total.ToString("N0")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted fw-bold">
+                                    No se encontraron registros de ventas para el rango de fechas seleccionado.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 1. INICIALIZACIÓN DEL GRÁFICO VISUAL CON CHART.JS
+        const ctx = document.getElementById('ventasChart').getContext('2d');
+        const fechasLabels = @Html.Raw(Json.Serialize(Model.FechasGrafico));
+        const totalesData = @Html.Raw(Json.Serialize(Model.TotalesGrafico));
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: fechasLabels.length > 0 ? fechasLabels : ['Sin Datos'],
+                datasets: [{
+                    label: 'Ventas por Día ($)',
+                    data: totalesData.length > 0 ? totalesData : [0],
+                    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                    borderColor: '#000000',
+                    borderWidth: 1,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'top' }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 2. FUNCIÓN PARA EXPORTAR LA TABLA A EXCEL (.CSV CON UTF-8)
+        function exportarExcel() {
+            let tabla = document.getElementById("tablaVentas");
+            let filas = tabla.querySelectorAll("tr");
+            let csv = [];
+
+            for (let i = 0; i < filas.length; i++) {
+                let fila = [], columnas = filas[i].querySelectorAll("td, th");
+                for (let j = 0; j < columnas.length; j++) {
+                    let texto = columnas[j].innerText.replace(/(\r\n|\n|\r)/gm, "").replace(/,/g, "");
+                    fila.push('"' + texto.trim() + '"');
+                }
+                csv.push(fila.join(","));
+            }
+
+            let csvString = "\uFEFF" + csv.join("\n"); // \uFEFF fuerza codificación UTF-8
+            let blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+            let url = URL.createObjectURL(blob);
+            let link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "Reporte_Ventas_FYR.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>

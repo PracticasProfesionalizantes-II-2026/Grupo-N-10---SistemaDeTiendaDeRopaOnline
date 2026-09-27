@@ -1,0 +1,426 @@
+@{
+    Layout = null;
+    ViewData["Title"] = "Nueva Venta - F&R";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F&R - Nueva Venta</title>
+    
+    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #000000;
+        }
+
+        .card-custom {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #e9ecef;
+            padding: 28px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+        }
+
+        .btn-black {
+            background-color: #000;
+            color: #fff;
+            border-radius: 50px;
+            padding: 14px 28px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            width: 100%;
+        }
+
+        .btn-black:hover {
+            background-color: #212529;
+            color: #fff;
+        }
+
+        /* Estilo para talles sin stock */
+        select option:disabled {
+            color: #adb5bd !important;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER BAR -->
+    <header class="bg-white border-bottom py-3 px-5 d-flex justify-content-between align-items-center shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Empleado" asp-action="Index">
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 40px; width: auto;" />
+            </a>
+            <span class="fs-5 fw-bold text-dark border-start ps-3 py-1 text-uppercase" style="letter-spacing: 1px;">PUNTO DE VENTA (POS)</span>
+        </div>
+
+        <div>
+            <a asp-controller="Empleado" asp-action="Index" class="btn btn-outline-dark rounded-pill fw-bold px-4 py-2" style="font-size: 0.85rem;">
+                &lt; Volver al Panel
+            </a>
+        </div>
+    </header>
+
+    <div class="container-fluid py-5 px-4 px-md-5" style="max-width: 1400px;">
+        <form asp-controller="Empleado" asp-action="ProcesarVenta" method="post" id="formNuevaVenta">
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+
+                <!-- COLUMNA IZQUIERDA: CLIENTE Y PRODUCTOS -->
+                <div class="col-12 col-lg-7">
+                    
+                    <!-- DATOS DEL CLIENTE -->
+                    <div class="card-custom mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="fw-bold text-uppercase mb-0">1. Datos del Cliente</h4>
+                            <span id="badgeEstadoCliente" class="badge bg-secondary rounded-pill px-3 py-2 fs-6">No Verificado</span>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-12 col-md-5">
+                                <label class="form-label fw-bold text-uppercase small">DNI / CUIT *</label>
+                                <div class="input-group">
+                                    <input type="text" name="clienteDni" id="clienteDni" class="form-control rounded-pill-start py-2" placeholder="Ej: 38456789" required>
+                                    <button class="btn btn-dark rounded-pill-end px-3 fw-bold small" type="button" onclick="buscarCliente()">BUSCAR</button>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-7">
+                                <label class="form-label fw-bold text-uppercase small">Nombre *</label>
+                                <input type="text" name="clienteNombre" id="clienteNombre" class="form-control rounded-pill py-2" placeholder="Nombre del cliente" required>
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-bold text-uppercase small">Apellido *</label>
+                                <input type="text" name="clienteApellido" id="clienteApellido" class="form-control rounded-pill py-2" placeholder="Apellido" required>
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-bold text-uppercase small">Email *</label>
+                                <input type="email" name="clienteEmail" id="clienteEmail" class="form-control rounded-pill py-2" placeholder="correo@ejemplo.com" required>
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-bold text-uppercase small">Teléfono</label>
+                                <input type="text" name="clienteTelefono" id="clienteTelefono" class="form-control rounded-pill py-2" placeholder="03493-15XXXXXX">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BÚSQUEDA Y LISTA DE PRODUCTOS CON VALIDACIÓN DE TALLES -->
+                    <div class="card-custom">
+                        <h4 class="fw-bold text-uppercase mb-3">2. Buscar Prendas</h4>
+                        <div class="input-group mb-4">
+                            <input type="text" id="inputBuscar" class="form-control rounded-pill-start py-3 fs-6" placeholder="Ingresar código o nombre de la prenda..." onkeyup="filtrarProductos()">
+                            <button class="btn btn-dark rounded-pill-end px-4 fw-bold" type="button">BUSCAR</button>
+                        </div>
+
+                        <div class="table-responsive style-scroll" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light sticky-top">
+                                    <tr class="text-uppercase small fw-bold text-muted">
+                                        <th class="py-3">CÓDIGO</th>
+                                        <th class="py-3">PRODUCTO</th>
+                                        <th class="py-3">COLOR</th>
+                                        <th class="py-3">TALLE DISPONIBLE</th>
+                                        <th class="py-3">PRECIO</th>
+                                        <th class="text-end py-3">ACCIÓN</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="listaProductos">
+                                    <tr>
+                                        <td class="fw-bold fs-6">PRD-001</td>
+                                        <td class="fs-6">BUZO VCV</td>
+                                        <td class="text-muted">BEIGE</td>
+                                        <td>
+                                            <select class="form-select form-select-sm rounded-pill fw-bold" id="talle_PRD-001">
+                                                <option value="S" disabled>S (Sin Stock)</option>
+                                                <option value="M" selected>M</option>
+                                                <option value="L">L</option>
+                                                <option value="XL" disabled>XL (Sin Stock)</option>
+                                            </select>
+                                        </td>
+                                        <td class="fw-bold fs-6">$80.000</td>
+                                        <td class="text-end">
+                                            <button type="button" class="btn btn-sm btn-dark rounded-pill px-3 fw-bold" onclick="agregarAlCarrito('PRD-001', 'BUZO VCV', 80000, 'BEIGE')">+ AGREGAR</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold fs-6">PRD-002</td>
+                                        <td class="fs-6">REMERA ACTIVE</td>
+                                        <td class="text-muted">NEGRO</td>
+                                        <td>
+                                            <select class="form-select form-select-sm rounded-pill fw-bold" id="talle_PRD-002">
+                                                <option value="XS" disabled>XS (Sin Stock)</option>
+                                                <option value="S" selected>S</option>
+                                                <option value="M">M</option>
+                                            </select>
+                                        </td>
+                                        <td class="fw-bold fs-6">$20.000</td>
+                                        <td class="text-end">
+                                            <button type="button" class="btn btn-sm btn-dark rounded-pill px-3 fw-bold" onclick="agregarAlCarrito('PRD-002', 'REMERA ACTIVE', 20000, 'NEGRO')">+ AGREGAR</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold fs-6">PRD-003</td>
+                                        <td class="fs-6">HOODIE URBAN</td>
+                                        <td class="text-muted">VERDE</td>
+                                        <td>
+                                            <select class="form-select form-select-sm rounded-pill fw-bold" id="talle_PRD-003">
+                                                <option value="L" selected>L</option>
+                                                <option value="XL" disabled>XL (Sin Stock)</option>
+                                            </select>
+                                        </td>
+                                        <td class="fw-bold fs-6">$65.000</td>
+                                        <td class="text-end">
+                                            <button type="button" class="btn btn-sm btn-dark rounded-pill px-3 fw-bold" onclick="agregarAlCarrito('PRD-003', 'HOODIE URBAN', 65000, 'VERDE')">+ AGREGAR</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold fs-6">PRD-005</td>
+                                        <td class="fs-6">PANTALON CARGO</td>
+                                        <td class="text-muted">NEGRO</td>
+                                        <td>
+                                            <select class="form-select form-select-sm rounded-pill fw-bold" id="talle_PRD-005">
+                                                <option value="38" disabled>38 (Sin Stock)</option>
+                                                <option value="40" selected>40</option>
+                                                <option value="42">42</option>
+                                            </select>
+                                        </td>
+                                        <td class="fw-bold fs-6">$55.000</td>
+                                        <td class="text-end">
+                                            <button type="button" class="btn btn-sm btn-dark rounded-pill px-3 fw-bold" onclick="agregarAlCarrito('PRD-005', 'PANTALON CARGO', 55000, 'NEGRO')">+ AGREGAR</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUMNA DERECHA: RESUMEN DE VENTA Y PAGO -->
+                <div class="col-12 col-lg-5">
+                    <div class="card-custom position-sticky" style="top: 20px;">
+                        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                            <h4 class="fw-bold text-uppercase mb-0">Resumen de Venta</h4>
+                            <span class="badge bg-secondary rounded-pill px-3 py-2 fs-6" id="cantItems">0 prendas</span>
+                        </div>
+
+                        <!-- TABLA RESUMEN -->
+                        <div class="table-responsive mb-3" style="min-height: 180px; max-height: 250px; overflow-y: auto;">
+                            <table class="table table-borderless align-middle">
+                                <thead class="border-bottom text-muted small text-uppercase fw-bold">
+                                    <tr>
+                                        <th>Prenda / Talle</th>
+                                        <th class="text-center">Cant</th>
+                                        <th class="text-end">Subtotal</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaCarrito">
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4 fs-6">No hay productos agregados a la venta.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- TOTALES -->
+                        <div class="bg-light p-4 rounded-4 mb-3">
+                            <div class="d-flex justify-content-between text-muted mb-2 fs-6">
+                                <span>Subtotal:</span>
+                                <span id="txtSubtotal">$0,00</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted mb-2 fs-6">
+                                <span>IVA (21%):</span>
+                                <span id="txtIva">$0,00</span>
+                            </div>
+                            <div class="d-flex justify-content-between fw-black fs-3 border-top pt-2">
+                                <span class="fw-bold">TOTAL:</span>
+                                <span id="txtTotal" class="fw-bold text-dark">$0,00</span>
+                            </div>
+                            <input type="hidden" name="totalVenta" id="inputTotalVenta" value="0" />
+                            <input type="hidden" name="jsonDetalle" id="inputJsonDetalle" value="[]" />
+                        </div>
+
+                        <!-- MEDIO DE PAGO -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-uppercase">Medio de Pago *</label>
+                            <select name="metodoPago" class="form-select rounded-pill py-2 fw-bold" required>
+                                <option value="EFECTIVO">Efectivo en Caja</option>
+                                <option value="TRANSFERENCIA">Transferencia / Mercado Pago</option>
+                                <option value="TARJETA_DEBITO">Tarjeta de Débito</option>
+                                <option value="TARJETA_CREDITO">Tarjeta de Crédito</option>
+                            </select>
+                        </div>
+
+                        <!-- BOTÓN COBRAR -->
+                        <button type="submit" id="btnCobrar" class="btn-black" disabled>
+                            COBRAR Y FACTURAR
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const clientesRegistrados = [
+            { dni: "38456789", nombre: "FRANCISCO", apellido: "AGUIRRE", email: "franciscoaguirre@gmail.com", telefono: "03493 456789" },
+            { dni: "39667173", nombre: "ROCIO", apellido: "MILANESE", email: "rocimilanese@gmail.com", telefono: "03493 667173" },
+            { dni: "30101010", nombre: "LIONEL", apellido: "MESSI", email: "messi10@gmail.com", telefono: "03493 101010" }
+        ];
+
+        let carrito = [];
+
+        function buscarCliente() {
+            const dniIngresado = document.getElementById('clienteDni').value.trim();
+            const badge = document.getElementById('badgeEstadoCliente');
+            
+            if (!dniIngresado) {
+                alert('Por favor, ingrese un número de DNI para buscar.');
+                return;
+            }
+
+            const clienteEncontrado = clientesRegistrados.find(c => c.dni === dniIngresado);
+
+            if (clienteEncontrado) {
+                document.getElementById('clienteNombre').value = clienteEncontrado.nombre;
+                document.getElementById('clienteApellido').value = clienteEncontrado.apellido;
+                document.getElementById('clienteEmail').value = clienteEncontrado.email;
+                document.getElementById('clienteTelefono').value = clienteEncontrado.telefono;
+
+                badge.className = "badge bg-success rounded-pill px-3 py-2 fs-6";
+                badge.innerText = "Cliente Registrado";
+            } else {
+                badge.className = "badge bg-warning text-dark rounded-pill px-3 py-2 fs-6";
+                badge.innerText = "Cliente Nuevo";
+                alert('El DNI ingresado no está registrado. Complete los datos para dar de alta al cliente.');
+            }
+        }
+
+        function agregarAlCarrito(codigo, nombre, precio, color) {
+            const talleSelect = document.getElementById(`talle_${codigo}`);
+            const optionSeleccionada = talleSelect.options[talleSelect.selectedIndex];
+
+            if (optionSeleccionada.disabled) {
+                alert('El talle seleccionado no tiene stock disponible.');
+                return;
+            }
+
+            const talleElegido = talleSelect.value;
+            const itemKey = `${codigo}_${talleElegido}`;
+            const existe = carrito.find(p => p.key === itemKey);
+
+            if (existe) {
+                existe.cantidad++;
+            } else {
+                carrito.push({
+                    key: itemKey,
+                    codigo: codigo,
+                    nombre: nombre,
+                    talle: talleElegido,
+                    color: color,
+                    precio: precio,
+                    cantidad: 1
+                });
+            }
+
+            actualizarTablaCarrito();
+        }
+
+        function cambiarCantidad(key, cambio) {
+            const prod = carrito.find(p => p.key === key);
+            if (prod) {
+                prod.cantidad += cambio;
+                if (prod.cantidad <= 0) {
+                    carrito = carrito.filter(p => p.key !== key);
+                }
+            }
+            actualizarTablaCarrito();
+        }
+
+        function actualizarTablaCarrito() {
+            const tbody = document.getElementById('tablaCarrito');
+            tbody.innerHTML = '';
+
+            if (carrito.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4 fs-6">No hay productos agregados a la venta.</td></tr>`;
+                document.getElementById('btnCobrar').disabled = true;
+                actualizarTotales(0);
+                document.getElementById('cantItems').innerText = '0 prendas';
+                document.getElementById('inputJsonDetalle').value = '[]';
+                return;
+            }
+
+            let subtotalGral = 0;
+            let totalItems = 0;
+            let listaDetalle = [];
+
+            carrito.forEach(p => {
+                const sub = p.precio * p.cantidad;
+                subtotalGral += sub;
+                totalItems += p.cantidad;
+
+                listaDetalle.push({
+                    ProductoId: 1,
+                    ProductoNombre: `${p.nombre} (Talle ${p.talle} / ${p.color})`,
+                    Cantidad: p.cantidad,
+                    PrecioUnitario: p.precio
+                });
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="fw-bold fs-6">${p.nombre} <br><span class="text-muted small">Talle: ${p.talle} / ${p.color}</span></td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm btn-light border py-0 px-2 fw-bold" onclick="cambiarCantidad('${p.key}', -1)">-</button>
+                            <span class="mx-1 fw-bold fs-6">${p.cantidad}</span>
+                            <button type="button" class="btn btn-sm btn-light border py-0 px-2 fw-bold" onclick="cambiarCantidad('${p.key}', 1)">+</button>
+                        </td>
+                        <td class="text-end fw-bold fs-6">$${sub.toLocaleString('es-AR')}</td>
+                        <td class="text-end">
+                            <button type="button" class="btn btn-sm text-danger border-0 fw-bold" onclick="cambiarCantidad('${p.key}', -${p.cantidad})">✕</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('cantItems').innerText = `${totalItems} prendas`;
+            document.getElementById('btnCobrar').disabled = false;
+            document.getElementById('inputJsonDetalle').value = JSON.stringify(listaDetalle);
+            actualizarTotales(subtotalGral);
+        }
+
+        function actualizarTotales(subtotal) {
+            const iva = subtotal * 0.21;
+            const total = subtotal + iva;
+
+            document.getElementById('txtSubtotal').innerText = `$${subtotal.toLocaleString('es-AR', {minimumFractionDigits: 2})}`;
+            document.getElementById('txtIva').innerText = `$${iva.toLocaleString('es-AR', {minimumFractionDigits: 2})}`;
+            document.getElementById('txtTotal').innerText = `$${total.toLocaleString('es-AR', {minimumFractionDigits: 2})}`;
+            document.getElementById('inputTotalVenta').value = total;
+        }
+
+        function filtrarProductos() {
+            const query = document.getElementById('inputBuscar').value.toLowerCase();
+            const filas = document.querySelectorAll('#listaProductos tr');
+            filas.forEach(fila => {
+                const texto = fila.innerText.toLowerCase();
+                fila.style.display = texto.includes(query) ? '' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

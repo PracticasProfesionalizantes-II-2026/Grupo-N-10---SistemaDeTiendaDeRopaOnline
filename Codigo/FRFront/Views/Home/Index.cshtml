@@ -1,0 +1,346 @@
+﻿@using Microsoft.AspNetCore.Http
+@using FRFront.Models
+@using FRFront.Controllers
+@{
+    Layout = null;
+    ViewData["Title"] = "Inicio";
+    var usuarioLogueado = Context.Session.GetString("UsuarioSesion");
+    var rolUsuario = Context.Session.GetString("RolSesion"); // "Administrador", "Empleado", "Cajero" o "Cliente"
+    var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0] : "Usuario";
+
+    // Carga de la configuración guardada desde el panel de administración
+    var config = ViewBag.ConfigTienda as ConfiguracionTiendaDto ?? AdministradorController.ConfiguracionActual;
+
+    // Split seguro de cadenas compuestas por comas o saltos de línea
+    var menuSecciones = !string.IsNullOrWhiteSpace(config.MenuEncabezado) 
+        ? config.MenuEncabezado.Split(new[] { ',', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) 
+        : new[] { "LANZAMIENTOS", "HOMBRE", "MUJER", "OFERTAS", "PRODUCTOS" };
+
+    var listaProductosMenu = !string.IsNullOrWhiteSpace(config.CategoriasMenu) 
+        ? config.CategoriasMenu.Split(new[] { ',', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) 
+        : new[] { "BUZOS", "CAMISAS", "SWEATER", "REMERAS", "PANTALONES" };
+
+    var listaMediosPago = !string.IsNullOrWhiteSpace(config.MediosPago) 
+        ? config.MediosPago.Split(new[] { ',', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) 
+        : new[] { "EFECTIVO", "TARJETA DE DEBITO", "TARJETA DE CREDITO", "TRANSFERENCIA" };
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@config.NombreTienda - Inicio</title>
+    
+    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <!-- Carga dinámica de la tipografía elegida desde Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=@(config.TipografiaSeleccionada.Replace(" ", "+")):wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            /* Sincronización del color de fondo y tipografía general */
+            background-color: @config.ColorFondo !important;
+            font-family: '@config.TipografiaSeleccionada', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        }
+
+        .ticker-fyr {
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 8px 0;
+            font-size: 0.9rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            width: 100%;
+        }
+
+        .ticker-track {
+            display: inline-block;
+            white-space: nowrap;
+            animation: ticker 25s linear infinite;
+        }
+
+        .ticker-track span {
+            display: inline-block;
+        }
+
+        @@keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .user-dropdown-menu {
+            border-radius: 12px;
+            border: 1px solid #111;
+            padding: 10px 0;
+            min-width: 190px;
+        }
+
+        .user-dropdown-menu .user-name-header {
+            font-weight: 800;
+            padding: 8px 16px;
+            font-size: 1rem;
+            color: #000;
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-dropdown-menu .dropdown-item {
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            color: #222;
+        }
+
+        .user-dropdown-menu .dropdown-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .search-input-box {
+            display: none;
+            width: 220px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========================================================= -->
+    <!-- HEADER / BARRA DE NAVEGACIÓN -->
+    <!-- ========================================================= -->
+    <header class="bg-white border-bottom py-4 px-4 d-flex justify-content-between align-items-center shadow-sm">
+        
+        <div>
+            <a asp-controller="Home" asp-action="Index">
+                <img src="@config.LogoUrl" alt="@config.NombreTienda Logo" style="height: 65px; width: auto;" />
+            </a>
+        </div>
+
+        <!-- MENÚ DE SECCIONES DINÁMICO -->
+        <nav class="d-none d-md-flex gap-4 fw-bold text-uppercase fs-6">
+            @foreach (var seccion in menuSecciones)
+            {
+                <a href="#" class="text-dark text-decoration-none">@seccion.Trim()</a>
+            }
+        </nav>
+
+        <div class="d-flex align-items-center gap-3">
+            
+            <div class="d-flex align-items-center gap-2">
+                <input type="text" id="searchInput" class="form-control form-control-sm rounded-pill search-input-box" placeholder="Ingrese lo que desea buscar" />
+                <button type="button" id="toggleSearch" class="btn btn-link p-0 text-dark text-decoration-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                    </svg>
+                </button>
+            </div>
+
+            @if (!string.IsNullOrEmpty(usuarioLogueado))
+            {
+                @if (rolUsuario == "Administrador")
+                {
+                    <a asp-controller="Administrador" asp-action="Index" class="text-danger fw-bold text-decoration-none text-uppercase me-2 small">
+                        ADMINISTRAR PÁGINA
+                    </a>
+                }
+                else if (rolUsuario == "Empleado" || rolUsuario == "Cajero")
+                {
+                    <a asp-controller="Empleado" asp-action="Index" class="text-dark fw-bold text-decoration-none text-uppercase me-2 small">
+                        PANEL CAJERO
+                    </a>
+                }
+                else
+                {
+                    <a href="#" class="text-dark fw-bold text-decoration-none text-uppercase me-2 small">
+                        MIS COMPRAS
+                    </a>
+                }
+
+                <div class="dropdown">
+                    <button class="btn btn-dark dropdown-toggle text-uppercase fw-bold rounded-pill px-3 py-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        MI CUENTA
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow user-dropdown-menu">
+                        <li class="user-name-header text-capitalize">@nombreUsuario</li>
+                        <li><a class="dropdown-item" asp-controller="Home" asp-action="Index">Inicio</a></li>
+                        
+                        @if (rolUsuario == "Administrador")
+                        {
+                            <li><a class="dropdown-item text-danger fw-bold" asp-controller="Administrador" asp-action="Index">Administrar Página</a></li>
+                        }
+                        else if (rolUsuario == "Empleado" || rolUsuario == "Cajero")
+                        {
+                            <li><a class="dropdown-item text-dark fw-bold" asp-controller="Empleado" asp-action="Index">Panel Cajero</a></li>
+                        }
+
+                        <li><a class="dropdown-item" href="#">Notificaciones</a></li>
+                        
+                        @if (rolUsuario != "Administrador" && rolUsuario != "Empleado" && rolUsuario != "Cajero")
+                        {
+                            <li><a class="dropdown-item" href="#">Mis Compras</a></li>
+                            <li><a class="dropdown-item" href="#">Carrito</a></li>
+                        }
+
+                        <li><a class="dropdown-item" href="#">Mi Cuenta</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger fw-bold" asp-controller="Account" asp-action="Logout">Cerrar Sesión</a></li>
+                    </ul>
+                </div>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login" class="text-dark fw-bold text-decoration-none text-uppercase">
+                    INICIAR SESIÓN
+                </a>
+            }
+
+        </div>
+
+    </header>
+
+    <!-- MARQUESINA DINÁMICA 1 (LÍNEA 1 DE CONFIGURACIÓN) -->
+    <div class="ticker-fyr">
+        <div class="ticker-track">
+            <span>
+                @for (int i = 0; i < 8; i++)
+                {
+                    @config.Linea1 @:&nbsp;&nbsp;&nbsp;&nbsp;
+                }
+            </span>
+            <span>
+                @for (int i = 0; i < 8; i++)
+                {
+                    @config.Linea1 @:&nbsp;&nbsp;&nbsp;&nbsp;
+                }
+            </span>
+        </div>
+    </div>
+
+    <!-- SECCIÓN HERO / BANNER PRINCIPAL -->
+    <section class="hero-fyr">
+        <img src="~/images/banner.png" alt="Nueva colección @config.NombreTienda" class="hero-fyr-img" />
+    </section>
+
+    <!-- MARQUESINA DINÁMICA 2 (LÍNEA 2 DE CONFIGURACIÓN) -->
+    <div class="ticker-fyr">
+        <div class="ticker-track">
+            <span>
+                @for (int i = 0; i < 8; i++)
+                {
+                    @config.Linea2 @:&nbsp;&nbsp;&nbsp;&nbsp;
+                }
+            </span>
+            <span>
+                @for (int i = 0; i < 8; i++)
+                {
+                    @config.Linea2 @:&nbsp;&nbsp;&nbsp;&nbsp;
+                }
+            </span>
+        </div>
+    </div>
+
+    <!-- CATEGORÍAS -->
+    <section class="categories-fyr my-4">
+        <div class="categories-container">
+            <a href="#" class="category-card">
+                <img src="~/images/nuevo.png" alt="Nueva colección" />
+                <div class="category-button">NUEVO</div>
+            </a>
+            <a href="#" class="category-card">
+                <img src="~/images/mujeres.png" alt="Mujeres" />
+                <div class="category-button">MUJERES</div>
+            </a>
+            <a href="#" class="category-card">
+                <img src="~/images/hombres.png" alt="Hombres" />
+                <div class="category-button">HOMBRES</div>
+            </a>
+        </div>
+    </section>
+
+    <!-- BARRA PROMOCIONAL DINÁMICA (LÍNEA 3 DE CONFIGURACIÓN) -->
+    <section class="promo-bar py-3 bg-dark text-white text-center fw-bold text-uppercase d-flex align-items-center justify-content-center gap-3">
+        <span class="promo-text fs-5">@config.Linea3</span>
+        <div class="promo-circle bg-warning text-dark rounded-circle px-3 py-1 fw-black small">
+            <span>OFERTAS!</span>
+        </div>
+    </section>
+
+    <!-- PRODUCTOS DESTACADOS -->
+    <section class="featured-products my-5">
+        <div class="products-container">
+            <a href="#" class="product-card">
+                <img src="~/images/hombres2.png" alt="Producto @config.NombreTienda" />
+            </a>
+            <a href="#" class="product-card">
+                <img src="~/images/mujeres2.png" alt="Producto @config.NombreTienda" />
+            </a>
+            <a href="#" class="product-card">
+                <img src="~/images/hombres3.png" alt="Producto @config.NombreTienda" />
+            </a>
+        </div>
+    </section>
+
+    <!-- SECCIÓN DE OFERTAS / SALE (LÍNEA 4 DE CONFIGURACIÓN) -->
+    <section class="sale-section my-5">
+        <div class="sale-banner d-flex align-items-center justify-content-center gap-4">
+            <img src="~/images/sale.png" alt="Sale" class="sale-image sale-image-left" />
+            <h2 class="sale-title display-4 fw-black text-uppercase m-0">@config.Linea4</h2>
+            <img src="~/images/off.png" alt="Ofertas" class="sale-image sale-image-right" />
+        </div>
+    </section>
+
+    <!-- FOOTER CON DATOS DE CONTACTO Y MENÚS DINÁMICOS -->
+    <footer class="bg-light pt-5 pb-4 border-top mt-5">
+        <div class="container">
+            <div class="row text-uppercase small fw-bold">
+                <!-- COLUMNA 1: LISTADO DE PRODUCTOS/CATEGORÍAS DESDE CONFIGURACIÓN -->
+                <div class="col-md-4 mb-4">
+                    <h6 class="fw-bold mb-3 text-dark">PRODUCTOS</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 text-muted">
+                        @foreach (var prod in listaProductosMenu)
+                        {
+                            <li><a href="#" class="text-decoration-none text-secondary">@prod.Trim()</a></li>
+                        }
+                    </ul>
+                </div>
+
+                <!-- COLUMNA 2: CONTACTANOS DESDE CONFIGURACIÓN -->
+                <div class="col-md-4 mb-4">
+                    <h6 class="fw-bold mb-3 text-dark">CONTACTANOS</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 text-secondary">
+                        <li>📞 @config.TelefonoContactanos</li>
+                        <li>✉️ @config.EmailContacto</li>
+                        <li>📍 @config.Ubicación</li>
+                        <li>📷 @config.Instagram</li>
+                    </ul>
+                </div>
+
+                <!-- COLUMNA 3: MEDIOS DE PAGO DESDE CONFIGURACIÓN -->
+                <div class="col-md-4 mb-4">
+                    <h6 class="fw-bold mb-3 text-dark">MEDIOS DE PAGO</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 text-secondary">
+                        @foreach (var pago in listaMediosPago)
+                        {
+                            <li>✓ @pago.Trim()</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#toggleSearch').click(function () {
+                $('#searchInput').toggle().focus();
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,243 @@
+@model List<FRFront.Models.EmpleadoDto>
+@{
+    Layout = null;
+    ViewData["Title"] = "Gestión de Empleados";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F&R - Gestión de Empleados</title>
+    
+    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .employee-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e9ecef;
+            padding: 18px 30px;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            margin-bottom: 12px;
+        }
+
+        .employee-card:hover {
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            border-color: #ced4da;
+        }
+
+        .table-header-custom {
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #6c757d;
+            text-transform: uppercase;
+            padding: 0 30px 12px 30px;
+        }
+
+        .btn-black-pill {
+            background-color: #000;
+            color: #fff;
+            border-radius: 50px;
+            padding: 8px 22px;
+            font-weight: 800;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+
+        .btn-black-pill:hover {
+            background-color: #212529;
+            color: #fff;
+        }
+
+        .btn-action-icon {
+            background-color: #f8f9fa;
+            color: #212529;
+            border: 1px solid #dee2e6;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease-in-out;
+            padding: 0;
+            text-decoration: none;
+        }
+
+        .btn-action-icon:hover {
+            background-color: #e9ecef;
+            color: #000;
+            border-color: #ced4da;
+        }
+
+        .badge-rol {
+            background-color: #e8f0fe;
+            color: #1a73e8;
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.72rem;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-bloqueado {
+            background-color: #fce8e6;
+            color: #c5221f;
+        }
+
+        .form-control-pill {
+            border-radius: 50px;
+            padding: 10px 20px;
+            border: 1px solid #ced4da;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Home" asp-action="Index">
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 45px; width: auto;" />
+            </a>
+            <span class="fs-5 fw-bold text-dark border-start ps-3 py-1">GESTIÓN DE EMPLEADOS</span>
+        </div>
+
+        <div>
+            <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-3 py-2">
+                &lt; VOLVER AL PANEL
+            </a>
+        </div>
+    </header>
+
+    <div class="container py-5" style="max-width: 1200px;">
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show rounded-4 fw-bold mb-4" role="alert">
+                ✓ @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <!-- CONTROLES -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+            <div>
+                <h1 class="fw-black text-uppercase mb-1" style="font-weight: 900;">EMPLEADOS</h1>
+                <p class="text-muted mb-0">Gestión de personal del sistema</p>
+            </div>
+
+            <div class="d-flex gap-2 align-items-center">
+                <form method="get" asp-controller="Administrador" asp-action="Empleados" class="d-flex gap-2">
+                    <input type="text" name="busqueda" value="@ViewBag.BusquedaActual" placeholder="Buscador de empleado..." class="form-control form-control-pill" style="min-width: 280px;" />
+                    <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold">BUSCAR</button>
+                </form>
+                <a asp-controller="Administrador" asp-action="CrearEmpleado" class="btn-black-pill">
+                    + NUEVO EMPLEADO
+                </a>
+            </div>
+        </div>
+
+        <!-- CABECERA DE TABLA -->
+        <div class="row table-header-custom d-none d-md-flex align-items-center">
+            <div class="col-md-2">N° EMPLEADO</div>
+            <div class="col-md-2 text-center">ROL</div>
+            <div class="col-md-3">NOMBRE</div>
+            <div class="col-md-3">EMAIL</div>
+            <div class="col-md-2 text-end">ACCIONES</div>
+        </div>
+
+        <!-- FILAS DE EMPLEADOS -->
+        <div class="d-flex flex-column gap-2">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var emp in Model)
+                {
+                    bool estaBloqueado = emp.Estado != null && emp.Estado.Equals("BLOQUEADO", StringComparison.OrdinalIgnoreCase);
+
+                    <div class="employee-card">
+                        <div class="row align-items-center text-center text-md-start">
+                            <div class="col-12 col-md-2 mb-2 mb-md-0 fw-bold fs-6">
+                                @emp.NumeroEmpleado
+                            </div>
+
+                            <div class="col-12 col-md-2 mb-2 mb-md-0 text-center">
+                                <span class="badge-rol @(estaBloqueado ? "badge-bloqueado" : "")">
+                                    @(estaBloqueado ? "BLOQUEADO" : (emp.Rol ?? "EMPLEADO").ToUpper())
+                                </span>
+                            </div>
+
+                            <div class="col-12 col-md-3 mb-2 mb-md-0 fw-bold text-uppercase">
+                                @emp.NombreCompleto
+                            </div>
+
+                            <div class="col-12 col-md-3 mb-2 mb-md-0 text-muted">
+                                @emp.Email
+                            </div>
+
+                            <div class="col-12 col-md-2 text-end d-flex justify-content-center justify-content-md-end gap-2 align-items-center">
+                                
+                                <!-- EDITAR -->
+                                <a asp-controller="Administrador" asp-action="DetalleEmpleado" asp-route-id="@emp.Id" class="btn-action-icon" title="Editar empleado">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </a>
+
+                                <!-- BLOQUEAR / DESBLOQUEAR -->
+                                <form asp-controller="Administrador" asp-action="CambiarEstadoEmpleado" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@emp.Id" />
+                                    <input type="hidden" name="nuevoEstado" value="@(estaBloqueado ? "ACTIVO" : "BLOQUEADO")" />
+                                    <button type="submit" class="btn-action-icon" title="@(estaBloqueado ? "Desbloquear usuario" : "Bloquear usuario")">
+                                        @if (estaBloqueado)
+                                        {
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
+                                        }
+                                        else
+                                        {
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                        }
+                                    </button>
+                                </form>
+
+                                <!-- ELIMINAR -->
+                                <form asp-controller="Administrador" asp-action="EliminarEmpleado" method="post" onsubmit="return confirm('¿Seguro que desea eliminar este empleado?');" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@emp.Id" />
+                                    <button type="submit" class="btn-action-icon" title="Eliminar usuario">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                    </button>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="employee-card text-center py-5">
+                    <p class="text-muted mb-0 fw-bold">No se encontraron empleados registrados en el sistema.</p>
+                </div>
+            }
+        </div>
+
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

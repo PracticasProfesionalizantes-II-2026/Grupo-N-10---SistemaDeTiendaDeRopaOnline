@@ -1,0 +1,377 @@
+@model FRFront.Models.ConfiguracionTiendaDto
+@{
+    Layout = null;
+    ViewData["Title"] = "Configuración de la Tienda";
+
+    var listaTipografias = new[] { 
+        "Roboto", "Nunito", "Lora", "EB Garamond", "Arial", 
+        "Lexend", "Lobster", "Merriweather", "Montserrat", 
+        "Oswald", "Pacifico", "Playfair Display", "Roboto Mono" 
+    };
+
+    var coloresPredeterminados = new[] { 
+        "#ffffff", "#000000", "#f8f9fa", "#e9ecef", 
+        "#0d6efd", "#198754", "#dc3545", "#fd7e14" 
+    };
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F&R - Configuración de la Tienda</title>
+    
+    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 1rem;
+        }
+
+        .config-card {
+            background: #ffffff;
+            border-radius: 18px;
+            border: 1px solid #e9ecef;
+            padding: 28px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.03);
+            height: 100%;
+        }
+
+        .config-section-title {
+            font-size: 1.15rem;
+            font-weight: 900;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: #111111;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f1f3f5;
+            padding-bottom: 8px;
+        }
+
+        .form-label-custom {
+            font-weight: 800;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            color: #495057;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .form-control-custom, .form-select-custom {
+            border-radius: 14px;
+            padding: 12px 18px;
+            border: 1px solid #ced4da;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #212529;
+        }
+
+        .form-control-custom:focus, .form-select-custom:focus {
+            border-color: #000000;
+            box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-preview-box {
+            width: 120px;
+            height: 120px;
+            border-radius: 16px;
+            border: 2px dashed #ced4da;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .logo-preview-box img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        .color-picker-dot {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #dee2e6;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+
+        .color-picker-dot:hover {
+            transform: scale(1.15);
+        }
+
+        .btn-save-floating {
+            background-color: #000000;
+            color: #ffffff;
+            border-radius: 50px;
+            padding: 14px 44px;
+            font-weight: 800;
+            font-size: 1.05rem;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            border: none;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+            transition: all 0.2s ease;
+        }
+
+        .btn-save-floating:hover {
+            background-color: #212529;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(0,0,0,0.3);
+        }
+
+        .text-help-custom {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Home" asp-action="Index">
+                <img src="~/images/logo-fr.png" alt="F&R Logo" style="height: 48px; width: auto;" />
+            </a>
+            <span class="fs-4 fw-bold text-dark border-start ps-3 py-1">CONFIGURACIÓN DE LA TIENDA</span>
+        </div>
+
+        <div>
+            <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-dark rounded-pill fw-bold px-4 py-2" style="font-size: 0.9rem;">
+                &lt; VOLVER AL PANEL
+            </a>
+        </div>
+    </header>
+
+    <div class="container py-5" style="max-width: 1280px;">
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show rounded-4 fw-bold fs-6 mb-4" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <form asp-controller="Administrador" asp-action="GuardarConfiguracion" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <div class="row g-4 mb-5">
+
+                <!-- COLUMNA IZQUIERDA: IDENTIDAD Y ESTILO -->
+                <div class="col-12 col-lg-4">
+                    <div class="d-flex flex-column gap-4">
+
+                        <!-- CARD 1: LOGO Y NOMBRE -->
+                        <div class="config-card">
+                            <div class="config-section-title">
+                                IDENTIDAD VISUAL
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label-custom">LOGO *</label>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="logo-preview-box">
+                                        <img id="logoPreview" src="@Model.LogoUrl" alt="Logo de la tienda" />
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <input type="file" name="logoFile" class="form-control form-control-sm rounded-pill mb-1" accept="image/*" onchange="previewImage(event)" />
+                                        <small class="text-help-custom d-block">Formatos recomendados: PNG o SVG transparente.</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label-custom">NOMBRE DE LA TIENDA *</label>
+                                <input type="text" asp-for="NombreTienda" class="form-control form-control-custom" placeholder="Ej: F & R" required />
+                            </div>
+
+                            <div>
+                                <label class="form-label-custom">COLOR DE FONDO *</label>
+                                <div class="d-flex align-items-center gap-2 mb-3">
+                                    <input type="color" id="inputColorFondo" asp-for="ColorFondo" class="form-control form-control-color rounded-circle" style="width: 46px; height: 46px; cursor: pointer;" />
+                                    <input type="text" id="hexColorFondo" asp-for="ColorFondo" class="form-control form-control-custom text-uppercase fw-bold" style="max-width: 140px;" />
+                                </div>
+                                <div class="d-flex gap-2 align-items-center">
+                                    @foreach (var hex in coloresPredeterminados)
+                                    {
+                                        <div class="color-picker-dot" style="background-color: @hex;" onclick="setColor('@hex')"></div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CARD 2: TIPOGRAFÍA -->
+                        <div class="config-card">
+                            <div class="config-section-title">
+                                TIPOGRAFÍA DE LA TIENDA *
+                            </div>
+
+                            <div>
+                                <label class="form-label-custom">FUENTE PRINCIPAL</label>
+                                <select asp-for="TipografiaSeleccionada" class="form-select form-select-custom">
+                                    @foreach (var font in listaTipografias)
+                                    {
+                                        <option value="@font" selected="@(Model.TipografiaSeleccionada == font)">@font</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- COLUMNA CENTRAL: CONTACTO Y MEDIOS DE PAGO -->
+                <div class="col-12 col-lg-4">
+                    <div class="d-flex flex-column gap-4">
+
+                        <!-- CARD 3: CONTACTOS -->
+                        <div class="config-card">
+                            <div class="config-section-title">
+                                CONTACTOS Y UBICACIÓN *
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label-custom">TELÉFONO DE CONTACTO</label>
+                                <input type="text" asp-for="TelefonoContactanos" class="form-control form-control-custom" placeholder="3564-451239" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label-custom">EMAIL DE CONSULTAS</label>
+                                <input type="email" asp-for="EmailContacto" class="form-control form-control-custom" placeholder="f&r_tienda_online@gmail.com" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label-custom">UBICACIÓN / CIUDAD</label>
+                                <input type="text" asp-for="Ubicación" class="form-control form-control-custom" placeholder="Sunchales, Santa Fe" />
+                            </div>
+
+                            <div>
+                                <label class="form-label-custom">INSTAGRAM</label>
+                                <input type="text" asp-for="Instagram" class="form-control form-control-custom" placeholder="@@F&R.OFICIAL" />
+                            </div>
+                        </div>
+
+                        <!-- CARD 4: MEDIOS DE PAGO -->
+                        <div class="config-card">
+                            <div class="config-section-title">
+                                MEDIOS DE PAGO HABILITADOS *
+                            </div>
+
+                            <div>
+                                <label class="form-label-custom">LISTADO DE MÉTODOS DE PAGO</label>
+                                <textarea asp-for="MediosPago" class="form-control form-control-custom" rows="4" placeholder="EFECTIVO, TARJETA DE DEBITO, TARJETA DE CREDITO, TRANSFERENCIA"></textarea>
+                                <small class="text-help-custom d-block mt-2">Separa las opciones con comas o saltos de línea.</small>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- COLUMNA DERECHA: NAVEGACIÓN Y BANNERS -->
+                <div class="col-12 col-lg-4">
+                    <div class="d-flex flex-column gap-4">
+
+                        <!-- CARD 5: CATEGORÍAS Y MENÚ ENCABEZADO -->
+                        <div class="config-card">
+                            <div class="config-section-title">
+                                MENÚ Y PRODUCTOS *
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label-custom">PRODUCTOS / CATEGORÍAS</label>
+                                <textarea asp-for="CategoriasMenu" class="form-control form-control-custom" rows="3" placeholder="BUZOS, CAMISAS, SWEATER, REMERAS, PANTALONES"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="form-label-custom">SECCIONES DEL ENCABEZADO</label>
+                                <textarea asp-for="MenuEncabezado" class="form-control form-control-custom" rows="3" placeholder="MIS COMPRAS, LANZAMIENTOS, HOMBRE, MUJER, OFERTAS, PRODUCTOS"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- CARD 6: BANNER Y LÍNEAS DE TEXTO -->
+                        <div class="config-card">
+                            <div class="config-section-title">
+                                BANNER PROMOCIONAL *
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label-custom">LÍNEA 1 *</label>
+                                <input type="text" asp-for="Linea1" class="form-control form-control-custom" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label-custom">LÍNEA 2 *</label>
+                                <input type="text" asp-for="Linea2" class="form-control form-control-custom" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label-custom">LÍNEA 3 *</label>
+                                <input type="text" asp-for="Linea3" class="form-control form-control-custom" />
+                            </div>
+
+                            <div>
+                                <label class="form-label-custom">LÍNEA 4 *</label>
+                                <input type="text" asp-for="Linea4" class="form-control form-control-custom" />
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- BOTÓN GUARDAR -->
+            <div class="d-flex justify-content-end mb-5">
+                <button type="submit" class="btn-save-floating">
+                    GUARDAR CAMBIOS
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const colorInput = document.getElementById('inputColorFondo');
+        const hexInput = document.getElementById('hexColorFondo');
+
+        colorInput.addEventListener('input', (e) => {
+            hexInput.value = e.target.value.toUpperCase();
+        });
+
+        hexInput.addEventListener('input', (e) => {
+            if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
+                colorInput.value = e.target.value;
+            }
+        });
+
+        function setColor(hex) {
+            colorInput.value = hex;
+            hexInput.value = hex.toUpperCase();
+        }
+
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function () {
+                const output = document.getElementById('logoPreview');
+                output.src = reader.result;
+            };
+            if (event.target.files[0]) {
+                reader.readAsDataURL(event.target.files[0]);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+@model FRFront.Models.ClienteDto
+
+@{
+    ViewData["Title"] = "Detalle del Cliente";
+    Layout = "_LayoutAdministrador";
+}
+
+<div class="container-fluid px-4 py-4" style="max-width: 900px;">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <a asp-action="Clientes" class="text-decoration-none text-muted small fw-bold">&lt; VOLVER A CLIENTES</a>
+            <h2 class="fw-bold text-uppercase mt-2 mb-0">Ficha del Cliente @Model.NumeroCliente</h2>
+        </div>
+        <div>
+            <a asp-action="HistorialCliente" asp-route-id="@Model.Id" class="btn btn-outline-dark rounded-pill fw-bold">
+                📜 HISTORIAL DE COMPRAS
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+            <form asp-action="EditarCliente" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold text-uppercase">DNI / CUIT *</label>
+                        <input type="text" asp-for="Dni" class="form-control rounded-pill" required />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold text-uppercase">Estado del Cliente</label>
+                        <select asp-for="Estado" class="form-select rounded-pill">
+                            <option value="ACTIVO">ACTIVO</option>
+                            <option value="INACTIVO">INACTIVO</option>
+                            <option value="BLOQUEADO">BLOQUEADO</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold text-uppercase">Nombre *</label>
+                        <input type="text" asp-for="Nombre" class="form-control rounded-pill" required />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold text-uppercase">Apellido *</label>
+                        <input type="text" asp-for="Apellido" class="form-control rounded-pill" required />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold text-uppercase">Email *</label>
+                        <input type="email" asp-for="Email" class="form-control rounded-pill" required />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold text-uppercase">Teléfono</label>
+                        <input type="text" asp-for="Telefono" class="form-control rounded-pill" />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold text-uppercase">Fecha de Registro</label>
+                        <input type="text" class="form-control rounded-pill bg-light" value="@Model.FechaAlta.ToString("dd/MM/yyyy HH:mm")" readonly />
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <a asp-action="Clientes" class="btn btn-light rounded-pill px-4 fw-bold">CANCELAR</a>
+                    <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold">GUARDAR CAMBIOS</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>

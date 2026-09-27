@@ -252,15 +252,10 @@ namespace FYR_API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("NotificacionId")
-                        .HasColumnType("int");
-
                     b.Property<int>("UsuarioId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("NotificacionId");
 
                     b.HasIndex("UsuarioId");
 
@@ -585,6 +580,10 @@ namespace FYR_API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("Dni")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -694,10 +693,6 @@ namespace FYR_API.Migrations
 
             modelBuilder.Entity("Entidades.Models.Notificacion", b =>
                 {
-                    b.HasOne("Entidades.Models.Notificacion", null)
-                        .WithMany("Notificaciones")
-                        .HasForeignKey("NotificacionId");
-
                     b.HasOne("Entidades.Models.Usuario", "Usuario")
                         .WithMany("Notificaciones")
                         .HasForeignKey("UsuarioId")
@@ -867,11 +862,6 @@ namespace FYR_API.Migrations
                     b.Navigation("Sucursales");
 
                     b.Navigation("Usuarios");
-                });
-
-            modelBuilder.Entity("Entidades.Models.Notificacion", b =>
-                {
-                    b.Navigation("Notificaciones");
                 });
 
             modelBuilder.Entity("Entidades.Models.Pedido", b =>

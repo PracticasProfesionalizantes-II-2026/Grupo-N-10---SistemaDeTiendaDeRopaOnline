@@ -5,5 +5,6 @@ public enum EstadoPedido
     Confirmado = 1,
     EnCamino = 2,
     Entregado = 3,
-    Rechazado = 4
+    Rechazado = 4,
+    Pagado = 5
 }

@@ -14,6 +14,7 @@ public class ClienteService : IClienteService
         return new ClienteResponse
         {
             IdUsuario = usuario.Id,
+            Dni = usuario.Dni,
             Nombre = usuario.Nombre,
             Apellido = usuario.Apellido,
             Email = usuario.Email,
@@ -40,6 +41,7 @@ public class ClienteService : IClienteService
     {
         var cliente = new Usuario
         {
+            Dni = request.Dni,
             Nombre = request.Nombre,
             Apellido = request.Apellido,
             Email = request.Email,

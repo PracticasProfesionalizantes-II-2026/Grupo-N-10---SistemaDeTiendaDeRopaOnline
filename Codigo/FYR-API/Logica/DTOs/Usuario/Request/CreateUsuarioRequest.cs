@@ -11,6 +11,8 @@ public class CreateUsuarioRequest
     [Required]
     public string Apellido { get; set; } = string.Empty;
 
+    public string? Dni { get; set; }
+
     [Required]
     [EmailAddress]
     public string Email { get; set; } = string.Empty;
