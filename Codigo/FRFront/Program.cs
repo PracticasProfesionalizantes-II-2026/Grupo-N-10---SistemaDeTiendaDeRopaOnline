@@ -47,4 +47,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+// app.Run() siempre debe ser la última instrucción
 app.Run();

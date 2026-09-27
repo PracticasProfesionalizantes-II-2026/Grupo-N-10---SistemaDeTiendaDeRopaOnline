@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.Http
 @using FRFront.Models
 @using FRFront.Controllers
 @{
@@ -75,39 +75,42 @@
             100% { transform: translateX(-50%); }
         }
 
-        .user-dropdown-menu {
+        /* Estilo elegante para las tarjetas de la página principal */
+        .fyr-card-home {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             border-radius: 12px;
-            border: 1px solid #111;
-            padding: 10px 0;
-            min-width: 190px;
+            overflow: hidden;
         }
 
-        .user-dropdown-menu .user-name-header {
-            font-weight: 800;
-            padding: 8px 16px;
-            font-size: 1rem;
-            color: #000;
-            border-bottom: 1px solid #eee;
-        }
-
-        .user-dropdown-menu .dropdown-item {
-            font-weight: 600;
-            font-size: 0.9rem;
-            padding: 8px 16px;
-            color: #222;
-        }
-
-        .user-dropdown-menu .dropdown-item:hover {
-            background-color: #f8f9fa;
-        }
-
-        .search-input-box {
-            display: none;
-            width: 220px;
+        .fyr-card-home:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
         }
     </style>
-</head>
-<body>
+}
+
+<!-- Tira Animada 1 -->
+<div class="ticker-fyr">
+    <div class="ticker-track">
+        <span>F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp;&nbsp;&nbsp;</span>
+    </div>
+</div>
+
+<!-- BANNER PRINCIPAL -->
+<section class="hero-fyr mb-5">
+    <a asp-controller="Home" asp-action="Catalogo">
+        <img src="~/images/banner.png" alt="Nueva colección F&R" class="w-100 object-fit-cover" style="max-height: 480px;" />
+    </a>
+</section>
+
+<!-- Tira Animada 2 -->
+<div class="ticker-fyr mb-5">
+    <div class="ticker-track">
+        <span>F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp;&nbsp;&nbsp;</span>
+    </div>
+</div>
 
     <!-- ========================================================= -->
     <!-- HEADER / BARRA DE NAVEGACIÓN -->
@@ -118,229 +121,107 @@
             <a asp-controller="Home" asp-action="Index">
                 <img src="@config.LogoUrl" alt="@config.NombreTienda Logo" style="height: 65px; width: auto;" />
             </a>
-        </div>
+        </div>}
 
-        <!-- MENÚ DE SECCIONES DINÁMICO -->
-        <nav class="d-none d-md-flex gap-4 fw-bold text-uppercase fs-6">
-            @foreach (var seccion in menuSecciones)
-            {
-                <a href="#" class="text-dark text-decoration-none">@seccion.Trim()</a>
-            }
-        </nav>
+        <!-- ========================================================= -->
+<!-- GRILLA DE CATEGORÍAS PRINCIPALES -->
+<!-- ========================================================= -->
+<div class="container mb-5">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
 
-        <div class="d-flex align-items-center gap-3">
-            
-            <div class="d-flex align-items-center gap-2">
-                <input type="text" id="searchInput" class="form-control form-control-sm rounded-pill search-input-box" placeholder="Ingrese lo que desea buscar" />
-                <button type="button" id="toggleSearch" class="btn btn-link p-0 text-dark text-decoration-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                    </svg>
-                </button>
-            </div>
-
-            @if (!string.IsNullOrEmpty(usuarioLogueado))
-            {
-                @if (rolUsuario == "Administrador")
-                {
-                    <a asp-controller="Administrador" asp-action="Index" class="text-danger fw-bold text-decoration-none text-uppercase me-2 small">
-                        ADMINISTRAR PÁGINA
-                    </a>
-                }
-                else if (rolUsuario == "Empleado" || rolUsuario == "Cajero")
-                {
-                    <a asp-controller="Empleado" asp-action="Index" class="text-dark fw-bold text-decoration-none text-uppercase me-2 small">
-                        PANEL CAJERO
-                    </a>
-                }
-                else
-                {
-                    <a href="#" class="text-dark fw-bold text-decoration-none text-uppercase me-2 small">
-                        MIS COMPRAS
-                    </a>
-                }
-
-                <div class="dropdown">
-                    <button class="btn btn-dark dropdown-toggle text-uppercase fw-bold rounded-pill px-3 py-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        MI CUENTA
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow user-dropdown-menu">
-                        <li class="user-name-header text-capitalize">@nombreUsuario</li>
-                        <li><a class="dropdown-item" asp-controller="Home" asp-action="Index">Inicio</a></li>
-                        
-                        @if (rolUsuario == "Administrador")
-                        {
-                            <li><a class="dropdown-item text-danger fw-bold" asp-controller="Administrador" asp-action="Index">Administrar Página</a></li>
-                        }
-                        else if (rolUsuario == "Empleado" || rolUsuario == "Cajero")
-                        {
-                            <li><a class="dropdown-item text-dark fw-bold" asp-controller="Empleado" asp-action="Index">Panel Cajero</a></li>
-                        }
-
-                        <li><a class="dropdown-item" href="#">Notificaciones</a></li>
-                        
-                        @if (rolUsuario != "Administrador" && rolUsuario != "Empleado" && rolUsuario != "Cajero")
-                        {
-                            <li><a class="dropdown-item" href="#">Mis Compras</a></li>
-                            <li><a class="dropdown-item" href="#">Carrito</a></li>
-                        }
-
-                        <li><a class="dropdown-item" href="#">Mi Cuenta</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger fw-bold" asp-controller="Account" asp-action="Logout">Cerrar Sesión</a></li>
-                    </ul>
+        
+        <!-- Tarjeta 1: Nuevo -->
+        <div class="col">
+            <a asp-controller="Home" asp-action="Catalogo" class="card fyr-card-home h-100 text-decoration-none text-dark border shadow-sm bg-light">
+                <div class="p-4 text-center" style="height: 320px; display: flex; align-items: center; justify-content: center;">
+                    <img src="~/images/hombres3.png" alt="Nuevo" class="img-fluid h-100 object-fit-contain" />
                 </div>
-            }
-            else
-            {
-                <a asp-controller="Account" asp-action="Login" class="text-dark fw-bold text-decoration-none text-uppercase">
-                    INICIAR SESIÓN
-                </a>
-            }
-
+                <div class="card-body text-center bg-white border-top">
+                    <h5 class="fw-bold text-uppercase m-0">NUEVO</h5>
+                </div>
+            </a>
         </div>
 
-    </header>
-
-    <!-- MARQUESINA DINÁMICA 1 (LÍNEA 1 DE CONFIGURACIÓN) -->
-    <div class="ticker-fyr">
-        <div class="ticker-track">
-            <span>
-                @for (int i = 0; i < 8; i++)
-                {
-                    @config.Linea1 @:&nbsp;&nbsp;&nbsp;&nbsp;
-                }
-            </span>
-            <span>
-                @for (int i = 0; i < 8; i++)
-                {
-                    @config.Linea1 @:&nbsp;&nbsp;&nbsp;&nbsp;
-                }
-            </span>
+        <!-- Tarjeta 2: Mujeres -->
+        <div class="col">
+            <a asp-controller="Home" asp-action="Mujer" class="card fyr-card-home h-100 text-decoration-none text-dark border shadow-sm bg-light">
+                <div class="p-4 text-center" style="height: 320px; display: flex; align-items: center; justify-content: center;">
+                    <img src="~/images/mujeres.png" alt="Mujeres" class="img-fluid h-100 object-fit-contain" />
+                </div>
+                <div class="card-body text-center bg-white border-top">
+                    <h5 class="fw-bold text-uppercase m-0">MUJERES</h5>
+                </div>
+            </a>
         </div>
+
+        <!-- Tarjeta 3: Hombres -->
+        <div class="col">
+            <a asp-controller="Home" asp-action="Hombre" class="card fyr-card-home h-100 text-decoration-none text-dark border shadow-sm bg-light">
+                <div class="p-4 text-center" style="height: 320px; display: flex; align-items: center; justify-content: center;">
+                    <img src="~/images/hombres2.png" alt="Hombres" class="img-fluid h-100 object-fit-contain" />
+                </div>
+                <div class="card-body text-center bg-white border-top">
+                    <h5 class="fw-bold text-uppercase m-0">HOMBRES</h5>
+                </div>
+            </a>
+        </div>
+
     </div>
+</div>
 
-    <!-- SECCIÓN HERO / BANNER PRINCIPAL -->
-    <section class="hero-fyr">
-        <img src="~/images/banner.png" alt="Nueva colección @config.NombreTienda" class="hero-fyr-img" />
-    </section>
-
-    <!-- MARQUESINA DINÁMICA 2 (LÍNEA 2 DE CONFIGURACIÓN) -->
-    <div class="ticker-fyr">
-        <div class="ticker-track">
-            <span>
-                @for (int i = 0; i < 8; i++)
-                {
-                    @config.Linea2 @:&nbsp;&nbsp;&nbsp;&nbsp;
-                }
-            </span>
-            <span>
-                @for (int i = 0; i < 8; i++)
-                {
-                    @config.Linea2 @:&nbsp;&nbsp;&nbsp;&nbsp;
-                }
-            </span>
-        </div>
+<!-- ========================================================= -->
+<!-- BARRA PROMO -->
+<!-- ========================================================= -->
+<section class="promo-bar py-4 bg-dark text-white text-center my-5 position-relative">
+    <div class="container d-flex justify-content-between align-items-center">
+        <span class="fw-bold text-uppercase tracking-wide" style="font-size: 1.1rem; letter-spacing: 2px;">ENVÍO A TODO EL PAÍS</span>
+        <a asp-controller="Home" asp-action="Ofertas" class="btn btn-outline-light rounded-pill px-4 fw-bold text-uppercase">
+            ¡OFERTAS!
+        </a>
     </div>
+</section>
 
-    <!-- CATEGORÍAS -->
-    <section class="categories-fyr my-4">
-        <div class="categories-container">
-            <a href="#" class="category-card">
-                <img src="~/images/nuevo.png" alt="Nueva colección" />
-                <div class="category-button">NUEVO</div>
-            </a>
-            <a href="#" class="category-card">
-                <img src="~/images/mujeres.png" alt="Mujeres" />
-                <div class="category-button">MUJERES</div>
-            </a>
-            <a href="#" class="category-card">
-                <img src="~/images/hombres.png" alt="Hombres" />
-                <div class="category-button">HOMBRES</div>
-            </a>
-        </div>
-    </section>
-
-    <!-- BARRA PROMOCIONAL DINÁMICA (LÍNEA 3 DE CONFIGURACIÓN) -->
-    <section class="promo-bar py-3 bg-dark text-white text-center fw-bold text-uppercase d-flex align-items-center justify-content-center gap-3">
-        <span class="promo-text fs-5">@config.Linea3</span>
-        <div class="promo-circle bg-warning text-dark rounded-circle px-3 py-1 fw-black small">
-            <span>OFERTAS!</span>
-        </div>
-    </section>
-
-    <!-- PRODUCTOS DESTACADOS -->
-    <section class="featured-products my-5">
-        <div class="products-container">
-            <a href="#" class="product-card">
-                <img src="~/images/hombres2.png" alt="Producto @config.NombreTienda" />
-            </a>
-            <a href="#" class="product-card">
-                <img src="~/images/mujeres2.png" alt="Producto @config.NombreTienda" />
-            </a>
-            <a href="#" class="product-card">
-                <img src="~/images/hombres3.png" alt="Producto @config.NombreTienda" />
-            </a>
-        </div>
-    </section>
-
-    <!-- SECCIÓN DE OFERTAS / SALE (LÍNEA 4 DE CONFIGURACIÓN) -->
-    <section class="sale-section my-5">
-        <div class="sale-banner d-flex align-items-center justify-content-center gap-4">
-            <img src="~/images/sale.png" alt="Sale" class="sale-image sale-image-left" />
-            <h2 class="sale-title display-4 fw-black text-uppercase m-0">@config.Linea4</h2>
-            <img src="~/images/off.png" alt="Ofertas" class="sale-image sale-image-right" />
-        </div>
-    </section>
-
-    <!-- FOOTER CON DATOS DE CONTACTO Y MENÚS DINÁMICOS -->
-    <footer class="bg-light pt-5 pb-4 border-top mt-5">
-        <div class="container">
-            <div class="row text-uppercase small fw-bold">
-                <!-- COLUMNA 1: LISTADO DE PRODUCTOS/CATEGORÍAS DESDE CONFIGURACIÓN -->
-                <div class="col-md-4 mb-4">
-                    <h6 class="fw-bold mb-3 text-dark">PRODUCTOS</h6>
-                    <ul class="list-unstyled d-flex flex-column gap-2 text-muted">
-                        @foreach (var prod in listaProductosMenu)
-                        {
-                            <li><a href="#" class="text-decoration-none text-secondary">@prod.Trim()</a></li>
-                        }
-                    </ul>
+<!-- ========================================================= -->
+<!-- SEGUNDA FILA DE PRODUCTOS DESTACADOS -->
+<!-- ========================================================= -->
+<div class="container mb-5">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        
+        <div class="col">
+            <a asp-controller="Home" asp-action="Catalogo" class="card fyr-card-home h-100 text-decoration-none text-dark border shadow-sm bg-light">
+                <div class="p-4 text-center" style="height: 300px; display: flex; align-items: center; justify-content: center;">
+                    <img src="~/images/mujeres.png" alt="Buzo Seekers" class="img-fluid h-100 object-fit-contain" />
                 </div>
-
-                <!-- COLUMNA 2: CONTACTANOS DESDE CONFIGURACIÓN -->
-                <div class="col-md-4 mb-4">
-                    <h6 class="fw-bold mb-3 text-dark">CONTACTANOS</h6>
-                    <ul class="list-unstyled d-flex flex-column gap-2 text-secondary">
-                        <li>📞 @config.TelefonoContactanos</li>
-                        <li>✉️ @config.EmailContacto</li>
-                        <li>📍 @config.Ubicación</li>
-                        <li>📷 @config.Instagram</li>
-                    </ul>
-                </div>
-
-                <!-- COLUMNA 3: MEDIOS DE PAGO DESDE CONFIGURACIÓN -->
-                <div class="col-md-4 mb-4">
-                    <h6 class="fw-bold mb-3 text-dark">MEDIOS DE PAGO</h6>
-                    <ul class="list-unstyled d-flex flex-column gap-2 text-secondary">
-                        @foreach (var pago in listaMediosPago)
-                        {
-                            <li>✓ @pago.Trim()</li>
-                        }
-                    </ul>
-                </div>
-            </div>
+            </a>
         </div>
-    </footer>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $('#toggleSearch').click(function () {
-                $('#searchInput').toggle().focus();
-            });
-        });
-    </script>
-</body>
-</html>
+        <div class="col">
+            <a asp-controller="Home" asp-action="Catalogo" class="card fyr-card-home h-100 text-decoration-none text-dark border shadow-sm bg-light">
+                <div class="p-4 text-center" style="height: 300px; display: flex; align-items: center; justify-content: center;">
+                    <img src="~/images/camisatramas.png" alt="Camisa Tramas" class="img-fluid h-100 object-fit-contain" />
+                </div>
+            </a>
+        </div>
+
+        <div class="col">
+            <a asp-controller="Home" asp-action="Catalogo" class="card fyr-card-home h-100 text-decoration-none text-dark border shadow-sm bg-light">
+                <div class="p-4 text-center" style="height: 300px; display: flex; align-items: center; justify-content: center;">
+                    <img src="~/images/pantaloncargo.png" alt="Pantalon Cargo" class="img-fluid h-100 object-fit-contain" />
+                </div>
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- BANNER SALE -->
+<!-- ========================================================= -->
+<section class="sale-section my-5">
+    <a asp-controller="Home" asp-action="Ofertas" class="text-decoration-none">
+        <div class="bg-black text-white p-5 text-center position-relative overflow-hidden">
+            <h2 class="display-4 fw-bold text-uppercase m-0" style="letter-spacing: 5px;">¡¡ SALE OFF !!</h2>
+            <p class="text-light m-0 mt-2 small text-uppercase tracking-wide">Hasta 50% de descuento en temporada</p>
+        </div>
+    </a>
+</section>

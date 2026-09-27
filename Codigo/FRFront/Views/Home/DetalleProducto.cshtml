@@ -1,0 +1,180 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = ViewData["Nombre"] ?? "Detalle de Producto";
+}
+
+<div class="container my-5">
+    <a href="javascript:history.back()" class="text-dark fw-bold text-decoration-none mb-4 d-inline-block">&lt; VOLVER</a>
+
+    <!-- Formulario único para enviar los datos al CarritoController -->
+    <form asp-controller="Carrito" asp-action="Agregar" method="post" id="formDetalleProducto">
+        <!-- Campos ocultos que viajarán al controlador -->
+        <input type="hidden" name="nombre" value="@ViewData["Nombre"]" />
+        <input type="hidden" name="precio" value="@ViewData["PrecioNumerico"]" />
+        <input type="hidden" name="imagen" value="@ViewData["Imagen"]" />
+        <input type="hidden" name="talle" id="talleSeleccionadoInput" />
+        <input type="hidden" name="cantidad" id="cantidadInput" value="1" />
+
+        <div class="row g-5">
+            <!-- Imagen del Producto y Descripción -->
+            <div class="col-md-6 text-center">
+                <div class="bg-light p-4 rounded border d-flex align-items-center justify-content-center" style="height: 450px;">
+                    <img src="@Url.Content(ViewData["Imagen"]?.ToString() ?? "~/images/logo-fr.png")" alt="@ViewData["Nombre"]" class="img-fluid h-100 object-fit-contain" />
+                </div>
+
+                <!-- Descripción de la prenda -->
+                <div class="text-start mt-4 p-3 bg-light rounded border">
+                    <h6 class="fw-bold text-uppercase small mb-2 text-secondary">Descripción:</h6>
+                    <p class="text-dark m-0" style="font-size: 0.95rem;">
+                        @(ViewData["Descripcion"]?.ToString() ?? "Prenda confeccionada con materiales de alta calidad, diseño exclusivo de temporada y máxima comodidad.")
+                    </p>
+                </div>
+            </div>
+
+            <!-- Información y Opciones de Compra -->
+            <div class="col-md-6">
+                <h2 class="fw-bold text-uppercase">@ViewData["Nombre"]</h2>
+                <p class="text-muted small mb-3">Código: @ViewData["Codigo"]</p>
+                
+                <h3 class="fw-bold text-dark mb-4">@ViewData["Precio"]</h3>
+
+                <!-- Selección de Talles (SIN SELECCIÓN POR DEFECTO) -->
+                <div class="mb-3">
+                    <label class="fw-bold small text-uppercase d-block mb-2">Talle:</label>
+                    <div class="d-flex gap-2" id="grupoTalles">
+                        @if (ViewData["Talles"] is string[] talles && talles.Length > 0)
+                        {
+                            @foreach (var talle in talles)
+                            {
+                                <input type="radio" class="btn-check" name="talleOptions" id="talle-@talle" autocomplete="off" value="@talle">
+                                <label class="btn btn-outline-dark px-3 py-1" for="talle-@talle">@talle</label>
+                            }
+                        }
+                    </div>
+                    <div id="errorTalle" class="text-danger small mt-1 d-none">Por favor selecciona un talle.</div>
+                </div>
+
+                <!-- Cantidad -->
+                <div class="mb-4">
+                    <label class="fw-bold small text-uppercase d-block mb-2">Cantidad:</label>
+                    <div class="input-group" style="width: 130px;">
+                        <button class="btn btn-outline-dark" type="button" id="btnRestar">-</button>
+                        <input type="text" id="txtCantidad" class="form-control text-center fw-bold" value="1" readonly>
+                        <button class="btn btn-outline-dark" type="button" id="btnSumar">+</button>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="d-grid gap-3 mb-4">
+                    <button type="button" id="btnComprar" class="btn btn-primary btn-lg fw-bold text-uppercase py-3" style="background-color: #3b55ff; border: none;">
+                        Comprar
+                    </button>
+                    <button type="button" id="btnAgregarCarrito" class="btn btn-outline-dark btn-lg fw-bold text-uppercase py-3">
+                        Agregar al Carrito
+                    </button>
+                </div>
+
+                <!-- Alerta flotante de éxito al agregar -->
+                <div id="alertaCarrito" class="alert alert-success d-none text-center fw-bold" role="alert">
+                    ¡Producto agregado al carrito con éxito!
+                </div>
+
+                <!-- Calcular Costo de Envío con Opciones Condicionales -->
+                <div class="border-top pt-4 mt-4">
+                    <h6 class="fw-bold text-uppercase small mb-2">Calcular Costo de Envío:</h6>
+                    <div class="input-group" style="max-width: 320px;">
+                        <input type="text" id="txtCp" class="form-control" placeholder="Ej: 2322">
+                        <button class="btn btn-dark" type="button" id="btnCalcularEnvio">Calcular</button>
+                    </div>
+                    <!-- Contenedor dinámico de opciones de envío -->
+                    <div id="resultadoEnvio" class="mt-3 small"></div>
+                </div>
+
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Control de cantidad
+            $('#btnSumar').click(function () {
+                let val = parseInt($('#txtCantidad').val()) + 1;
+                $('#txtCantidad').val(val);
+                $('#cantidadInput').val(val);
+            });
+            $('#btnRestar').click(function () {
+                let val = parseInt($('#txtCantidad').val());
+                if (val > 1) {
+                    $('#txtCantidad').val(val - 1);
+                    $('#cantidadInput').val(val - 1);
+                }
+            });
+
+            // Capturar talle seleccionado
+            $('input[name="talleOptions"]').change(function () {
+                $('#talleSeleccionadoInput').val($(this).val());
+                $('#errorTalle').addClass('d-none');
+            });
+
+            // Validar que haya seleccionado talle
+            function validarTalle() {
+                let talleSeleccionado = $('input[name="talleOptions"]:checked').val();
+                if (!talleSeleccionado) {
+                    $('#errorTalle').removeClass('d-none');
+                    return false;
+                }
+                $('#errorTalle').addClass('d-none');
+                return true;
+            }
+
+            // BOTÓN AGREGAR AL CARRITO (Usa AJAX para quedarse en la pantalla y mostrar aviso)
+            $('#btnAgregarCarrito').click(function () {
+                if (!validarTalle()) return;
+
+                let formData = $('#formDetalleProducto').serialize();
+
+                $.post('@Url.Action("Agregar", "Carrito")', formData, function () {
+                    $('#alertaCarrito').removeClass('d-none').hide().fadeIn(300);
+                    setTimeout(function () {
+                        $('#alertaCarrito').fadeOut(300);
+                    }, 3000);
+                }).fail(function () {
+                    alert("Error al agregar el producto al carrito.");
+                });
+            });
+
+            // BOTÓN COMPRAR (Envía el formulario y redirige directo al carrito)
+            $('#btnComprar').click(function () {
+                if (!validarTalle()) return;
+                $('#formDetalleProducto').submit();
+            });
+
+            // Lógica de cálculo de envío según CP
+            $('#btnCalcularEnvio').click(function () {
+                let cp = $('#txtCp').val().trim();
+                let contenedor = $('#resultadoEnvio');
+
+                if (cp === "") {
+                    contenedor.html('<span class="text-danger fw-semibold">Por favor ingresa un código postal.</span>');
+                    return;
+                }
+
+                let htmlOpciones = '<ul class="list-group shadow-sm" style="max-width: 380px;">';
+
+                if (cp === "2322") {
+                    htmlOpciones += '<li class="list-group-item d-flex justify-content-between align-items-center"><span>📦 Retirar por local</span><strong class="text-success">Gratis</strong></li>';
+                    htmlOpciones += '<li class="list-group-item d-flex justify-content-between align-items-center"><span>🚀 Envío Premium <small class="text-muted">(1 día hábil)</small></span><strong>$ 3.000</strong></li>';
+                } else {
+                    htmlOpciones += '<li class="list-group-item d-flex justify-content-between align-items-center"><span>📦 Retirar por local</span><strong class="text-success">Gratis</strong></li>';
+                    htmlOpciones += '<li class="list-group-item d-flex justify-content-between align-items-center"><span>🚚 Envío Estándar <small class="text-muted">(7 días hábiles)</small></span><strong>$ 15.000</strong></li>';
+                    htmlOpciones += '<li class="list-group-item d-flex justify-content-between align-items-center"><span>✈️ Envío Premium <small class="text-muted">(2 días hábiles)</small></span><strong>$ 22.000</strong></li>';
+                }
+
+                htmlOpciones += '</ul>';
+                contenedor.html(htmlOpciones);
+            });
+        });
+    </script>
+}

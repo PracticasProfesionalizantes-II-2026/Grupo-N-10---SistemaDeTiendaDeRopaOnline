@@ -10,8 +10,9 @@ namespace FRFront.Controllers
     {
         // GET: /Account/Login
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl = null)
         {
+            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
@@ -22,6 +23,7 @@ namespace FRFront.Controllers
         {
             if (!ModelState.IsValid)
             {
+                ViewData["ReturnUrl"] = returnUrl;
                 return View(model);
             }
 
@@ -52,6 +54,10 @@ namespace FRFront.Controllers
                 HttpContext.Session.SetString("RolSesion", "Empleado");
                 return RedirectToAction("Index", "Empleado");
             }
+            else if (emailLower.Contains("empleado") || emailLower.Contains("cajero"))
+            {
+                HttpContext.Session.SetString("RolSesion", "Empleado");
+            }
             else
             {
                 bool estaBloqueado = emailLower.Contains("bloqueado");
@@ -68,6 +74,15 @@ namespace FRFront.Controllers
 
                 return RedirectToAction("Index", "Home");
             }
+
+            // Si hay una ruta de retorno válida (ej. el carrito), volvemos ahí
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+
+            // Si no hay ruta previa, redirige al inicio por defecto
+            return RedirectToAction("Index", "Home");
         }
 
         // GET: /Account/Logout

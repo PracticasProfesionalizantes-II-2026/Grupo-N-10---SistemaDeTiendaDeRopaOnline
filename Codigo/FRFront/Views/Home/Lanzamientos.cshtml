@@ -1,0 +1,170 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Lanzamientos";
+}
+
+<div class="container my-5">
+    
+    <!-- Banner Superior Estilo F&R (Igual al de Mujer/Hombre) -->
+    <div class="position-relative text-white rounded-4 overflow-hidden mb-5 shadow" style="background-color: #000; min-height: 180px;">
+        <div class="row align-items-center h-100 g-0">
+            <div class="col-md-8 p-4 p-md-5">
+                <span class="text-uppercase small fw-bold text-muted d-block mb-1" style="letter-spacing: 2px;">F&R TIENDA ONLINE</span>
+                <h1 class="fw-bold text-uppercase display-6 mb-3" style="letter-spacing: 1px;">LANZAMIENTOS</h1>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-light text-dark px-3 py-2 rounded-pill fw-semibold small">ENVÍO A TODO EL PAÍS</span>
+                    <span class="badge bg-secondary text-white px-3 py-2 rounded-pill fw-semibold small">TENDENCIA URBANA</span>
+                </div>
+            </div>
+            <div class="col-md-4 d-none d-md-block text-end h-100">
+                <img src="~/images/buzovcv.png" alt="Lanzamientos" class="h-100 w-100 object-fit-cover" style="max-height: 180px; opacity: 0.85;" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón Volver -->
+    <div class="mb-4">
+        <a asp-controller="Home" asp-action="Index" class="text-dark fw-bold text-uppercase text-decoration-none small" style="letter-spacing: 1px;">
+            &lt; VOLVER
+        </a>
+    </div>
+
+    <div class="row g-4">
+        
+        <!-- BARRA LATERAL DE FILTROS -->
+        <div class="col-lg-3 pe-lg-4 border-end">
+            
+            <!-- Sello NEW -->
+            <div class="text-center mb-4">
+                <div class="d-inline-block p-4 rounded-circle border border-dark border-3 bg-white shadow-sm position-relative" style="width: 120px; height: 120px;">
+                    <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                        <span class="fw-bold fs-3 text-dark lh-1" style="letter-spacing: 2px;">NEW</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categorías -->
+            <div class="mb-4">
+                <h6 class="fw-bold text-uppercase mb-3 small text-muted" style="letter-spacing: 1px;">CATEGORÍAS</h6>
+                <ul class="list-unstyled text-secondary small d-flex flex-column gap-2 fw-semibold">
+                    <li><a href="#" class="text-decoration-none text-dark">Ver todo Lanzamientos</a></li>
+                    <li><a href="#" class="text-decoration-none text-dark">Remeras</a></li>
+                    <li><a href="#" class="text-decoration-none text-dark">Pantalones</a></li>
+                    <li><a href="#" class="text-decoration-none text-dark">Polleras</a></li>
+                    <li><a href="#" class="text-decoration-none text-dark">Vestidos</a></li>
+                    <li><a href="#" class="text-decoration-none text-dark">Abrigos</a></li>
+                </ul>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Tiempo de Entrega -->
+            <div class="mb-4">
+                <h6 class="fw-bold text-uppercase mb-2 small text-muted" style="letter-spacing: 1px;">Tiempo de Entrega</h6>
+                <ul class="list-unstyled text-secondary small d-flex flex-column gap-1">
+                    <li><a href="#" class="text-decoration-none text-dark">Entrega en 2 días</a></li>
+                    <li><a href="#" class="text-decoration-none text-dark">Entrega en 7 días</a></li>
+                </ul>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Filtro de Color -->
+            <div class="mb-4">
+                <h6 class="fw-bold text-uppercase mb-2 small text-muted" style="letter-spacing: 1px;">Color</h6>
+                <div class="d-flex flex-wrap gap-2 my-2">
+                    <span class="rounded-circle bg-dark border" style="width: 20px; height: 20px; cursor: pointer;"></span>
+                    <span class="rounded-circle bg-secondary border" style="width: 20px; height: 20px; cursor: pointer;"></span>
+                    <span class="rounded-circle bg-primary border" style="width: 20px; height: 20px; cursor: pointer;"></span>
+                    <span class="rounded-circle bg-info border" style="width: 20px; height: 20px; cursor: pointer;"></span>
+                    <span class="rounded-circle bg-warning border" style="width: 20px; height: 20px; cursor: pointer;"></span>
+                    <span class="rounded-circle bg-danger border" style="width: 20px; height: 20px; cursor: pointer;"></span>
+                    <span class="rounded-circle bg-light border" style="width: 20px; height: 20px; cursor: pointer;"></span>
+                    <span class="rounded-circle bg-success border" style="width: 20px; height: 20px; cursor: pointer;"></span>
+                    <span class="rounded-circle border" style="width: 20px; height: 20px; background-color: #fd7e14; cursor: pointer;"></span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- GRILLA DE PRODUCTOS DE LANZAMIENTO (Estilo unificado con Precios) -->
+        <div class="col-lg-9">
+            <div class="row g-4">
+                
+                <!-- Producto 1 -->
+                <div class="col-md-4 col-sm-6 text-center">
+                    <div class="card border rounded-4 bg-white shadow-sm p-3 h-100 position-relative">
+                        <div class="bg-light rounded-3 p-3 mb-3 d-flex align-items-center justify-content-center" style="height: 250px;">
+                            <img src="~/images/buzovcv.png" alt="Buzo Seekers" class="img-fluid h-100 object-fit-contain" />
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Buzo Seekers</h6>
+                        <span class="fw-bold text-dark fs-6">$ 78.000</span>
+                    </div>
+                </div>
+
+                <!-- Producto 2 -->
+                <div class="col-md-4 col-sm-6 text-center">
+                    <div class="card border rounded-4 bg-white shadow-sm p-3 h-100 position-relative">
+                        <div class="bg-light rounded-3 p-3 mb-3 d-flex align-items-center justify-content-center" style="height: 250px;">
+                            <img src="~/images/buzovcv.png" alt="Jogging Addis" class="img-fluid h-100 object-fit-contain" />
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Jogging Addis</h6>
+                        <div>
+                            <span class="text-muted text-decoration-line-through small me-2">$ 50.000</span>
+                            <span class="fw-bold text-danger fs-6">$ 40.000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 3 -->
+                <div class="col-md-4 col-sm-6 text-center">
+                    <div class="card border rounded-4 bg-white shadow-sm p-3 h-100 position-relative">
+                        <div class="bg-light rounded-3 p-3 mb-3 d-flex align-items-center justify-content-center" style="height: 250px;">
+                            <img src="~/images/buzovcv.png" alt="Remera Active" class="img-fluid h-100 object-fit-contain" />
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Remera Active</h6>
+                        <span class="fw-bold text-dark fs-6">$ 35.000</span>
+                    </div>
+                </div>
+
+                <!-- Producto 4 -->
+                <div class="col-md-4 col-sm-6 text-center">
+                    <div class="card border rounded-4 bg-white shadow-sm p-3 h-100 position-relative">
+                        <div class="bg-light rounded-3 p-3 mb-3 d-flex align-items-center justify-content-center" style="height: 250px;">
+                            <img src="~/images/buzovcv.png" alt="Sweater Phobos" class="img-fluid h-100 object-fit-contain" />
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Sweater Phobos</h6>
+                        <span class="fw-bold text-dark fs-6">$ 65.000</span>
+                    </div>
+                </div>
+
+                <!-- Producto 5 (Ejemplo Sin Stock) -->
+                <div class="col-md-4 col-sm-6 text-center">
+                    <div class="card border rounded-4 bg-white shadow-sm p-3 h-100 position-relative">
+                        <div class="bg-light rounded-3 p-3 mb-3 d-flex align-items-center justify-content-center position-relative overflow-hidden" style="height: 250px;">
+                            <img src="~/images/buzovcv.png" alt="Camisa Lino" class="img-fluid h-100 object-fit-contain opacity-50" />
+                            <div class="position-absolute top-50 start-50 translate-middle bg-dark text-white px-3 py-1 rounded-pill fw-bold small shadow" style="letter-spacing: 1px;">
+                                SIN STOCK
+                            </div>
+                        </div>
+                        <h6 class="fw-bold text-muted mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Camisa Lino</h6>
+                        <span class="fw-bold text-muted fs-6">$ 55.000</span>
+                    </div>
+                </div>
+
+                <!-- Producto 6 -->
+                <div class="col-md-4 col-sm-6 text-center">
+                    <div class="card border rounded-4 bg-white shadow-sm p-3 h-100 position-relative">
+                        <div class="bg-light rounded-3 p-3 mb-3 d-flex align-items-center justify-content-center" style="height: 250px;">
+                            <img src="~/images/buzovcv.png" alt="Camisa Lino" class="img-fluid h-100 object-fit-contain" />
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Camisa Lino</h6>
+                        <span class="fw-bold text-dark fs-6">$ 55.000</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>

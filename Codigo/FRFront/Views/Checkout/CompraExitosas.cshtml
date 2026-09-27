@@ -1,0 +1,73 @@
+@model List<FRFront.Models.ItemCarrito>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Compra Realizada";
+
+    string textoEntrega = ViewData["TextoEntrega"]?.ToString() ?? "Tu pedido está en proceso.";
+    string numeroPedido = ViewData["NumeroPedido"]?.ToString() ?? "#48192";
+    bool esRetiroLocal = ViewData["EsRetiroLocal"] is bool valor && valor;
+}
+
+<div class="container my-5" style="max-width: 900px;">
+    
+    <div class="card border-0 shadow-lg rounded-4 p-5 text-white text-center position-relative overflow-hidden" style="background-color: #2bd673;">
+        
+        <h1 class="fw-bold text-uppercase mb-5 fs-2" style="letter-spacing: 1px;">¡Tu compra ha sido exitosa!</h1>
+
+        <!-- Tarjeta blanca central con imágenes y detalles -->
+        <div class="card border-0 rounded-4 p-4 text-dark shadow-sm mx-auto mb-5 text-start w-100" style="max-width: 750px;">
+            <div class="row align-items-center g-4">
+                
+                <!-- Columna de Imágenes de los Productos Comprados -->
+                <div class="col-md-5 text-center border-end">
+                    @if (Model != null && Model.Any())
+                    {
+                        <div class="d-flex flex-wrap justify-content-center gap-2 align-items-center" style="min-height: 160px;">
+                            @foreach (var item in Model)
+                            {
+                                <div class="bg-light p-2 rounded border position-relative shadow-sm" style="width: 85px; height: 85px;">
+                                    <img src="@Url.Content(item.Imagen)" alt="@item.Nombre" class="img-fluid h-100 w-100 object-fit-contain" />
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark" style="font-size: 0.65rem;">
+                                        x@(item.Cantidad)
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="bg-light p-3 rounded border d-flex align-items-center justify-content-center" style="height: 140px;">
+                            <img src="~/images/logo-fr.png" alt="F&R" class="img-fluid h-75 object-fit-contain" />
+                        </div>
+                    }
+                </div>
+
+                <!-- Columna de Mensaje y N° de Pedido -->
+                <div class="col-md-7 ps-md-4">
+                    <p class="fs-6 mb-3 text-secondary lh-sm">
+                        @Html.Raw(textoEntrega)
+                    </p>
+                    <h5 class="fw-bold text-uppercase m-0 text-dark" style="letter-spacing: 1px;">
+                        Nº PEDIDO: <span class="text-primary">@numeroPedido</span>
+                    </h5>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Botones de Acción Inferiores -->
+        <div class="d-flex flex-wrap justify-content-center gap-3 align-items-center">
+            <a asp-controller="Cliente" asp-action="MisCompras" class="btn btn-light rounded-pill px-4 py-2 fw-bold text-uppercase text-dark shadow-sm" style="font-size: 0.85rem;">
+                Ir a mis compras
+            </a>
+            <a asp-controller="Cliente" asp-action="SeguirEnvio" asp-route-nroPedido="@numeroPedido" class="btn btn-light rounded-pill px-4 py-2 fw-bold text-uppercase text-dark shadow-sm" style="font-size: 0.85rem;">
+                Seguir envío
+            </a>
+            <a asp-controller="Home" asp-action="Catalogo" class="btn btn-primary rounded-pill px-4 py-2 fw-bold text-uppercase shadow" style="background-color: #3b55ff; border: none; font-size: 0.85rem;">
+                Seguir comprando
+            </a>
+        </div>
+
+    </div>
+</div>

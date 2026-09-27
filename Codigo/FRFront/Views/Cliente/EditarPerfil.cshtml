@@ -1,0 +1,97 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Editar Perfil";
+    string emailUser = ViewData["EmailUsuario"]?.ToString() ?? "usuario@fyr.com";
+    string nombreBase = emailUser.Split('@')[0];
+}
+
+<div class="container my-5" style="max-width: 750px;">
+    
+    <!-- Botón Volver -->
+    <a asp-controller="Cliente" asp-action="MiPerfil" class="text-dark fw-bold text-uppercase text-decoration-none small mb-4 d-inline-block" style="letter-spacing: 1px;">
+        &lt; Volver al Perfil
+    </a>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+            <h3 class="fw-bold text-uppercase m-0" style="letter-spacing: 1.5px; font-size: 1.4rem;">Editar Perfil</h3>
+            <span class="text-muted small">Actualiza tus datos</span>
+        </div>
+
+        <form asp-controller="Cliente" asp-action="GuardarPerfil" method="post">
+            
+            <div class="d-flex flex-column gap-4">
+                
+                <!-- Tarjeta 1: Información Personal -->
+                <div class="p-4 border rounded-4 bg-light">
+                    <h6 class="fw-bold text-uppercase text-primary small mb-3" style="letter-spacing: 1px;">Información Personal</h6>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">Nombre y Apellido</label>
+                            <input type="text" name="nombre" class="form-control rounded-pill px-3 py-2" value="@nombreBase" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">DNI</label>
+                            <input type="text" name="dni" class="form-control rounded-pill px-3 py-2 campo-numerico" value="45666782" maxlength="8" required />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 2: Datos Fiscales y Ubicación -->
+                <div class="p-4 border rounded-4 bg-light">
+                    <h6 class="fw-bold text-uppercase text-primary small mb-3" style="letter-spacing: 1px;">Datos Fiscales y Domicilio</h6>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">Condición Fiscal</label>
+                            <input type="text" class="form-control rounded-pill px-3 py-2 bg-white" value="Consumidor Final" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">Domicilio</label>
+                            <input type="text" name="domicilio" class="form-control rounded-pill px-3 py-2" value="Mitre 443" required />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 3: Datos de Contacto de la Cuenta -->
+                <div class="p-4 border rounded-4 bg-light">
+                    <h6 class="fw-bold text-uppercase text-primary small mb-3" style="letter-spacing: 1px;">Datos de Contacto</h6>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">Gmail (No editable)</label>
+                            <input type="email" class="form-control rounded-pill px-3 py-2 bg-white text-muted" value="@emailUser" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">Teléfono</label>
+                            <input type="text" name="telefono" class="form-control rounded-pill px-3 py-2 campo-numerico" value="+543493665467" required />
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Botón Guardar -->
+            <div class="text-end mt-5 pt-3 border-top">
+                <button type="submit" class="btn btn-primary rounded-pill px-5 py-3 text-uppercase fw-bold shadow" style="background-color: #3b55ff; border: none; letter-spacing: 1.5px;">
+                    Guardar Cambios
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Validación en tiempo real para campos numéricos (DNI y Teléfono)
+        document.querySelectorAll('.campo-numerico').forEach(input => {
+            input.addEventListener('input', function (e) {
+                this.value = this.value.replace(/[^0-9+\s]/g, '');
+            });
+        });
+    </script>
+}

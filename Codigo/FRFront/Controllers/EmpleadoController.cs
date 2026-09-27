@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using FRFront.Models;
 using System.Text.Json;
 using System.Text;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FRFront.Controllers
 {
@@ -397,5 +398,25 @@ namespace FRFront.Controllers
         public int ProductoId { get; set; }
         public int Cantidad { get; set; }
         public decimal PrecioUnitario { get; set; }
+    }
+}
+
+
+namespace FRFront.Controllers
+{
+    public class EmpleadoController : Controller
+    {
+        // GET: /Empleado/
+        public IActionResult Index()
+        {
+            return View();
+        }
+
+        // GET: /Empleado/Crear
+        [HttpGet]
+        public IActionResult Crear()
+        {
+            return View();
+        }
     }
 }
