@@ -427,7 +427,7 @@ namespace FRFront.Controllers
 
         // GET: /Administrador/Clientes
         [HttpGet]
-        public async Task<IActionResult> Clientes(string? busqueda)
+        public async Task<IActionResult> Clientes(string? busqueda);
         // ==========================================
         // CONFIGURACIÓN DE LA TIENDA
         // ==========================================
