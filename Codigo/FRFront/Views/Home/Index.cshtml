@@ -1,53 +1,10 @@
-@using Microsoft.AspNetCore.Http
-@using FRFront.Models
-@using FRFront.Controllers
-@{
-    Layout = null;
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Inicio";
-    var usuarioLogueado = Context.Session.GetString("UsuarioSesion");
-    var rolUsuario = Context.Session.GetString("RolSesion"); // "Administrador", "Empleado", "Cajero" o "Cliente"
-    var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0] : "Usuario";
-
-    // Carga de la configuración guardada desde el panel de administración
-    var config = ViewBag.ConfigTienda as ConfiguracionTiendaDto ?? AdministradorController.ConfiguracionActual;
-
-    // Split seguro de cadenas compuestas por comas o saltos de línea
-    var menuSecciones = !string.IsNullOrWhiteSpace(config.MenuEncabezado) 
-        ? config.MenuEncabezado.Split(new[] { ',', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) 
-        : new[] { "LANZAMIENTOS", "HOMBRE", "MUJER", "OFERTAS", "PRODUCTOS" };
-
-    var listaProductosMenu = !string.IsNullOrWhiteSpace(config.CategoriasMenu) 
-        ? config.CategoriasMenu.Split(new[] { ',', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) 
-        : new[] { "BUZOS", "CAMISAS", "SWEATER", "REMERAS", "PANTALONES" };
-
-    var listaMediosPago = !string.IsNullOrWhiteSpace(config.MediosPago) 
-        ? config.MediosPago.Split(new[] { ',', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) 
-        : new[] { "EFECTIVO", "TARJETA DE DEBITO", "TARJETA DE CREDITO", "TRANSFERENCIA" };
 }
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@config.NombreTienda - Inicio</title>
-    
-    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-
-    <!-- Carga dinámica de la tipografía elegida desde Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=@(config.TipografiaSeleccionada.Replace(" ", "+")):wght@400;600;700;800;900&display=swap" rel="stylesheet">
-
+@section Styles {
     <style>
-        body {
-            /* Sincronización del color de fondo y tipografía general */
-            background-color: @config.ColorFondo !important;
-            font-family: '@config.TipografiaSeleccionada', -apple-system, BlinkMacSystemFont, sans-serif !important;
-        }
-
         .ticker-fyr {
             background-color: #000;
             color: #fff;
@@ -112,23 +69,11 @@
     </div>
 </div>
 
-    <!-- ========================================================= -->
-    <!-- HEADER / BARRA DE NAVEGACIÓN -->
-    <!-- ========================================================= -->
-    <header class="bg-white border-bottom py-4 px-4 d-flex justify-content-between align-items-center shadow-sm">
-        
-        <div>
-            <a asp-controller="Home" asp-action="Index">
-                <img src="@config.LogoUrl" alt="@config.NombreTienda Logo" style="height: 65px; width: auto;" />
-            </a>
-        </div>}
-
-        <!-- ========================================================= -->
+<!-- ========================================================= -->
 <!-- GRILLA DE CATEGORÍAS PRINCIPALES -->
 <!-- ========================================================= -->
 <div class="container mb-5">
     <div class="row row-cols-1 row-cols-md-3 g-4">
-
         
         <!-- Tarjeta 1: Nuevo -->
         <div class="col">

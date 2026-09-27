@@ -19,7 +19,7 @@ namespace FRFront.Controllers
         // POST: /Account/Login
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
             if (!ModelState.IsValid)
             {
@@ -35,6 +35,7 @@ namespace FRFront.Controllers
             // 2. Validar que la contraseña coincida con la activa
             if (model.Password != claveEsperada)
             {
+                ViewData["ReturnUrl"] = returnUrl;
                 ModelState.AddModelError("Password", "La contraseña ingresada es incorrecta.");
                 return View(model);
             }
@@ -54,16 +55,13 @@ namespace FRFront.Controllers
                 HttpContext.Session.SetString("RolSesion", "Empleado");
                 return RedirectToAction("Index", "Empleado");
             }
-            else if (emailLower.Contains("empleado") || emailLower.Contains("cajero"))
-            {
-                HttpContext.Session.SetString("RolSesion", "Empleado");
-            }
             else
             {
                 bool estaBloqueado = emailLower.Contains("bloqueado");
 
                 if (estaBloqueado)
                 {
+                    ViewData["ReturnUrl"] = returnUrl;
                     ModelState.AddModelError(string.Empty, "Su cuenta se encuentra BLOQUEADA. Por favor, contacte con soporte.");
                     return View(model);
                 }
@@ -72,17 +70,14 @@ namespace FRFront.Controllers
                 HttpContext.Session.SetString("EstadoCliente", "ACTIVO");
                 HttpContext.Session.SetString("UltimoIngreso", DateTime.Now.ToString("o"));
 
+                // Si hay una ruta de retorno válida (ej. el carrito), volvemos ahí
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                {
+                    return Redirect(returnUrl);
+                }
+
                 return RedirectToAction("Index", "Home");
             }
-
-            // Si hay una ruta de retorno válida (ej. el carrito), volvemos ahí
-            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-            {
-                return Redirect(returnUrl);
-            }
-
-            // Si no hay ruta previa, redirige al inicio por defecto
-            return RedirectToAction("Index", "Home");
         }
 
         // GET: /Account/Logout
