@@ -1,42 +1,48 @@
 using Microsoft.AspNetCore.Mvc;
 using FRFront.Models;
+using FRFront.Helpers;
+using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace FRFront.Controllers
 {
     public class ClienteController : Controller
     {
-        // 1. Vista de Mis Compras del cliente autenticado con datos reales
-        public IActionResult MisCompras()
+        private readonly HttpClient _httpClient;
+
+        public ClienteController(IHttpClientFactory httpClientFactory)
         {
-            var usuarioLogueado = HttpContext.Session.GetString("UsuarioSesion");
-            if (string.IsNullOrEmpty(usuarioLogueado))
+            _httpClient = httpClientFactory.CreateClient("BackendApi");
+        }
+
+        private bool EsClienteAutenticado()
+        {
+            return !string.IsNullOrEmpty(HttpContext.Session.GetString("UsuarioSesion")) &&
+                   string.Equals(HttpContext.Session.GetString("RolSesion"), "Cliente", StringComparison.OrdinalIgnoreCase);
+        }
+
+        // 1. Vista de Mis Compras del cliente autenticado con datos reales
+        public async Task<IActionResult> MisCompras()
+        {
+            if (!EsClienteAutenticado())
             {
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("Index", "Home");
             }
 
-            // Recuperamos únicamente el historial de compras reales guardado en la sesión
-            var historialJson = HttpContext.Session.GetString("HistorialComprasSession");
-            var listaCompras = string.IsNullOrEmpty(historialJson) 
-                ? new List<PedidoModel>() 
-                : JsonSerializer.Deserialize<List<PedidoModel>>(historialJson) ?? new List<PedidoModel>();
+            var listaCompras = await ObtenerComprasPersistidasAsync();
 
             return View(listaCompras);
         }
 
         // 2. Vista de seguimiento de un pedido específico del cliente autenticado
-        public IActionResult SeguirEnvio(string nroPedido)
+        public async Task<IActionResult> SeguirEnvio(string nroPedido)
         {
-            var usuarioLogueado = HttpContext.Session.GetString("UsuarioSesion");
-            if (string.IsNullOrEmpty(usuarioLogueado))
+            if (!EsClienteAutenticado())
             {
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("Index", "Home");
             }
 
-            var historialJson = HttpContext.Session.GetString("HistorialComprasSession");
-            var listaCompras = string.IsNullOrEmpty(historialJson) 
-                ? new List<PedidoModel>() 
-                : JsonSerializer.Deserialize<List<PedidoModel>>(historialJson) ?? new List<PedidoModel>();
+            var listaCompras = await ObtenerComprasPersistidasAsync();
 
             // Buscamos el pedido que coincida con el número recibido
             var pedido = listaCompras.FirstOrDefault(p => p.NroPedido == nroPedido);
@@ -58,12 +64,12 @@ namespace FRFront.Controllers
         // 3. Vista del Perfil de Usuario
         public IActionResult MiPerfil()
         {
-            var usuarioLogueado = HttpContext.Session.GetString("UsuarioSesion");
-            if (string.IsNullOrEmpty(usuarioLogueado))
+            if (!EsClienteAutenticado())
             {
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("Index", "Home");
             }
 
+            var usuarioLogueado = HttpContext.Session.GetString("UsuarioSesion")!;
             ViewData["EmailUsuario"] = usuarioLogueado;
             return View();
         }
@@ -71,12 +77,12 @@ namespace FRFront.Controllers
         // 4. Muestra la vista para Editar el Perfil
         public IActionResult EditarPerfil()
         {
-            var usuarioLogueado = HttpContext.Session.GetString("UsuarioSesion");
-            if (string.IsNullOrEmpty(usuarioLogueado))
+            if (!EsClienteAutenticado())
             {
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("Index", "Home");
             }
 
+            var usuarioLogueado = HttpContext.Session.GetString("UsuarioSesion")!;
             ViewData["EmailUsuario"] = usuarioLogueado;
             return View();
         }
@@ -85,10 +91,9 @@ namespace FRFront.Controllers
         [HttpPost]
         public IActionResult GuardarPerfil(string nombre, string dni, string domicilio, string telefono)
         {
-            var usuarioLogueado = HttpContext.Session.GetString("UsuarioSesion");
-            if (string.IsNullOrEmpty(usuarioLogueado))
+            if (!EsClienteAutenticado())
             {
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("Index", "Home");
             }
 
             // Aquí puedes guardar los datos en tu sesión o base de datos si lo deseas
@@ -100,27 +105,94 @@ namespace FRFront.Controllers
         }
 
         // 6. Vista de Notificaciones del cliente
-        public IActionResult Notificaciones()
+        public async Task<IActionResult> Notificaciones()
         {
-            var listaNotificaciones = new List<NotificacionModel>
+            if (!EsClienteAutenticado())
             {
-                new NotificacionModel 
-                { 
-                    Titulo = "¡Tu pedido está en camino!", 
-                    Mensaje = "El pedido reciente sale hoy hacia tu domicilio.", 
-                    Fecha = "Hace 2 horas", 
-                    Tipo = "Envio" 
-                },
-                new NotificacionModel 
-                { 
-                    Titulo = "¡15% OFF en Buzos!", 
-                    Mensaje = "Aprovechá el descuento exclusivo por tiempo limitado en toda la tienda.", 
-                    Fecha = "Ayer", 
-                    Tipo = "Oferta" 
-                }
-            };
+                return RedirectToAction("Index", "Home");
+            }
+
+            var listaNotificaciones = await ObtenerNotificacionesPersistidasAsync();
+            var compras = await ObtenerComprasPersistidasAsync();
+            var compraReciente = compras.FirstOrDefault();
+
+            if (compraReciente != null)
+            {
+                listaNotificaciones.Add(new NotificacionModel
+                {
+                    Titulo = $"Pedido {compraReciente.NroPedido}: {compraReciente.Estado}",
+                    Mensaje = $"El estado de tu pedido es {compraReciente.Estado.ToLowerInvariant()}.",
+                    Fecha = compraReciente.DetalleFecha,
+                    Tipo = "Envio"
+                });
+            }
 
             return View(listaNotificaciones);
+        }
+
+        private async Task<List<NotificacionModel>> ObtenerNotificacionesPersistidasAsync()
+        {
+            var email = HttpContext.Session.GetString("UsuarioSesion");
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return new List<NotificacionModel>();
+            }
+
+            try
+            {
+                var usuarios = await _httpClient.GetFromJsonAsync<List<UsuarioSimpleDto>>("api/usuarios") ?? new List<UsuarioSimpleDto>();
+                var usuario = usuarios.FirstOrDefault(item => string.Equals(item.Email, email, StringComparison.OrdinalIgnoreCase));
+                if (usuario == null || usuario.ResolveId() <= 0)
+                {
+                    return new List<NotificacionModel>();
+                }
+
+                var notificaciones = await _httpClient.GetFromJsonAsync<List<NotificacionResponseDto>>($"api/notificaciones/usuario/{usuario.ResolveId()}") ?? new List<NotificacionResponseDto>();
+                return notificaciones.Select(n => new NotificacionModel
+                {
+                    Titulo = "Nueva notificación",
+                    Mensaje = n.Mensaje,
+                    Fecha = n.FechaEnvio.ToLocalTime().ToString("dd/MM/yyyy HH:mm"),
+                    Tipo = "Difusion",
+                    ImagenUrl = n.ImagenUrl
+                }).ToList();
+            }
+            catch (HttpRequestException)
+            {
+                return new List<NotificacionModel>();
+            }
+        }
+
+        private async Task<List<PedidoModel>> ObtenerComprasPersistidasAsync()
+        {
+            var email = HttpContext.Session.GetString("UsuarioSesion");
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return new List<PedidoModel>();
+            }
+
+            try
+            {
+                var usuarios = await _httpClient.GetFromJsonAsync<List<UsuarioSimpleDto>>("api/usuarios") ?? new List<UsuarioSimpleDto>();
+                var usuario = usuarios.FirstOrDefault(item => string.Equals(item.Email, email, StringComparison.OrdinalIgnoreCase));
+                if (usuario == null || usuario.ResolveId() <= 0)
+                {
+                    return new List<PedidoModel>();
+                }
+
+                var pedidos = await _httpClient.GetFromJsonAsync<List<PedidoDto>>($"api/usuarios/{usuario.ResolveId()}/pedidos") ?? new List<PedidoDto>();
+                return pedidos.Select(pedido => new PedidoModel
+                {
+                    NroPedido = pedido.NumeroPedido,
+                    Estado = pedido.Estado,
+                    DetalleFecha = pedido.FechaPedido.ToLocalTime().ToString("dd/MM/yyyy HH:mm"),
+                    TotalProductos = pedido.Detalle.Sum(detalle => detalle.Cantidad)
+                }).ToList();
+            }
+            catch (HttpRequestException)
+            {
+                return new List<PedidoModel>();
+            }
         }
     }
 }

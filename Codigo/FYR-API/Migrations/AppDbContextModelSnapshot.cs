@@ -245,6 +245,10 @@ namespace FYR_API.Migrations
                     b.Property<DateTime>("FechaEnvio")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ImagenUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<bool>("Leida")
                         .HasColumnType("bit");
 
@@ -356,6 +360,9 @@ namespace FYR_API.Migrations
                     b.Property<int>("EmpresaId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("EsOferta")
+                        .HasColumnType("bit");
+
                     b.Property<string>("ImagenUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -365,6 +372,9 @@ namespace FYR_API.Migrations
 
                     b.Property<decimal>("Precio")
                         .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("PrecioAnterior")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("SubcategoriaId")

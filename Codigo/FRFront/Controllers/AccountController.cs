@@ -48,12 +48,12 @@ namespace FRFront.Controllers
             if (emailLower.Contains("admin"))
             {
                 HttpContext.Session.SetString("RolSesion", "Administrador");
-                return RedirectToAction("Index", "Administrador");
+                return RedirectToAction("Index", "Home");
             }
             else if (emailLower.Contains("empleado") || emailLower.Contains("cajero"))
             {
                 HttpContext.Session.SetString("RolSesion", "Empleado");
-                return RedirectToAction("Index", "Empleado");
+                return RedirectToAction("Index", "Home");
             }
             else
             {

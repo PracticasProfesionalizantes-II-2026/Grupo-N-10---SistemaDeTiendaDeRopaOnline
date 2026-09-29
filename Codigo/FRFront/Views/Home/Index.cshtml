@@ -3,148 +3,54 @@
     ViewData["Title"] = "Inicio";
 }
 
-@section Styles {
-    <style>
-        /* Estilo elegante para las tarjetas de la página principal */
-        .fyr-card-home {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .fyr-card-home:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-        }
-    </style>
-}
-
-<div hidden>
-<!-- Tira Animada 1 -->
-<div class="ticker-fyr">
-    <div class="ticker-track">
-        <span>F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp;&nbsp;&nbsp;</span>
-        <span>F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp;&nbsp;&nbsp;</span>
-    </div>
-</div>
-
-<!-- BANNER PRINCIPAL -->
-<section class="hero-fyr mb-5">
-    <a asp-controller="Home" asp-action="Catalogo">
-        <img src="~/images/banner.png" alt="Nueva colección F&R" class="w-100 object-fit-cover" style="max-height: 480px;" />
-    </a>
-</section>
-
-<!-- Tira Animada 2 -->
-<div class="ticker-fyr mb-5">
-    <div class="ticker-track">
-        <span>F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp;&nbsp;&nbsp;</span>
-        <span>F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp; F&R &nbsp;&nbsp;&nbsp;&nbsp;</span>
-    </div>
-</div>
-
-</div>
-
-<!-- El componente visible se renderiza desde _Layout.cshtml. -->
-
-<!-- ========================================================= -->
-<!-- GRILLA DE CATEGORÍAS PRINCIPALES -->
-<!-- ========================================================= -->
-<div class="container mb-5">
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-        
-        <!-- Tarjeta 1: Nuevo -->
-        <div class="col">
-            <a asp-controller="Home" asp-action="Catalogo" class="card fyr-card-home h-100 text-decoration-none text-dark border shadow-sm bg-light">
-                <div class="p-4 text-center" style="height: 320px; display: flex; align-items: center; justify-content: center;">
-                    <img src="~/images/hombres3.png" alt="Nuevo" class="img-fluid h-100 object-fit-contain" />
-                </div>
-                <div class="card-body text-center bg-white border-top">
-                    <h5 class="fw-bold text-uppercase m-0">NUEVO</h5>
-                </div>
-            </a>
-        </div>
-
-        <!-- Tarjeta 2: Mujeres -->
-        <div class="col">
-            <a asp-controller="Home" asp-action="Mujer" class="card fyr-card-home h-100 text-decoration-none text-dark border shadow-sm bg-light">
-                <div class="p-4 text-center" style="height: 320px; display: flex; align-items: center; justify-content: center;">
-                    <img src="~/images/mujeres.png" alt="Mujeres" class="img-fluid h-100 object-fit-contain" />
-                </div>
-                <div class="card-body text-center bg-white border-top">
-                    <h5 class="fw-bold text-uppercase m-0">MUJERES</h5>
-                </div>
-            </a>
-        </div>
-
-        <!-- Tarjeta 3: Hombres -->
-        <div class="col">
-            <a asp-controller="Home" asp-action="Hombre" class="card fyr-card-home h-100 text-decoration-none text-dark border shadow-sm bg-light">
-                <div class="p-4 text-center" style="height: 320px; display: flex; align-items: center; justify-content: center;">
-                    <img src="~/images/hombres2.png" alt="Hombres" class="img-fluid h-100 object-fit-contain" />
-                </div>
-                <div class="card-body text-center bg-white border-top">
-                    <h5 class="fw-bold text-uppercase m-0">HOMBRES</h5>
-                </div>
-            </a>
-        </div>
-
-    </div>
-</div>
-
-<!-- ========================================================= -->
-<!-- BARRA PROMO -->
-<!-- ========================================================= -->
-<section class="promo-bar py-4 bg-dark text-white text-center my-5 position-relative">
-    <div class="container d-flex justify-content-between align-items-center">
-        <span class="fw-bold text-uppercase tracking-wide" style="font-size: 1.1rem; letter-spacing: 2px;">ENVÍO A TODO EL PAÍS</span>
-        <a asp-controller="Home" asp-action="Ofertas" class="btn btn-outline-light rounded-pill px-4 fw-bold text-uppercase">
-            ¡OFERTAS!
+<!-- CATEGORÍAS -->
+<section class="categories-fyr my-4">
+    <div class="categories-container">
+        <a asp-controller="Home" asp-action="Catalogo" class="category-card">
+            <img src="~/images/nuevo.png" alt="Nueva colección" />
+            <div class="category-button">NUEVO</div>
+        </a>
+        <a asp-controller="Home" asp-action="Mujer" class="category-card">
+            <img src="~/images/mujeres.png" alt="Mujeres" />
+            <div class="category-button">MUJERES</div>
+        </a>
+        <a asp-controller="Home" asp-action="Hombre" class="category-card">
+            <img src="~/images/hombres.png" alt="Hombres" />
+            <div class="category-button">HOMBRES</div>
         </a>
     </div>
 </section>
 
-<!-- ========================================================= -->
-<!-- SEGUNDA FILA DE PRODUCTOS DESTACADOS -->
-<!-- ========================================================= -->
-<div class="container mb-5">
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-        
-        <div class="col">
-            <a asp-controller="Home" asp-action="Catalogo" class="card fyr-card-home h-100 text-decoration-none text-dark border shadow-sm bg-light">
-                <div class="p-4 text-center" style="height: 300px; display: flex; align-items: center; justify-content: center;">
-                    <img src="~/images/mujeres.png" alt="Buzo Seekers" class="img-fluid h-100 object-fit-contain" />
-                </div>
-            </a>
-        </div>
+<!-- BARRA PROMOCIONAL -->
+<section class="promo-bar">
+    <span class="promo-text">ENVÍO A TODO EL PAÍS</span>
+    <a asp-controller="Home" asp-action="Ofertas" class="promo-circle text-decoration-none">
+        <span>OFERTAS!</span>
+    </a>
+</section>
 
-        <div class="col">
-            <a asp-controller="Home" asp-action="Catalogo" class="card fyr-card-home h-100 text-decoration-none text-dark border shadow-sm bg-light">
-                <div class="p-4 text-center" style="height: 300px; display: flex; align-items: center; justify-content: center;">
-                    <img src="~/images/camisatramas.png" alt="Camisa Tramas" class="img-fluid h-100 object-fit-contain" />
-                </div>
-            </a>
-        </div>
-
-        <div class="col">
-            <a asp-controller="Home" asp-action="Catalogo" class="card fyr-card-home h-100 text-decoration-none text-dark border shadow-sm bg-light">
-                <div class="p-4 text-center" style="height: 300px; display: flex; align-items: center; justify-content: center;">
-                    <img src="~/images/pantaloncargo.png" alt="Pantalon Cargo" class="img-fluid h-100 object-fit-contain" />
-                </div>
-            </a>
-        </div>
-
+<!-- PRODUCTOS DESTACADOS -->
+<section class="featured-products my-5">
+    <div class="products-container">
+        <a asp-controller="Home" asp-action="Catalogo" class="product-card">
+            <img src="~/images/hombres2.png" alt="Producto destacado" />
+        </a>
+        <a asp-controller="Home" asp-action="Catalogo" class="product-card">
+            <img src="~/images/mujeres2.png" alt="Producto destacado" />
+        </a>
+        <a asp-controller="Home" asp-action="Catalogo" class="product-card">
+            <img src="~/images/hombres3.png" alt="Producto destacado" />
+        </a>
     </div>
-</div>
+</section>
 
-<!-- ========================================================= -->
-<!-- BANNER SALE -->
-<!-- ========================================================= -->
+<!-- SECCIÓN SALE -->
 <section class="sale-section my-5">
     <a asp-controller="Home" asp-action="Ofertas" class="text-decoration-none">
-        <div class="bg-black text-white p-5 text-center position-relative overflow-hidden">
-            <h2 class="display-4 fw-bold text-uppercase m-0" style="letter-spacing: 5px;">¡¡ SALE OFF !!</h2>
-            <p class="text-light m-0 mt-2 small text-uppercase tracking-wide">Hasta 50% de descuento en temporada</p>
+        <div class="sale-banner">
+            <img src="~/images/sale.png" alt="Sale" class="sale-image sale-image-left" />
+            <h2 class="sale-title">SALE</h2>
+            <img src="~/images/off.png" alt="Ofertas" class="sale-image sale-image-right" />
         </div>
     </a>
 </section>

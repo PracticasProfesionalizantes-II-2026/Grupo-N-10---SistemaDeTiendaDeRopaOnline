@@ -142,6 +142,10 @@ a {
 
     align-items: center;
     justify-content: center;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
 }
 
 .icon-link:hover {
@@ -186,6 +190,41 @@ a {
 
 .icon-link:hover .icon-svg {
     transform: scale(1.08);
+}
+
+.search-form {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #111;
+    padding: 2px 0;
+}
+
+.search-form[hidden] {
+    display: none;
+}
+
+.search-form input {
+    width: 170px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #111;
+    font-size: 0.85rem;
+}
+
+.search-form input::placeholder {
+    color: #777;
+}
+
+.search-form button {
+    border: 0;
+    background: transparent;
+    color: #111;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
 }
 
 
@@ -254,13 +293,16 @@ main {
 }
 
 .ticker-track {
-    display: inline-block;
+    display: flex;
+    width: max-content;
     white-space: nowrap;
     animation: ticker 25s linear infinite;
+    will-change: transform;
 }
 
 .ticker-track span {
-    display: inline-block;
+    display: block;
+    flex: 0 0 auto;
 }
 
 @keyframes ticker {

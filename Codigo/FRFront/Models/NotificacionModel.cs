@@ -6,5 +6,6 @@ namespace FRFront.Models
         public string Mensaje { get; set; } = string.Empty;
         public string Fecha { get; set; } = string.Empty;
         public string Tipo { get; set; } = "Oferta"; // Puede ser "Envio", "Oferta", etc.
+        public string? ImagenUrl { get; set; }
     }
 }

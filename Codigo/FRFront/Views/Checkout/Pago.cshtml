@@ -7,14 +7,14 @@
     decimal subtotal = Model != null && Model.Any() ? Model.Sum(i => i.Total) : 0;
 
     decimal costoEnvio = 0;
-    var costoEnvioStr = Context.Session.GetString("CostoEnvio");
+    var costoEnvioStr = Context.Session.GetString(UserSessionKeys.ForUser(Context.Session, "CostoEnvio"));
     if (!string.IsNullOrEmpty(costoEnvioStr))
     {
         decimal.TryParse(costoEnvioStr, out costoEnvio);
     }
     
     // Leemos correctamente el nombre del envío guardado en el CheckoutController
-    var nombreEnvio = Context.Session.GetString("NombreEnvio") ?? Context.Session.GetString("TipoEnvio") ?? "Envío estándar";
+    var nombreEnvio = Context.Session.GetString(UserSessionKeys.ForUser(Context.Session, "NombreEnvio")) ?? Context.Session.GetString(UserSessionKeys.ForUser(Context.Session, "TipoEnvio")) ?? "Envío estándar";
     
     // Verificamos si eligió retiro en el local en el paso anterior
     bool esRetiroLocal = nombreEnvio.Contains("Retiro", StringComparison.OrdinalIgnoreCase);

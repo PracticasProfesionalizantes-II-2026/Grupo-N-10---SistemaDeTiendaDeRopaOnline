@@ -87,7 +87,6 @@ C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FR
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\scopedcss\bundle\FRFront.styles.css
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\scopedcss\projectbundle\FRFront.bundle.scp.css
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\hsypp4at35-{0}-61n19gt1b8-61n19gt1b8.gz
-C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\a2tmmo3x2m-{0}-xtxxf3hu2r-xtxxf3hu2r.gz
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\c9vocxvlot-{0}-c2jlpeoesf-c2jlpeoesf.gz
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\ly4v7l0lav-{0}-aexeepp0ev-aexeepp0ev.gz
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\d7uvrsj6k4-{0}-ausgxo2sd3-ausgxo2sd3.gz
@@ -195,4 +194,5 @@ C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codig
 C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\d867ecdf9n-{0}-9vr69e8ynj-9vr69e8ynj.gz
 C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\b31kfw0q39-{0}-z8cq8abec5-z8cq8abec5.gz
 C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\7hn9m71r2r-{0}-z8cq8abec5-z8cq8abec5.gz
-C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\q8khbhzoej-{0}-oc52aqk8zv-oc52aqk8zv.gz
+C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\q8khbhzoej-{0}-5ewd70xlvo-5ewd70xlvo.gz
+C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\a2tmmo3x2m-{0}-1ezkijq6an-1ezkijq6an.gz

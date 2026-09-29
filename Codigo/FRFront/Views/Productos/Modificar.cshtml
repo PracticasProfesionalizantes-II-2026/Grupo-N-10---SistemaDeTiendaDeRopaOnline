@@ -1,4 +1,5 @@
 @using Microsoft.AspNetCore.Http
+@model FRFront.Models.ProductoDto
 @{
     Layout = null;
     ViewData["Title"] = "Modificar Producto";
@@ -139,7 +140,9 @@
             <p class="text-muted">Actualice la información general, stock y atributos del producto</p>
         </div>
 
-        <form id="formModificarProducto" method="post" action="#">
+        <form id="formModificarProducto" method="post" asp-controller="Producto" asp-action="Modificar" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input asp-for="Id" type="hidden" />
             <div class="edit-card">
                 <div class="row g-4">
                     
@@ -169,6 +172,19 @@
                             <div class="col-6">
                                 <label class="form-label fw-bold">STOCK (UNIDADES)</label>
                                 <input type="number" class="form-control form-control-custom" value="10" min="0" required />
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3 align-items-end">
+                            <div class="col-6">
+                                <label asp-for="PrecioAnterior" class="form-label fw-bold">PRECIO ANTERIOR</label>
+                                <input asp-for="PrecioAnterior" type="number" step="0.01" class="form-control form-control-custom" placeholder="Opcional" />
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check form-switch">
+                                    <input asp-for="EsOferta" class="form-check-input" type="checkbox" />
+                                    <label asp-for="EsOferta" class="form-check-label fw-bold">PUBLICAR COMO OFERTA</label>
+                                </div>
                             </div>
                         </div>
 

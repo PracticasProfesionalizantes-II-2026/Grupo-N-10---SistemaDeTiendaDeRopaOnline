@@ -4,12 +4,14 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using FRFront.Models;
+using System.Net.Http.Json;
 
 namespace FRFront.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly HttpClient _httpClient;
 
         // Lista centralizada de productos
         private static readonly List<Producto> _productos = new List<Producto>
@@ -100,15 +102,16 @@ namespace FRFront.Controllers
             }
         };
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
+            _httpClient = httpClientFactory.CreateClient("BackendApi");
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View(_productos);
+            return View(await ObtenerProductosAsync());
         }
 
         public IActionResult Lanzamientos()
@@ -118,9 +121,9 @@ namespace FRFront.Controllers
         }
 
         // Acción para la sección de HOMBRE
-        public IActionResult Hombre(string categoria)
+        public async Task<IActionResult> Hombre(string categoria)
         {
-            var query = _productos.Where(p => p.Genero.Equals("Hombre", System.StringComparison.OrdinalIgnoreCase));
+            var query = (await ObtenerProductosAsync()).Where(p => p.Genero.Equals("Hombre", System.StringComparison.OrdinalIgnoreCase));
             
             if (!string.IsNullOrEmpty(categoria))
             {
@@ -134,9 +137,9 @@ namespace FRFront.Controllers
         }
 
         // Acción para la sección de MUJER
-        public IActionResult Mujer(string categoria)
+        public async Task<IActionResult> Mujer(string categoria)
         {
-            var query = _productos.Where(p => p.Genero.Equals("Mujer", System.StringComparison.OrdinalIgnoreCase));
+            var query = (await ObtenerProductosAsync()).Where(p => p.Genero.Equals("Mujer", System.StringComparison.OrdinalIgnoreCase));
 
             if (!string.IsNullOrEmpty(categoria))
             {
@@ -150,24 +153,38 @@ namespace FRFront.Controllers
         }
 
         // Acción para ver la sección de Ofertas
-        public IActionResult Ofertas()
+        public async Task<IActionResult> Ofertas()
         {
-            var productosOferta = _productos.Where(p => p.EsOferta).ToList();
+            var productosOferta = (await ObtenerProductosAsync()).Where(p => p.EsOferta).ToList();
             return View(productosOferta);
         }
 
         // Acción para mostrar el Catálogo General
-        public IActionResult Catalogo()
+        public async Task<IActionResult> Catalogo(string busqueda)
         {
-            return View(_productos);
+            var productos = (await ObtenerProductosAsync()).AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(busqueda))
+            {
+                productos = productos.Where(producto => producto.Nombre.Contains(busqueda.Trim(), System.StringComparison.OrdinalIgnoreCase));
+            }
+
+            ViewData["Busqueda"] = busqueda;
+            return View(productos.ToList());
         }
 
         // Acción dinámica para el Detalle de un Producto
-        public IActionResult DetalleProducto(string nombre)
+        public async Task<IActionResult> DetalleProducto(string nombre)
         {
             string productoBuscado = !string.IsNullOrEmpty(nombre) ? nombre.ToUpper().Trim() : "BUZO VCV";
             
-            var productoEncontrado = _productos.FirstOrDefault(p => p.Nombre.ToUpper() == productoBuscado) ?? _productos.First();
+            var productos = await ObtenerProductosAsync();
+            var productoEncontrado = productos.FirstOrDefault(p => p.Nombre.ToUpper() == productoBuscado) ?? productos.FirstOrDefault();
+
+            if (productoEncontrado == null)
+            {
+                return NotFound();
+            }
 
             ViewData["Nombre"] = productoEncontrado.Nombre;
             ViewData["Codigo"] = productoEncontrado.Codigo;
@@ -183,6 +200,37 @@ namespace FRFront.Controllers
             ViewData["SinStock"] = productoEncontrado.SinStock;
 
             return View();
+        }
+
+        private async Task<List<Producto>> ObtenerProductosAsync()
+        {
+            try
+            {
+                var productosApi = await _httpClient.GetFromJsonAsync<List<ProductoDto>>("api/productos") ?? new List<ProductoDto>();
+                if (productosApi.Count > 0)
+                {
+                    return productosApi.Select(producto => new Producto
+                    {
+                        Id = producto.Id,
+                        Nombre = producto.Nombre,
+                        Precio = producto.Precio,
+                        Descripcion = producto.Descripcion ?? string.Empty,
+                        Imagen = string.IsNullOrWhiteSpace(producto.ImagenUrl) ? "~/images/logo-fr.png" : producto.ImagenUrl,
+                        Categoria = producto.Categoria,
+                        Talles = string.IsNullOrWhiteSpace(producto.Talles)
+                            ? Array.Empty<string>()
+                            : producto.Talles.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                        Genero = producto.Categoria.Contains("mujer", StringComparison.OrdinalIgnoreCase) ? "Mujer" : "Hombre",
+                        EsOferta = false
+                    }).ToList();
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogWarning(ex, "No se pudo consultar el catálogo persistido en FYR-API.");
+            }
+
+            return _productos;
         }
 
         [HttpGet]

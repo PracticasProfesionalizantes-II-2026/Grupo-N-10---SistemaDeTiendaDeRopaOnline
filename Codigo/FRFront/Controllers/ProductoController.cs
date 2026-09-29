@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using FRFront.Models;
 using System.Text.Json;
+using System.Net.Http.Json;
 
 namespace FRFront.Controllers
 {
@@ -96,6 +97,8 @@ namespace FRFront.Controllers
                 using var content = new MultipartFormDataContent();
                 content.Add(new StringContent(nuevoProducto.Nombre ?? ""), nameof(nuevoProducto.Nombre));
                 content.Add(new StringContent(nuevoProducto.Precio.ToString()), nameof(nuevoProducto.Precio));
+                content.Add(new StringContent(nuevoProducto.PrecioAnterior?.ToString() ?? ""), nameof(nuevoProducto.PrecioAnterior));
+                content.Add(new StringContent(nuevoProducto.EsOferta.ToString()), nameof(nuevoProducto.EsOferta));
                 content.Add(new StringContent(nuevoProducto.Talles ?? ""), nameof(nuevoProducto.Talles));
                 content.Add(new StringContent(nuevoProducto.Color ?? ""), nameof(nuevoProducto.Color));
                 content.Add(new StringContent(nuevoProducto.Stock.ToString()), nameof(nuevoProducto.Stock));
@@ -110,7 +113,11 @@ namespace FRFront.Controllers
 
                 try
                 {
-                    await _httpClient.PostAsync("api/productos", content);
+                    var response = await _httpClient.PostAsync("api/productos", content);
+                    if (response.IsSuccessStatusCode && nuevoProducto.EsOferta)
+                    {
+                        await EnviarDifusionOfertaAsync(nuevoProducto);
+                    }
                 }
                 catch
                 {
@@ -164,6 +171,7 @@ namespace FRFront.Controllers
         {
             if (ModelState.IsValid)
             {
+                var productoAnterior = await ObtenerProductoApiAsync(productoModificado.Id);
                 // Actualización local
                 var productoLocal = _productosEnMemoria!.FirstOrDefault(p => p.Id == productoModificado.Id);
                 if (productoLocal != null)
@@ -182,6 +190,8 @@ namespace FRFront.Controllers
                 content.Add(new StringContent(productoModificado.Id.ToString()), nameof(productoModificado.Id));
                 content.Add(new StringContent(productoModificado.Nombre ?? ""), nameof(productoModificado.Nombre));
                 content.Add(new StringContent(productoModificado.Precio.ToString()), nameof(productoModificado.Precio));
+                content.Add(new StringContent(productoModificado.PrecioAnterior?.ToString() ?? ""), nameof(productoModificado.PrecioAnterior));
+                content.Add(new StringContent(productoModificado.EsOferta.ToString()), nameof(productoModificado.EsOferta));
                 content.Add(new StringContent(productoModificado.Talles ?? ""), nameof(productoModificado.Talles));
                 content.Add(new StringContent(productoModificado.Color ?? ""), nameof(productoModificado.Color));
                 content.Add(new StringContent(productoModificado.Stock.ToString()), nameof(productoModificado.Stock));
@@ -197,7 +207,11 @@ namespace FRFront.Controllers
 
                 try
                 {
-                    await _httpClient.PutAsync($"api/productos/{productoModificado.Id}", content);
+                    var response = await _httpClient.PutAsync($"api/productos/{productoModificado.Id}", content);
+                    if (response.IsSuccessStatusCode && productoModificado.EsOferta && !(productoAnterior?.EsOferta ?? false))
+                    {
+                        await EnviarDifusionOfertaAsync(productoModificado);
+                    }
                 }
                 catch
                 {
@@ -209,6 +223,34 @@ namespace FRFront.Controllers
             }
 
             return View("~/Views/Productos/Modificar.cshtml", productoModificado);
+        }
+
+        private async Task<ProductoDto?> ObtenerProductoApiAsync(int id)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<ProductoDto>($"api/productos/{id}");
+            }
+            catch (HttpRequestException)
+            {
+                return null;
+            }
+        }
+
+        private async Task EnviarDifusionOfertaAsync(ProductoDto producto)
+        {
+            try
+            {
+                await _httpClient.PostAsJsonAsync("api/notificaciones/difusion", new
+                {
+                    Mensaje = $"¡Oferta especial! {producto.Nombre} ahora está disponible con descuento.",
+                    ImagenUrl = producto.ImagenUrl
+                });
+            }
+            catch (HttpRequestException)
+            {
+                // La oferta ya fue guardada; la difusión podrá reenviarse manualmente.
+            }
         }
 
         // POST: /Producto/Eliminar/5

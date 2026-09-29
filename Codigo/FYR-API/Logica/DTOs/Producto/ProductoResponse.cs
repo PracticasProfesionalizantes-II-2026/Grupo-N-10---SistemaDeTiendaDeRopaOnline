@@ -10,6 +10,10 @@ public class ProductoResponse
 
     public decimal Precio { get; set; }
 
+    public decimal? PrecioAnterior { get; set; }
+
+    public bool EsOferta { get; set; }
+
     public string? ImagenUrl { get; set; }
 
     public string? Talles { get; set; }

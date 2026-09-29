@@ -47,6 +47,10 @@
                                     <span class="text-muted small">@noti.Fecha</span>
                                 </div>
                                 <p class="text-secondary small m-0">@noti.Mensaje</p>
+                                @if (!string.IsNullOrWhiteSpace(noti.ImagenUrl))
+                                {
+                                    <img src="@noti.ImagenUrl" alt="Imagen de la notificación" class="img-fluid rounded-3 mt-3" style="max-height: 240px; object-fit: contain;" />
+                                }
                             </div>
                         </div>
                     </div>

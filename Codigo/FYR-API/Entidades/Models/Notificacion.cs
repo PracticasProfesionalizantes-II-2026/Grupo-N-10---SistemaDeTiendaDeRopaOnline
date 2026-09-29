@@ -9,6 +9,9 @@ public class Notificacion
 
     [Required]
     public string Mensaje { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string? ImagenUrl { get; set; }
     
 
     public DateTime FechaEnvio { get; set; } = DateTime.UtcNow;

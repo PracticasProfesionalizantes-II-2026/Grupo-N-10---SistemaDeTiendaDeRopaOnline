@@ -15,6 +15,7 @@ public class NotificacionService : INotificacionService
         {
             IdNotificacion = notificacion.Id,
             Mensaje = notificacion.Mensaje,
+            ImagenUrl = notificacion.ImagenUrl,
             FechaEnvio = notificacion.FechaEnvio,
             Leida = notificacion.Leida,
             UsuarioId = notificacion.UsuarioId
@@ -39,6 +40,7 @@ public class NotificacionService : INotificacionService
         {
             UsuarioId = request.UsuarioId,
             Mensaje = request.Mensaje,
+            ImagenUrl = request.ImagenUrl,
             FechaEnvio = DateTime.UtcNow,
         };
 

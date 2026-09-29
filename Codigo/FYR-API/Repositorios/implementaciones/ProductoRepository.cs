@@ -28,6 +28,8 @@ public class ProductoRepository : IProductoRepository
                 Nombre = p.Nombre,
                 Descripcion = p.Descripcion,
                 Precio = p.Precio,
+                PrecioAnterior = p.PrecioAnterior,
+                EsOferta = p.EsOferta,
                 ImagenUrl = p.ImagenUrl,
                 Talles = p.Talles,
                 Colores = p.Colores,
@@ -55,6 +57,8 @@ public class ProductoRepository : IProductoRepository
             Nombre = p.Nombre,
             Descripcion = p.Descripcion,
             Precio = p.Precio,
+            PrecioAnterior = p.PrecioAnterior,
+            EsOferta = p.EsOferta,
             ImagenUrl = p.ImagenUrl,
             Talles = p.Talles,
             Colores = p.Colores,
@@ -71,6 +75,8 @@ public class ProductoRepository : IProductoRepository
             Nombre = request.Nombre,
             Descripcion = request.Descripcion,
             Precio = request.Precio,
+            PrecioAnterior = request.PrecioAnterior,
+            EsOferta = request.EsOferta,
             ImagenUrl = request.ImagenUrl,
             Talles = request.Talles,
             Colores = request.Colores,
@@ -96,6 +102,8 @@ public class ProductoRepository : IProductoRepository
         producto.Nombre = request.Nombre;
         producto.Descripcion = request.Descripcion;
         producto.Precio = request.Precio;
+        producto.PrecioAnterior = request.PrecioAnterior;
+        producto.EsOferta = request.EsOferta;
         producto.ImagenUrl = request.ImagenUrl;
         producto.Talles = request.Talles;
         producto.Colores = request.Colores;

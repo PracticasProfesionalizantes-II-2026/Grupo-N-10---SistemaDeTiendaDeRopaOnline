@@ -3,9 +3,10 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - F&R</title>
+    <title>@ViewData["Title"] - F &amp; R</title>
 
     <!-- Bootstrap -->
+    <link rel="icon" type="image/png" href="~/images/logo-fr.png" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 
     <!-- CSS propio de F&R -->
@@ -22,14 +23,14 @@
         <nav class="navbar navbar-expand-lg navbar-fyr">
             <div class="container-fluid px-4">
 
-                <!-- LOGO -->
-                <a class="navbar-brand logo-fyr"
-                   asp-controller="Home"
-                   asp-action="Index">
-                    <img src="~/images/logo-fr.png"
-                         alt="F&R"
-                         class="logo-fyr-img" />
-                </a>
+                     <!-- LOGO -->
+                     <a class="navbar-brand logo-fyr"
+                         asp-controller="Home"
+                         asp-action="Index">
+                          <img src="~/images/logo-fr.png"
+                                 alt="F&R"
+                                 class="logo-fyr-img" />
+                     </a>
 
                 <!-- BOTÓN RESPONSIVE -->
                 <button class="navbar-toggler"
@@ -109,16 +110,22 @@
                     <div class="navbar-icons d-flex align-items-center gap-3">
 
                         <!-- BUSCAR -->
-                        <a href="#" class="icon-link" title="Buscar" aria-label="Buscar">
+                        <button type="button" class="icon-link search-toggle" title="Buscar" aria-label="Buscar" aria-expanded="false" aria-controls="searchForm">
                             <svg class="icon-svg icon-search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
                                 <circle cx="11" cy="11" r="7"></circle>
                                 <line x1="16.5" y1="16.5" x2="22" y2="22"></line>
                             </svg>
-                        </a>
+                        </button>
+
+                        <form id="searchForm" class="search-form" asp-controller="Home" asp-action="Catalogo" method="get" hidden>
+                            <label class="visually-hidden" for="searchInput">Buscar producto</label>
+                            <input id="searchInput" name="busqueda" type="search" value="@Context.Request.Query["busqueda"]" placeholder="Buscar producto" autocomplete="off" />
+                            <button type="submit" title="Buscar" aria-label="Buscar">Ir</button>
+                        </form>
 
                         @{
                             // Cálculo de la cantidad total de productos en el carrito para el contador
-                            var sessionCarritoData = Context.Session.GetString("CarritoSession");
+                            var sessionCarritoData = Context.Session.GetString(UserSessionKeys.ForUser(Context.Session, "CarritoSession"));
                             int totalProductosCarrito = 0;
                             if (!string.IsNullOrEmpty(sessionCarritoData))
                             {
@@ -148,15 +155,33 @@
                         @{
                             var usuarioLogueado = Context.Session.GetString("UsuarioSesion");
                             var rolUsuario = Context.Session.GetString("RolSesion");
+                            var esCliente = string.Equals(rolUsuario, "Cliente", StringComparison.OrdinalIgnoreCase);
+                            var esAdministrador = string.Equals(rolUsuario, "Administrador", StringComparison.OrdinalIgnoreCase);
+                            var esCajero = string.Equals(rolUsuario, "Empleado", StringComparison.OrdinalIgnoreCase) || string.Equals(rolUsuario, "CAJERO", StringComparison.OrdinalIgnoreCase);
                             var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0] : "Usuario";
                         }
 
                         @if (!string.IsNullOrEmpty(usuarioLogueado))
                         {
-                            <!-- Enlace rápido de Mis Compras -->
-                            <a asp-controller="Cliente" asp-action="MisCompras" class="text-dark fw-bold text-decoration-none text-uppercase small" style="letter-spacing: 0.5px;">
-                                MIS COMPRAS
-                            </a>
+                            @if (esCliente)
+                            {
+                                <a asp-controller="Cliente" asp-action="MisCompras" class="text-dark fw-bold text-decoration-none text-uppercase small" style="letter-spacing: 0.5px;">
+                                    MIS COMPRAS
+                                </a>
+                            }
+
+                            @if (esAdministrador)
+                            {
+                                <a asp-controller="Administrador" asp-action="Index" class="btn btn-dark btn-sm text-uppercase fw-bold rounded-pill px-3" style="font-size: 0.75rem;">
+                                    PANEL ADMINISTRADOR
+                                </a>
+                            }
+                            else if (esCajero)
+                            {
+                                <a asp-controller="Empleado" asp-action="Index" class="btn btn-dark btn-sm text-uppercase fw-bold rounded-pill px-3" style="font-size: 0.75rem;">
+                                    PANEL CAJERO
+                                </a>
+                            }
 
                             <!-- Menú Desplegable de Mi Cuenta -->
                             <div class="dropdown">
@@ -166,10 +191,13 @@
                                 <ul class="dropdown-menu dropdown-menu-end shadow user-dropdown-menu" style="border-radius: 12px; border: 1px solid #111; padding: 10px 0; min-width: 190px;">
                                     <li class="user-name-header text-capitalize px-3 py-2 fw-bold border-bottom" style="font-size: 1rem; color: #000;">@nombreUsuario</li>
                                     <li><a class="dropdown-item py-2 px-3 fw-semibold" style="font-size: 0.9rem;" asp-controller="Home" asp-action="Index">Inicio</a></li>
-                                    <li><a class="dropdown-item py-2 px-3 fw-semibold" style="font-size: 0.9rem;" asp-controller="Cliente" asp-action="Notificaciones">Notificaciones</a></li>
-                                    <li><a class="dropdown-item py-2 px-3 fw-semibold" style="font-size: 0.9rem;" asp-controller="Cliente" asp-action="MisCompras">Mis Compras</a></li>
-                                    <li><a class="dropdown-item py-2 px-3 fw-semibold" style="font-size: 0.9rem;" asp-controller="Carrito" asp-action="Index">Carrito</a></li>
-                                    <li><a class="dropdown-item py-2 px-3 fw-semibold" style="font-size: 0.9rem;" asp-controller="Cliente" asp-action="MiPerfil">Mi Cuenta</a></li>
+                                    @if (esCliente)
+                                    {
+                                        <li><a class="dropdown-item py-2 px-3 fw-semibold" style="font-size: 0.9rem;" asp-controller="Cliente" asp-action="Notificaciones">Notificaciones</a></li>
+                                        <li><a class="dropdown-item py-2 px-3 fw-semibold" style="font-size: 0.9rem;" asp-controller="Cliente" asp-action="MisCompras">Mis Compras</a></li>
+                                        <li><a class="dropdown-item py-2 px-3 fw-semibold" style="font-size: 0.9rem;" asp-controller="Carrito" asp-action="Index">Carrito</a></li>
+                                        <li><a class="dropdown-item py-2 px-3 fw-semibold" style="font-size: 0.9rem;" asp-controller="Cliente" asp-action="MiPerfil">Mi Cuenta</a></li>
+                                    }
                                     <li><hr class="dropdown-divider my-1"></li>
                                     <li><a class="dropdown-item py-2 px-3 text-danger fw-bold" style="font-size: 0.9rem;" asp-controller="Account" asp-action="Logout">Cerrar Sesión</a></li>
                                 </ul>
@@ -190,7 +218,10 @@
         </nav>
     </header>
 
-    <partial name="_FyrBrandBanner" />
+    @if (ViewData["HideBrandBanner"] as bool? != true)
+    {
+        <partial name="_FyrBrandBanner" />
+    }
 
     <!-- ===================================================== -->
     <!-- CONTENIDO DE CADA PÁGINA -->

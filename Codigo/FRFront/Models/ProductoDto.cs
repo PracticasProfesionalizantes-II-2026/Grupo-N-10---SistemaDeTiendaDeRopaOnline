@@ -5,6 +5,8 @@ namespace FRFront.Models
         public int Id { get; set; }
         public string Nombre { get; set; } = string.Empty;
         public decimal Precio { get; set; }
+        public decimal? PrecioAnterior { get; set; }
+        public bool EsOferta { get; set; }
         public string Talles { get; set; } = string.Empty;
         public string Color { get; set; } = string.Empty;
         public int Stock { get; set; }

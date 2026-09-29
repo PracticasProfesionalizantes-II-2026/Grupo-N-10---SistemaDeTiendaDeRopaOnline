@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using FRFront.Models;
+using FRFront.Helpers;
 using System.Text.Json;
 
 namespace FRFront.Controllers
@@ -120,7 +121,7 @@ namespace FRFront.Controllers
         // Métodos auxiliares privados para leer/escribir en Session usando JSON
         private List<ItemCarrito> ObtenerCarritoSesion()
         {
-            var sessionData = HttpContext.Session.GetString("CarritoSession");
+            var sessionData = HttpContext.Session.GetString(UserSessionKeys.ForUser(HttpContext.Session, "CarritoSession"));
             if (string.IsNullOrEmpty(sessionData))
             {
                 return new List<ItemCarrito>();
@@ -130,7 +131,7 @@ namespace FRFront.Controllers
 
         private void GuardarCarritoSesion(List<ItemCarrito> carrito)
         {
-            HttpContext.Session.SetString("CarritoSession", JsonSerializer.Serialize(carrito));
+            HttpContext.Session.SetString(UserSessionKeys.ForUser(HttpContext.Session, "CarritoSession"), JsonSerializer.Serialize(carrito));
         }
     }
 }
