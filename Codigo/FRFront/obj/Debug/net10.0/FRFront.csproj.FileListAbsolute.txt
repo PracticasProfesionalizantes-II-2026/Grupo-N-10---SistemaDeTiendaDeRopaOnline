@@ -127,7 +127,6 @@ C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FR
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\FRFront.pdb
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\FRFront.genruntimeconfig.cache
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\ref\FRFront.dll
-C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\q8khbhzoej-{0}-9qtycwbj42-9qtycwbj42.gz
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\b31kfw0q39-{0}-z8cq8abec5-z8cq8abec5.gz
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\7hn9m71r2r-{0}-z8cq8abec5-z8cq8abec5.gz
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\wm5x74b6p0-{0}-t1cqhe9u97-t1cqhe9u97.gz
@@ -196,3 +195,4 @@ C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codig
 C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\d867ecdf9n-{0}-9vr69e8ynj-9vr69e8ynj.gz
 C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\b31kfw0q39-{0}-z8cq8abec5-z8cq8abec5.gz
 C:\Users\Usuario\Documents\GitHub\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\7hn9m71r2r-{0}-z8cq8abec5-z8cq8abec5.gz
+C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FRFront\obj\Debug\net10.0\compressed\q8khbhzoej-{0}-oc52aqk8zv-oc52aqk8zv.gz

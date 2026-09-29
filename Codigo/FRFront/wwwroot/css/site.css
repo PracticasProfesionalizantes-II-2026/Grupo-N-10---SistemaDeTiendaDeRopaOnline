@@ -202,6 +202,11 @@ main {
 /* BANNER PRINCIPAL */
 /* ========================================================= */
 
+.fyr-brand-banner {
+    width: 100%;
+    overflow: hidden;
+}
+
 .hero-fyr {
     width: 100%;
 
@@ -223,6 +228,11 @@ main {
     object-position: center center;
 }
 
+.fyr-brand-banner .hero-fyr {
+    display: block;
+    margin: 0;
+}
+
 
 /* ========================================================= */
 /* TIRA NEGRA F&R */
@@ -230,16 +240,32 @@ main {
 
 .ticker-fyr {
     width: 100%;
-
     height: 20px;
-
     background-color: #000;
-
+    color: #fff;
     overflow: hidden;
-
     display: flex;
-
     align-items: center;
+    white-space: nowrap;
+    padding: 8px 0;
+    font-size: 0.9rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.ticker-track {
+    display: inline-block;
+    white-space: nowrap;
+    animation: ticker 25s linear infinite;
+}
+
+.ticker-track span {
+    display: inline-block;
+}
+
+@keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
 
 .ticker-text {
