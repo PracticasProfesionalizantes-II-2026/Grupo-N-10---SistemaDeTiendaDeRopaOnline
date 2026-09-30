@@ -52,6 +52,26 @@ namespace FRFront.Controllers
             CrearProducto("Vestido Party", "vestidomujer5.jfif", "Mujer", "Vestidos", "Azul", 102000)
         };
 
+        public static List<ProductoDto> ObtenerProductosLocalesDto()
+        {
+            return _productos.Select((producto, indice) => new ProductoDto
+            {
+                Id = 10000 + indice,
+                Nombre = producto.Nombre,
+                Precio = producto.Precio,
+                PrecioAnterior = producto.PrecioAnterior,
+                EsOferta = producto.EsOferta,
+                Talles = string.Join(",", producto.Talles),
+                Color = producto.Color,
+                Colores = producto.Color,
+                Categoria = producto.Categoria,
+                Descripcion = producto.Descripcion,
+                ImagenUrl = producto.Imagen.Replace("~/", "/", StringComparison.OrdinalIgnoreCase),
+                Stock = producto.SinStock ? 0 : 10,
+                Disponible = !producto.SinStock
+            }).ToList();
+        }
+
         public HomeController(ILogger<HomeController> logger, IHttpClientFactory httpClientFactory)
         {
             _logger = logger;

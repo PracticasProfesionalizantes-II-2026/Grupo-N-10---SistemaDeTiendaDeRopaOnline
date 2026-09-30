@@ -1,3 +1,5 @@
+@model IEnumerable<FRFront.Models.ProductoDto>
+
 @{
     Layout = null;
     ViewData["Title"] = "Nueva Venta - F&R";
@@ -138,70 +140,43 @@
                                     </tr>
                                 </thead>
                                 <tbody id="listaProductos">
-                                    <tr>
-                                        <td class="fw-bold fs-6">PRD-001</td>
-                                        <td class="fs-6">BUZO VCV</td>
-                                        <td class="text-muted">BEIGE</td>
-                                        <td>
-                                            <select class="form-select form-select-sm rounded-pill fw-bold" id="talle_PRD-001">
-                                                <option value="S" disabled>S (Sin Stock)</option>
-                                                <option value="M" selected>M</option>
-                                                <option value="L">L</option>
-                                                <option value="XL" disabled>XL (Sin Stock)</option>
-                                            </select>
-                                        </td>
-                                        <td class="fw-bold fs-6">$80.000</td>
-                                        <td class="text-end">
-                                            <button type="button" class="btn btn-sm btn-dark rounded-pill px-3 fw-bold" onclick="agregarAlCarrito('PRD-001', 'BUZO VCV', 80000, 'BEIGE')">+ AGREGAR</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-bold fs-6">PRD-002</td>
-                                        <td class="fs-6">REMERA ACTIVE</td>
-                                        <td class="text-muted">NEGRO</td>
-                                        <td>
-                                            <select class="form-select form-select-sm rounded-pill fw-bold" id="talle_PRD-002">
-                                                <option value="XS" disabled>XS (Sin Stock)</option>
-                                                <option value="S" selected>S</option>
-                                                <option value="M">M</option>
-                                            </select>
-                                        </td>
-                                        <td class="fw-bold fs-6">$20.000</td>
-                                        <td class="text-end">
-                                            <button type="button" class="btn btn-sm btn-dark rounded-pill px-3 fw-bold" onclick="agregarAlCarrito('PRD-002', 'REMERA ACTIVE', 20000, 'NEGRO')">+ AGREGAR</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-bold fs-6">PRD-003</td>
-                                        <td class="fs-6">HOODIE URBAN</td>
-                                        <td class="text-muted">VERDE</td>
-                                        <td>
-                                            <select class="form-select form-select-sm rounded-pill fw-bold" id="talle_PRD-003">
-                                                <option value="L" selected>L</option>
-                                                <option value="XL" disabled>XL (Sin Stock)</option>
-                                            </select>
-                                        </td>
-                                        <td class="fw-bold fs-6">$65.000</td>
-                                        <td class="text-end">
-                                            <button type="button" class="btn btn-sm btn-dark rounded-pill px-3 fw-bold" onclick="agregarAlCarrito('PRD-003', 'HOODIE URBAN', 65000, 'VERDE')">+ AGREGAR</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-bold fs-6">PRD-005</td>
-                                        <td class="fs-6">PANTALON CARGO</td>
-                                        <td class="text-muted">NEGRO</td>
-                                        <td>
-                                            <select class="form-select form-select-sm rounded-pill fw-bold" id="talle_PRD-005">
-                                                <option value="38" disabled>38 (Sin Stock)</option>
-                                                <option value="40" selected>40</option>
-                                                <option value="42">42</option>
-                                            </select>
-                                        </td>
-                                        <td class="fw-bold fs-6">$55.000</td>
-                                        <td class="text-end">
-                                            <button type="button" class="btn btn-sm btn-dark rounded-pill px-3 fw-bold" onclick="agregarAlCarrito('PRD-005', 'PANTALON CARGO', 55000, 'NEGRO')">+ AGREGAR</button>
-                                        </td>
-                                    </tr>
+                                    @if (Model != null && Model.Any())
+                                    {
+                                        @foreach (var producto in Model)
+                                        {
+                                            var codigo = $"PRD-{producto.Id:D3}";
+                                            var color = string.IsNullOrWhiteSpace(producto.Colores) ? producto.Color : producto.Colores;
+                                            var talles = (producto.Talles ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                                            <tr>
+                                                <td class="fw-bold fs-6">@codigo</td>
+                                                <td class="fs-6">@producto.Nombre</td>
+                                                <td class="text-muted">@color</td>
+                                                <td>
+                                                    <select class="form-select form-select-sm rounded-pill fw-bold" id="talle_@codigo">
+                                                        @if (talles.Length == 0)
+                                                        {
+                                                            <option value="Único">Único</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            @foreach (var talle in talles)
+                                                            {
+                                                                <option value="@talle">@talle</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </td>
+                                                <td class="fw-bold fs-6">$@producto.Precio.ToString("N0")</td>
+                                                <td class="text-end">
+                                                    <button type="button" class="btn btn-sm btn-dark rounded-pill px-3 fw-bold" onclick="agregarAlCarrito('@codigo', @Html.Raw(System.Text.Json.JsonSerializer.Serialize(producto.Nombre)), @producto.Precio.ToString(System.Globalization.CultureInfo.InvariantCulture), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(color)))">+ AGREGAR</button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr><td colspan="6" class="text-center text-muted py-4">No hay productos disponibles.</td></tr>
+                                    }
                                 </tbody>
                             </table>
                         </div>

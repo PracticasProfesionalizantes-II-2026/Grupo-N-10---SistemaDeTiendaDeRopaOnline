@@ -126,6 +126,14 @@ namespace FRFront.Controllers
                 Console.WriteLine($"[ERROR EN NUEVA VENTA]: {ex.Message}");
             }
 
+            var imagenesExistentes = productos
+                .Where(producto => !string.IsNullOrWhiteSpace(producto.ImagenUrl))
+                .Select(producto => producto.ImagenUrl!.Trim().TrimStart('~'))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            productos.AddRange(HomeController.ObtenerProductosLocalesDto()
+                .Where(producto => string.IsNullOrWhiteSpace(producto.ImagenUrl) ||
+                    !imagenesExistentes.Contains(producto.ImagenUrl.Trim().TrimStart('~'))));
+
             return View("~/Views/Empleado/NuevaVenta.cshtml", productos);
         }
 

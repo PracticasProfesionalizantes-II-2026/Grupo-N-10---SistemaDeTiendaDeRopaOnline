@@ -289,6 +289,14 @@ namespace FRFront.Controllers
                 Console.WriteLine($"[ERROR EN PRODUCTOS API]: {ex.Message}");
             }
 
+            var imagenesExistentes = productos
+                .Where(producto => !string.IsNullOrWhiteSpace(producto.ImagenUrl))
+                .Select(producto => producto.ImagenUrl!.Trim().TrimStart('~'))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            productos.AddRange(HomeController.ObtenerProductosLocalesDto()
+                .Where(producto => string.IsNullOrWhiteSpace(producto.ImagenUrl) ||
+                    !imagenesExistentes.Contains(producto.ImagenUrl.Trim().TrimStart('~'))));
+
             if (!string.IsNullOrEmpty(categoria) && !categoria.Equals("Todos", StringComparison.OrdinalIgnoreCase))
             {
                 productos = productos.Where(p => p.Categoria.Equals(categoria, StringComparison.OrdinalIgnoreCase)).ToList();
