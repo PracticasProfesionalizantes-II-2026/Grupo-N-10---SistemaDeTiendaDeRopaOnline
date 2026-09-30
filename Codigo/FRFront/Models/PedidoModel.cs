@@ -5,6 +5,8 @@ namespace FRFront.Models
         public string NroPedido { get; set; } = "";
         public string Estado { get; set; } = "En Camino";
         public string DetalleFecha { get; set; } = "";
+        public decimal Total { get; set; }
+        public bool EsRetiroLocal { get; set; }
         public int TotalProductos { get; set; }
         public string ImagenProducto { get; set; } = "";
         public List<ItemCarrito> Productos { get; set; } = new List<ItemCarrito>();

@@ -69,6 +69,7 @@
                                         <p class="text-secondary small mt-1 mb-0 fw-semibold">
                                             @pedido.DetalleFecha
                                         </p>
+                                        <p class="text-dark fw-bold mb-1">Total: $ @pedido.Total.ToString("N2")</p>
                                         <span class="text-muted" style="font-size: 0.75rem;">
                                             @(pedido.Productos?.Sum(p => p.Cantidad) ?? pedido.TotalProductos) producto(s)
                                         </span>
@@ -79,7 +80,7 @@
                                         <a asp-controller="Home" asp-action="Catalogo" class="text-primary fw-bold text-decoration-none small d-block mb-1">
                                             Volver a comprar
                                         </a>
-                                        @if (!esEntregado)
+                                        @if (!esEntregado && !pedido.EsRetiroLocal)
                                         {
                                             <a asp-controller="Cliente" asp-action="SeguirEnvio" asp-route-nroPedido="@pedido.NroPedido" class="text-dark fw-bold text-decoration-none small d-block">
                                                 Seguir Envío

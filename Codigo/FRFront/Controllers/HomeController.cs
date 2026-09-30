@@ -13,93 +13,43 @@ namespace FRFront.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly HttpClient _httpClient;
 
-        // Lista centralizada de productos
-        private static readonly List<Producto> _productos = new List<Producto>
+        // Catálogo local de respaldo. Cada imagen representa una prenda única.
+        private static readonly List<Producto> _productos = new()
         {
-            new Producto
-            {
-                Nombre = "BUZO VCV",
-                Codigo = "VCV-001",
-                Precio = 100000,
-                PrecioAnterior = 150000,
-                EsOferta = true,
-                Genero = "Hombre",
-                Categoria = "Abrigos",
-                Descripcion = "Este buzo está hecho para la gente elegante.",
-                Imagen = "~/images/hombres2.png",
-                Talles = new string[] { "S", "M", "L", "XL" },
-                SinStock = false
-            },
-            new Producto
-            {
-                Nombre = "JOGGING ADDIS",
-                Codigo = "JOG-002",
-                Precio = 40000,
-                PrecioAnterior = 50000,
-                EsOferta = true,
-                Genero = "Mujer",
-                Categoria = "Pantalones",
-                Descripcion = "Jogging urbano de algodón cómodo, diseñado con la estética streetwear del proyecto.",
-                Imagen = "~/images/mujeres.png",
-                Talles = new string[] { "S", "M", "L", "XL" },
-                SinStock = false
-            },
-            new Producto
-            {
-                Nombre = "REMERA FIT FRIENDS",
-                Codigo = "REM-003",
-                Precio = 50000,
-                PrecioAnterior = null,
-                EsOferta = false,
-                Genero = "Hombre",
-                Categoria = "Remeras",
-                Descripcion = "Remera de algodón premium con calce fit ideal para cualquier ocasión urbana.",
-                Imagen = "~/images/hombres.png",
-                Talles = new string[] { "S", "M", "L", "XL" },
-                SinStock = false
-            },
-            new Producto
-            {
-                Nombre = "BUZO SEEKERS",
-                Codigo = "M-BS-01",
-                Precio = 78000,
-                PrecioAnterior = null,
-                EsOferta = false,
-                Genero = "Mujer",
-                Categoria = "Abrigos",
-                Descripcion = "Buzo urbano de algodón rústico para mujer, diseño cómodo y moderno.",
-                Imagen = "~/images/mujeres2.png",
-                Talles = new string[] { "S", "M", "L" },
-                SinStock = false
-            },
-            new Producto
-            {
-                Nombre = "CAMISA TRAMAS",
-                Codigo = "CA-004",
-                Precio = 80000,
-                PrecioAnterior = null,
-                EsOferta = false,
-                Genero = "Hombre",
-                Categoria = "Remeras",
-                Descripcion = "Camisa de tejido tramado de alta calidad para la temporada verano.",
-                Imagen = "~/images/hombres3.png",
-                Talles = new string[] { "M", "L", "XL" },
-                SinStock = false
-            },
-            new Producto
-            {
-                Nombre = "Remera Arrow",
-                Codigo = "R-AR-01",
-                Precio = 78000,
-                PrecioAnterior = null,
-                EsOferta = false,
-                Genero = "Mujer",
-                Categoria = "Remeras",
-                Descripcion = "Remera urbana de algodón elegante para mujer, diseño cómodo y moderno.",
-                Imagen = "~/images/nuevo.png",
-                Talles = new string[] { "S", "M", "L" },
-                SinStock = true
-            }
+            CrearProducto("Abrigo North", "abrigo-hombre.jfif", "Hombre", "Abrigos", "Negro", 98000),
+            CrearProducto("Abrigo Urban", "abrigo-hombre-2.jfif", "Hombre", "Abrigos", "Gris", 112000, true),
+            CrearProducto("Abrigo Essential", "abrigo-hombre-3.webp", "Hombre", "Abrigos", "Beige", 105000),
+            CrearProducto("Buzo Street", "buzo-hombre3.webp", "Hombre", "Abrigos", "Negro", 85000),
+            CrearProducto("Buzo Comfy", "buzo4-hombre.webp", "Hombre", "Abrigos", "Verde", 79000),
+            CrearProducto("Buzo Classic", "buzo5-hombre.jfif", "Hombre", "Abrigos", "Azul", 82000),
+            CrearProducto("Campera Line", "campera2-hombre.webp", "Hombre", "Abrigos", "Marrón", 125000),
+            CrearProducto("Campera Denim", "camperahombre.jpg", "Hombre", "Abrigos", "Azul", 118000),
+            CrearProducto("Remera Basic", "remera-hombre4.jfif", "Hombre", "Remeras", "Blanco", 42000),
+            CrearProducto("Remera Sport", "remera7hombre.jfif", "Hombre", "Remeras", "Negro", 45000),
+            CrearProducto("Remera Essential", "remerahombre6.jfif", "Hombre", "Remeras", "Verde", 47000),
+
+            CrearProducto("Abrigo Soft", "abrigo-mujer.jfif", "Mujer", "Abrigos", "Beige", 99000),
+            CrearProducto("Abrigo Cozy", "abrigo-mujer-2.jpg", "Mujer", "Abrigos", "Gris", 108000),
+            CrearProducto("Abrigo Winter", "abrigo-mujer3.jfif", "Mujer", "Abrigos", "Negro", 115000, true),
+            CrearProducto("Buzo Cozy", "buzo-mujer.jfif", "Mujer", "Abrigos", "Rosa", 76000),
+            CrearProducto("Buzo Oversize", "buzo2-mujer.webp", "Mujer", "Abrigos", "Gris", 81000),
+            CrearProducto("Campera Puffer", "campera-mujer.webp", "Mujer", "Abrigos", "Negro", 128000),
+            CrearProducto("Campera Light", "campera-mujer2.webp", "Mujer", "Abrigos", "Verde", 119000),
+            CrearProducto("Jean Wide", "jeanmujer.jfif", "Mujer", "Pantalones", "Azul", 72000),
+            CrearProducto("Jean Straight", "jeanmujer2.webp", "Mujer", "Pantalones", "Celeste", 75000),
+            CrearProducto("Jogging Urban", "joggin-mujer.jfif", "Mujer", "Pantalones", "Gris", 52000, true),
+            CrearProducto("Cargo Relax", "pantalon-cargo-mujer.webp", "Mujer", "Pantalones", "Verde", 68000),
+            CrearProducto("Pollera Denim", "pollera-mujer2.jfif", "Mujer", "Polleras", "Azul", 56000),
+            CrearProducto("Pollera Black", "pollera-negra.jpg", "Mujer", "Polleras", "Negro", 58000),
+            CrearProducto("Remera Soft", "remera-mujer2.jfif", "Mujer", "Remeras", "Blanco", 39000),
+            CrearProducto("Remera Urban", "remera3-mujer.jpg", "Mujer", "Remeras", "Rojo", 43000),
+            CrearProducto("Remera Basic", "remera5-mujer.jfif", "Mujer", "Remeras", "Negro", 41000),
+            CrearProducto("Top Essential", "top-negro.webp", "Mujer", "Remeras", "Negro", 35000),
+            CrearProducto("Vestido Daily", "vestido-mujer.jfif", "Mujer", "Vestidos", "Negro", 85000),
+            CrearProducto("Vestido Flow", "vestido-mujer2.webp", "Mujer", "Vestidos", "Rojo", 92000),
+            CrearProducto("Vestido Midi", "vestido-mujer3.webp", "Mujer", "Vestidos", "Verde", 95000),
+            CrearProducto("Vestido Summer", "vestido-mujer4.webp", "Mujer", "Vestidos", "Blanco", 88000),
+            CrearProducto("Vestido Party", "vestidomujer5.jfif", "Mujer", "Vestidos", "Azul", 102000)
         };
 
         public HomeController(ILogger<HomeController> logger, IHttpClientFactory httpClientFactory)
@@ -108,59 +58,76 @@ namespace FRFront.Controllers
             _httpClient = httpClientFactory.CreateClient("BackendApi");
         }
 
+        private static Producto CrearProducto(string nombre, string imagen, string genero, string categoria, string color, decimal precio, bool esOferta = false)
+        {
+            return new Producto
+            {
+                Nombre = nombre,
+                Codigo = nombre.Replace(" ", "-").ToUpperInvariant(),
+                Precio = esOferta ? precio * 0.8m : precio,
+                PrecioAnterior = esOferta ? precio : null,
+                EsOferta = esOferta,
+                Genero = genero,
+                Categoria = categoria,
+                Color = color,
+                Descripcion = $"{nombre} de colección F&R.",
+                Imagen = $"~/images/{imagen}",
+                Talles = new[] { "S", "M", "L", "XL" },
+                TiempoEntregaDias = categoria.Equals("Abrigos", StringComparison.OrdinalIgnoreCase) ? 7 : 2
+            };
+        }
+
         [HttpGet]
         public async Task<IActionResult> Index()
         {
             return View(await ObtenerProductosAsync());
         }
 
-        public IActionResult Lanzamientos()
+        public async Task<IActionResult> Lanzamientos(string? categoria, string? color, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
         {
-            // Puedes retornar una lista de productos destacados o nuevos aquí si lo deseas
-            return View();
+            var productos = await AplicarOrdenAsync(AplicarFiltros(await ObtenerProductosAsync(), categoria, color, entrega, precioMin, precioMax, orden), orden);
+            PrepararFiltros(categoria, color, entrega, precioMin, precioMax, orden);
+            return View(productos);
         }
 
         // Acción para la sección de HOMBRE
-        public async Task<IActionResult> Hombre(string categoria)
+        public async Task<IActionResult> Hombre(string? categoria, string? color, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
         {
             var query = (await ObtenerProductosAsync()).Where(p => p.Genero.Equals("Hombre", System.StringComparison.OrdinalIgnoreCase));
             
-            if (!string.IsNullOrEmpty(categoria))
-            {
-                query = query.Where(p => p.Categoria.Equals(categoria, System.StringComparison.OrdinalIgnoreCase));
-            }
+            var productos = await AplicarOrdenAsync(AplicarFiltros(query, categoria, color, entrega, precioMin, precioMax, orden), orden);
 
             ViewData["TituloSeccion"] = "SECCIÓN HOMBRES";
             ViewData["GeneroActual"] = "Hombre";
             
-            return View("Seccion", query.ToList());
+            PrepararFiltros(categoria, color, entrega, precioMin, precioMax, orden);
+            return View("Seccion", productos);
         }
 
         // Acción para la sección de MUJER
-        public async Task<IActionResult> Mujer(string categoria)
+        public async Task<IActionResult> Mujer(string? categoria, string? color, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
         {
             var query = (await ObtenerProductosAsync()).Where(p => p.Genero.Equals("Mujer", System.StringComparison.OrdinalIgnoreCase));
 
-            if (!string.IsNullOrEmpty(categoria))
-            {
-                query = query.Where(p => p.Categoria.Equals(categoria, System.StringComparison.OrdinalIgnoreCase));
-            }
+            var productos = await AplicarOrdenAsync(AplicarFiltros(query, categoria, color, entrega, precioMin, precioMax, orden), orden);
 
             ViewData["TituloSeccion"] = "SECCIÓN MUJERES";
             ViewData["GeneroActual"] = "Mujer";
 
-            return View("Seccion", query.ToList());
+            PrepararFiltros(categoria, color, entrega, precioMin, precioMax, orden);
+            return View("Seccion", productos);
         }
 
         // Acción para ver la sección de Ofertas
-        public async Task<IActionResult> Ofertas()
+        public async Task<IActionResult> Ofertas(string? categoria, string? color, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
         {
-            var productosOferta = (await ObtenerProductosAsync()).Where(p => p.EsOferta).ToList();
+            var productosOferta = await AplicarOrdenAsync(AplicarFiltros((await ObtenerProductosAsync()).Where(p => p.EsOferta), categoria, color, entrega, precioMin, precioMax, orden), orden);
+            PrepararFiltros(categoria, color, entrega, precioMin, precioMax, orden);
             return View(productosOferta);
         }
 
         // Acción para mostrar el Catálogo General
-        public async Task<IActionResult> Catalogo(string busqueda)
+        public async Task<IActionResult> Catalogo(string? busqueda, string? categoria, string? color, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
         {
             var productos = (await ObtenerProductosAsync()).AsEnumerable();
 
@@ -169,8 +136,10 @@ namespace FRFront.Controllers
                 productos = productos.Where(producto => producto.Nombre.Contains(busqueda.Trim(), System.StringComparison.OrdinalIgnoreCase));
             }
 
+            var filtrados = await AplicarOrdenAsync(AplicarFiltros(productos, categoria, color, entrega, precioMin, precioMax, orden), orden);
             ViewData["Busqueda"] = busqueda;
-            return View(productos.ToList());
+            PrepararFiltros(categoria, color, entrega, precioMin, precioMax, orden);
+            return View(filtrados);
         }
 
         // Acción dinámica para el Detalle de un Producto
@@ -209,7 +178,7 @@ namespace FRFront.Controllers
                 var productosApi = await _httpClient.GetFromJsonAsync<List<ProductoDto>>("api/productos") ?? new List<ProductoDto>();
                 if (productosApi.Count > 0)
                 {
-                    return productosApi.Select(producto => new Producto
+                    var productos = productosApi.Select(producto => new Producto
                     {
                         Id = producto.Id,
                         Nombre = producto.Nombre,
@@ -220,9 +189,15 @@ namespace FRFront.Controllers
                         Talles = string.IsNullOrWhiteSpace(producto.Talles)
                             ? Array.Empty<string>()
                             : producto.Talles.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
-                        Genero = producto.Categoria.Contains("mujer", StringComparison.OrdinalIgnoreCase) ? "Mujer" : "Hombre",
-                        EsOferta = false
+                        Color = string.IsNullOrWhiteSpace(producto.Colores) ? producto.Color : producto.Colores,
+                        Genero = DeterminarGenero(producto),
+                        EsOferta = producto.EsOferta,
+                        TiempoEntregaDias = producto.Categoria.Contains("abrigo", StringComparison.OrdinalIgnoreCase) ? 7 : 2
                     }).ToList();
+
+                    AgregarProductosLocalesSinRepetir(productos);
+
+                    return productos;
                 }
             }
             catch (HttpRequestException ex)
@@ -231,6 +206,131 @@ namespace FRFront.Controllers
             }
 
             return _productos;
+        }
+
+        private static string DeterminarGenero(ProductoDto producto)
+        {
+            var texto = string.Join(" ", producto.Nombre, producto.Categoria, producto.Colores, producto.ImagenUrl);
+            if (texto.Contains("mujer", StringComparison.OrdinalIgnoreCase) || texto.Contains("dama", StringComparison.OrdinalIgnoreCase))
+                return "Mujer";
+            if (texto.Contains("hombre", StringComparison.OrdinalIgnoreCase) || texto.Contains("caballero", StringComparison.OrdinalIgnoreCase))
+                return "Hombre";
+
+            return string.Empty;
+        }
+
+        private static void AgregarProductosLocalesSinRepetir(List<Producto> productos)
+        {
+            foreach (var productoLocal in _productos)
+            {
+                var imagenRepetida = productos.Any(actual => NormalizarImagen(actual.Imagen).Equals(NormalizarImagen(productoLocal.Imagen), StringComparison.OrdinalIgnoreCase));
+                if (!imagenRepetida)
+                    AgregarProductoRespaldo(productos, productoLocal);
+            }
+        }
+
+        private static string NormalizarImagen(string? imagen)
+        {
+            return (imagen ?? string.Empty).Replace("~/", "/", StringComparison.OrdinalIgnoreCase).Trim();
+        }
+
+        private static void AgregarProductoRespaldo(List<Producto> productos, Producto respaldo)
+        {
+            productos.Add(new Producto
+            {
+                Id = respaldo.Id,
+                Nombre = respaldo.Nombre,
+                Codigo = respaldo.Codigo,
+                Precio = respaldo.Precio,
+                PrecioAnterior = respaldo.PrecioAnterior,
+                EsOferta = respaldo.EsOferta,
+                Genero = respaldo.Genero,
+                Categoria = respaldo.Categoria,
+                Descripcion = respaldo.Descripcion,
+                Imagen = respaldo.Imagen,
+                Talles = respaldo.Talles,
+                Color = respaldo.Color,
+                TiempoEntregaDias = respaldo.TiempoEntregaDias,
+                SinStock = respaldo.SinStock
+            });
+        }
+
+        private static List<Producto> AplicarFiltros(IEnumerable<Producto> productos, string? categoria, string? color, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
+        {
+            var resultado = productos;
+            if (!string.IsNullOrWhiteSpace(categoria))
+            {
+                if (categoria.Equals("Buzos", StringComparison.OrdinalIgnoreCase))
+                    resultado = resultado.Where(p => p.Nombre.Contains("buzo", StringComparison.OrdinalIgnoreCase));
+                else if (categoria.Equals("Camperas", StringComparison.OrdinalIgnoreCase))
+                    resultado = resultado.Where(p => p.Nombre.Contains("campera", StringComparison.OrdinalIgnoreCase));
+                else
+                    resultado = resultado.Where(p => p.Categoria.Equals(categoria, StringComparison.OrdinalIgnoreCase));
+            }
+            if (!string.IsNullOrWhiteSpace(color))
+                resultado = resultado.Where(p => p.Color.Split(',', ';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .Any(colorProducto => colorProducto.Equals(color.Trim(), StringComparison.OrdinalIgnoreCase)));
+            if (entrega.HasValue)
+                resultado = resultado.Where(p => p.TiempoEntregaDias <= entrega.Value);
+            if (precioMin.HasValue)
+                resultado = resultado.Where(p => p.Precio >= precioMin.Value);
+            if (precioMax.HasValue)
+                resultado = resultado.Where(p => p.Precio <= precioMax.Value);
+
+            return orden?.ToLowerInvariant() switch
+            {
+                _ => resultado.ToList()
+            };
+        }
+
+        private async Task<List<Producto>> AplicarOrdenAsync(List<Producto> productos, string? orden)
+        {
+            if (!string.Equals(orden, "masComprados", StringComparison.OrdinalIgnoreCase))
+            {
+                return orden?.ToLowerInvariant() switch
+                {
+                    "precioasc" => productos.OrderBy(p => p.Precio).ToList(),
+                    "preciodesc" => productos.OrderByDescending(p => p.Precio).ToList(),
+                    _ => productos
+                };
+            }
+
+            var cantidadesVendidas = new Dictionary<int, int>();
+            try
+            {
+                var pedidos = await _httpClient.GetFromJsonAsync<List<PedidoDto>>("api/pedidos") ?? new List<PedidoDto>();
+                foreach (var pedido in pedidos)
+                {
+                    var pedidoId = pedido.Id > 0 ? pedido.Id : pedido.IdPedido;
+                    if (pedidoId <= 0)
+                        continue;
+
+                    var detalles = await _httpClient.GetFromJsonAsync<List<DetallePedidoDto>>($"api/pedidos/{pedidoId}/detalles") ?? new List<DetallePedidoDto>();
+                    foreach (var detalle in detalles)
+                    {
+                        cantidadesVendidas[detalle.ProductoId] = cantidadesVendidas.GetValueOrDefault(detalle.ProductoId) + detalle.Cantidad;
+                    }
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogWarning(ex, "No se pudo consultar el historial de ventas para ordenar los productos.");
+            }
+
+            return productos
+                .OrderByDescending(producto => cantidadesVendidas.GetValueOrDefault(producto.Id))
+                .ThenBy(producto => producto.Nombre)
+                .ToList();
+        }
+
+        private void PrepararFiltros(string? categoria, string? color, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
+        {
+            ViewData["Categoria"] = categoria;
+            ViewData["Color"] = color;
+            ViewData["Entrega"] = entrega;
+            ViewData["PrecioMin"] = precioMin;
+            ViewData["PrecioMax"] = precioMax;
+            ViewData["Orden"] = orden;
         }
 
         [HttpGet]

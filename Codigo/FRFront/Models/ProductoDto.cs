@@ -9,6 +9,7 @@ namespace FRFront.Models
         public bool EsOferta { get; set; }
         public string Talles { get; set; } = string.Empty;
         public string Color { get; set; } = string.Empty;
+        public string? Colores { get; set; }
         public int Stock { get; set; }
         public string Categoria { get; set; } = string.Empty;
         public string? Descripcion { get; set; }

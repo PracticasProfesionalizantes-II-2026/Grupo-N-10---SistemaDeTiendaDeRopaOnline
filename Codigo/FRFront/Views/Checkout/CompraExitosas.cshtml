@@ -61,9 +61,12 @@
             <a asp-controller="Cliente" asp-action="MisCompras" class="btn btn-light rounded-pill px-4 py-2 fw-bold text-uppercase text-dark shadow-sm" style="font-size: 0.85rem;">
                 Ir a mis compras
             </a>
-            <a asp-controller="Cliente" asp-action="SeguirEnvio" asp-route-nroPedido="@numeroPedido" class="btn btn-light rounded-pill px-4 py-2 fw-bold text-uppercase text-dark shadow-sm" style="font-size: 0.85rem;">
-                Seguir envío
-            </a>
+            @if (!esRetiroLocal)
+            {
+                <a asp-controller="Cliente" asp-action="SeguirEnvio" asp-route-nroPedido="@numeroPedido" class="btn btn-light rounded-pill px-4 py-2 fw-bold text-uppercase text-dark shadow-sm" style="font-size: 0.85rem;">
+                    Seguir envío
+                </a>
+            }
             <a asp-controller="Home" asp-action="Catalogo" class="btn btn-primary rounded-pill px-4 py-2 fw-bold text-uppercase shadow" style="background-color: #3b55ff; border: none; font-size: 0.85rem;">
                 Seguir comprando
             </a>

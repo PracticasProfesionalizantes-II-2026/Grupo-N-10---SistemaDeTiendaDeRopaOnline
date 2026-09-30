@@ -197,6 +197,7 @@
                                         <li><a class="dropdown-item py-2 px-3 fw-semibold" style="font-size: 0.9rem;" asp-controller="Cliente" asp-action="MisCompras">Mis Compras</a></li>
                                         <li><a class="dropdown-item py-2 px-3 fw-semibold" style="font-size: 0.9rem;" asp-controller="Carrito" asp-action="Index">Carrito</a></li>
                                         <li><a class="dropdown-item py-2 px-3 fw-semibold" style="font-size: 0.9rem;" asp-controller="Cliente" asp-action="MiPerfil">Mi Cuenta</a></li>
+                                        <li><a class="dropdown-item py-2 px-3 fw-semibold" style="font-size: 0.9rem;" asp-controller="Account" asp-action="CambiarContrasena">Cambiar contraseña</a></li>
                                     }
                                     <li><hr class="dropdown-divider my-1"></li>
                                     <li><a class="dropdown-item py-2 px-3 text-danger fw-bold" style="font-size: 0.9rem;" asp-controller="Account" asp-action="Logout">Cerrar Sesión</a></li>
@@ -240,11 +241,12 @@
                 <div class="col-md-4 footer-column">
                     <h5>PRODUCTOS</h5>
                     <ul>
-                        <li><a asp-controller="Home" asp-action="Catalogo">BUZOS</a></li>
-                        <li><a asp-controller="Home" asp-action="Catalogo">CAMISAS</a></li>
-                        <li><a asp-controller="Home" asp-action="Catalogo">SWEATER</a></li>
-                        <li><a asp-controller="Home" asp-action="Catalogo">REMERAS</a></li>
-                        <li><a asp-controller="Home" asp-action="Catalogo">PANTALONES</a></li>
+                        <li><a asp-controller="Home" asp-action="Catalogo" asp-route-categoria="Buzos">BUZOS</a></li>
+                        <li><a asp-controller="Home" asp-action="Catalogo" asp-route-categoria="Remeras">REMERAS</a></li>
+                        <li><a asp-controller="Home" asp-action="Catalogo" asp-route-categoria="Pantalones">PANTALONES</a></li>
+                        <li><a asp-controller="Home" asp-action="Catalogo" asp-route-categoria="Polleras">POLLERAS</a></li>
+                        <li><a asp-controller="Home" asp-action="Catalogo" asp-route-categoria="Camperas">CAMPERAS</a></li>
+                        <li><a asp-controller="Home" asp-action="Catalogo" asp-route-categoria="Vestidos">VESTIDOS</a></li>
                     </ul>
                 </div>
 

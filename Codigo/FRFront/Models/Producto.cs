@@ -10,6 +10,8 @@ namespace FRFront.Models
         public bool EsOferta { get; set; }           // True si va a la sección Ofertas
         public string Genero { get; set; }        = string.Empty;   // "Hombre" o "Mujer"
         public string Categoria { get; set; }   = string.Empty;     // "Abrigos", "Pantalones", "Remeras", etc.
+        public string Color { get; set; } = string.Empty;
+        public int TiempoEntregaDias { get; set; } = 2;
         public string Descripcion { get; set; }= string.Empty;
         public string Imagen { get; set; }= string.Empty;
         public string[] Talles { get; set; } = Array.Empty<string>();

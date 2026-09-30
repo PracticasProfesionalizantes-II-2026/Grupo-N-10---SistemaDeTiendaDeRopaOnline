@@ -12,7 +12,7 @@ dddddddd
         <input type="hidden" name="nombre" value="@ViewData["Nombre"]" />
         <input type="hidden" name="precio" value="@ViewData["PrecioNumerico"]" />
         <input type="hidden" name="imagen" value="@ViewData["Imagen"]" />
-        <input type="hidden" name="talle" id="talleSeleccionadoInput" />
+            <input type="hidden" name="talle" id="talleSeleccionadoInput" value="Único" />
         <input type="hidden" name="cantidad" id="cantidadInput" value="1" />
 
         <div class="row g-5">
@@ -51,7 +51,6 @@ dddddddd
                             }
                         }
                     </div>
-                    <div id="errorTalle" class="text-danger small mt-1 d-none">Por favor selecciona un talle.</div>
                 </div>
 
                 <!-- Cantidad -->
@@ -118,21 +117,8 @@ dddddddd
                 $('#errorTalle').addClass('d-none');
             });
 
-            // Validar que haya seleccionado talle
-            function validarTalle() {
-                let talleSeleccionado = $('input[name="talleOptions"]:checked').val();
-                if (!talleSeleccionado) {
-                    $('#errorTalle').removeClass('d-none');
-                    return false;
-                }
-                $('#errorTalle').addClass('d-none');
-                return true;
-            }
-
             // BOTÓN AGREGAR AL CARRITO (Usa AJAX para quedarse en la pantalla y mostrar aviso)
             $('#btnAgregarCarrito').click(function () {
-                if (!validarTalle()) return;
-
                 let formData = $('#formDetalleProducto').serialize();
 
                 $.post('@Url.Action("Agregar", "Carrito")', formData, function () {
@@ -147,7 +133,6 @@ dddddddd
 
             // BOTÓN COMPRAR (Envía el formulario y redirige directo al carrito)
             $('#btnComprar').click(function () {
-                if (!validarTalle()) return;
                 $('#formDetalleProducto').submit();
             });
 
@@ -163,14 +148,9 @@ dddddddd
 
                 let htmlOpciones = '<ul class="list-group shadow-sm" style="max-width: 380px;">';
 
-                if (cp === "2322") {
-                    htmlOpciones += '<li class="list-group-item d-flex justify-content-between align-items-center"><span>📦 Retirar por local</span><strong class="text-success">Gratis</strong></li>';
-                    htmlOpciones += '<li class="list-group-item d-flex justify-content-between align-items-center"><span>🚀 Envío Premium <small class="text-muted">(1 día hábil)</small></span><strong>$ 3.000</strong></li>';
-                } else {
-                    htmlOpciones += '<li class="list-group-item d-flex justify-content-between align-items-center"><span>📦 Retirar por local</span><strong class="text-success">Gratis</strong></li>';
-                    htmlOpciones += '<li class="list-group-item d-flex justify-content-between align-items-center"><span>🚚 Envío Estándar <small class="text-muted">(7 días hábiles)</small></span><strong>$ 15.000</strong></li>';
-                    htmlOpciones += '<li class="list-group-item d-flex justify-content-between align-items-center"><span>✈️ Envío Premium <small class="text-muted">(2 días hábiles)</small></span><strong>$ 22.000</strong></li>';
-                }
+                htmlOpciones += '<li class="list-group-item d-flex justify-content-between align-items-center"><span>📦 Retirar por local</span><strong class="text-success">Gratis</strong></li>';
+                htmlOpciones += '<li class="list-group-item d-flex justify-content-between align-items-center"><span>🚚 Envío normal <small class="text-muted">(máximo 7 días)</small></span><strong>$ 6.000</strong></li>';
+                htmlOpciones += '<li class="list-group-item d-flex justify-content-between align-items-center"><span>🚀 Envío full <small class="text-muted">(máximo 2 días)</small></span><strong>$ 8.500</strong></li>';
 
                 htmlOpciones += '</ul>';
                 contenedor.html(htmlOpciones);

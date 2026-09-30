@@ -1,0 +1,109 @@
+@model IEnumerable<FRFront.Models.Producto>
+@{
+    var action = ViewContext.RouteData.Values["action"]?.ToString() ?? "Catalogo";
+    var busqueda = ViewData["Busqueda"]?.ToString();
+    var categoria = ViewData["Categoria"]?.ToString();
+    var color = ViewData["Color"]?.ToString();
+    var entrega = ViewData["Entrega"]?.ToString();
+    var precioMin = ViewData["PrecioMin"]?.ToString();
+    var precioMax = ViewData["PrecioMax"]?.ToString();
+    var orden = ViewData["Orden"]?.ToString();
+    var colores = Model.SelectMany(p => (p.Color ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        .Where(c => !string.IsNullOrWhiteSpace(c)).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(c => c).ToList();
+}
+
+<div class="container-fluid px-4 my-4">
+    <div class="row">
+        <aside class="col-lg-3 pe-lg-4 mb-4">
+            <form asp-controller="Home" asp-action="@action" method="get" class="border rounded-3 p-3 bg-light">
+                @if (!string.IsNullOrWhiteSpace(busqueda))
+                {
+                    <input type="hidden" name="busqueda" value="@busqueda" />
+                }
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-uppercase small">Categoría</label>
+                    <select name="categoria" class="form-select">
+                        <option value="">Todas</option>
+                        @foreach (var item in new[] { "Remeras", "Pantalones", "Buzos", "Camperas", "Abrigos", "Polleras", "Vestidos" })
+                        {
+                            <option value="@item" selected="@(categoria == item)">@item</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-uppercase small">Color</label>
+                    <select name="color" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in colores)
+                        {
+                            <option value="@item" selected="@(string.Equals(color, item, StringComparison.OrdinalIgnoreCase))">@item</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-uppercase small">Tiempo de entrega</label>
+                    <select name="entrega" class="form-select">
+                        <option value="">Cualquier plazo</option>
+                        <option value="2" selected="@(entrega == "2")">Hasta 2 días</option>
+                        <option value="7" selected="@(entrega == "7")">Hasta 7 días</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-uppercase small">Rango de precio</label>
+                    <div class="d-flex gap-2">
+                        <input name="precioMin" value="@precioMin" type="number" min="0" step="1000" class="form-control" placeholder="Desde" />
+                        <input name="precioMax" value="@precioMax" type="number" min="0" step="1000" class="form-control" placeholder="Hasta" />
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-uppercase small">Ordenar por</label>
+                    <select name="orden" class="form-select">
+                        <option value="masComprados" selected="@(orden == "masComprados")">Más comprados</option>
+                        <option value="precioAsc" selected="@(orden == "precioAsc")">Más barato a más caro</option>
+                        <option value="precioDesc" selected="@(orden == "precioDesc")">Más caro a más barato</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-dark w-100 text-uppercase fw-bold">Aplicar filtros</button>
+                <a asp-controller="Home" asp-action="@action" class="btn btn-link text-dark w-100 mt-2">Limpiar filtros</a>
+            </form>
+        </aside>
+
+        <section class="col-lg-9">
+            <div class="row g-4">
+                @if (Model.Any())
+                {
+                    @foreach (var prod in Model)
+                    {
+                        <div class="col-md-4 col-sm-6">
+                            <a asp-controller="Home" asp-action="DetalleProducto" asp-route-nombre="@prod.Nombre" class="card h-100 text-decoration-none text-dark border shadow-sm bg-light" style="border-radius: 10px; overflow: hidden;">
+                                <div class="bg-light p-3 text-center position-relative" style="height: 250px; display: flex; align-items: center; justify-content: center;">
+                                    @if (prod.SinStock)
+                                    {
+                                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-75 text-white fw-bold text-uppercase" style="z-index: 2;">SIN STOCK</div>
+                                    }
+                                    @if (prod.EsOferta)
+                                    {
+                                        <span class="position-absolute top-0 end-0 badge bg-danger m-2">OFERTA</span>
+                                    }
+                                    <img src="@Url.Content(prod.Imagen)" alt="@prod.Nombre" class="img-fluid h-100 object-fit-contain" />
+                                </div>
+                                <div class="card-body text-center bg-white border-top">
+                                    <h6 class="card-title fw-semibold small text-uppercase">@prod.Nombre</h6>
+                                    @if (prod.PrecioAnterior.HasValue && prod.PrecioAnterior.Value > prod.Precio)
+                                    {
+                                        <span class="text-muted text-decoration-line-through small me-2">$@prod.PrecioAnterior.Value.ToString("N0")</span>
+                                    }
+                                    <span class="fw-bold @(prod.EsOferta ? "text-danger" : "text-dark")">$@prod.Precio.ToString("N0")</span>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12 text-center py-5"><p class="text-muted">No hay productos que coincidan con los filtros.</p></div>
+                }
+            </div>
+        </section>
+    </div>
+</div>

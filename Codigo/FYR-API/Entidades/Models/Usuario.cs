@@ -43,6 +43,8 @@ public class Usuario
 
     public bool Activo { get; set; } = true;
 
+    public string? CarritoJson { get; set; }
+
     // Empresa a la que pertenece.
     // Los clientes no tienen empresa.
     public int? EmpresaId { get; set; }

@@ -35,20 +35,15 @@ namespace FRFront.Controllers
             decimal costoEnvio = 0;
             string nombreEnvioTexto = "Retiro en el local";
 
-            if (tipoEnvio == "Premium") // 1 día hábil (Sunchales - 2322)
+            if (tipoEnvio == "Estandar")
             {
-                costoEnvio = 3000;
-                nombreEnvioTexto = "Envío a domicilio premium (1 día hábil)";
+                costoEnvio = 6000;
+                nombreEnvioTexto = "Envío normal (máximo 7 días)";
             }
-            else if (tipoEnvio == "Estandar") // 7 días hábiles (Nacional)
+            else if (tipoEnvio == "PremiumNacional")
             {
-                costoEnvio = 15000;
-                nombreEnvioTexto = "Envío a domicilio estándar (7 días hábiles)";
-            }
-            else if (tipoEnvio == "PremiumNacional") // 2 días hábiles (Nacional)
-            {
-                costoEnvio = 22000;
-                nombreEnvioTexto = "Envío a domicilio premium (2 días hábiles)";
+                costoEnvio = 8500;
+                nombreEnvioTexto = "Envío full (máximo 2 días)";
             }
             else if (tipoEnvio == "RetiroLocal")
             {
@@ -57,7 +52,7 @@ namespace FRFront.Controllers
             }
 
             // Guardamos los datos del envío en la sesión
-            HttpContext.Session.SetString(UserSessionKeys.ForUser(HttpContext.Session, "TipoEnvioSeleccionado"), tipoEnvio ?? "Estándar");
+            HttpContext.Session.SetString(UserSessionKeys.ForUser(HttpContext.Session, "TipoEnvioSeleccionado"), tipoEnvio ?? "Estandar");
             HttpContext.Session.SetString(UserSessionKeys.ForUser(HttpContext.Session, "CodigoPostalEnvio"), codigoPostal ?? "");
             HttpContext.Session.SetString(UserSessionKeys.ForUser(HttpContext.Session, "NombreEnvio"), nombreEnvioTexto);
             HttpContext.Session.SetString(UserSessionKeys.ForUser(HttpContext.Session, "CostoEnvio"), costoEnvio.ToString());
@@ -107,8 +102,29 @@ namespace FRFront.Controllers
                 return RedirectToAction("Index", "Carrito");
             }
 
+            if (string.IsNullOrWhiteSpace(metodoPago))
+            {
+                TempData["ErrorMessage"] = "Seleccioná un método de pago para continuar.";
+                return RedirectToAction("Pago");
+            }
+
+            if ((metodoPago.Equals("Debito", StringComparison.OrdinalIgnoreCase) || metodoPago.Equals("Credito", StringComparison.OrdinalIgnoreCase)) &&
+                (string.IsNullOrWhiteSpace(numeroTarjeta) || string.IsNullOrWhiteSpace(vencimiento) || string.IsNullOrWhiteSpace(cvv) || string.IsNullOrWhiteSpace(titular)))
+            {
+                TempData["ErrorMessage"] = "Completá todos los datos de la tarjeta para continuar.";
+                return RedirectToAction("Pago");
+            }
+
             try
             {
+                var usuarios = await _httpClient.GetFromJsonAsync<List<UsuarioSimpleDto>>("api/usuarios") ?? new List<UsuarioSimpleDto>();
+                var usuarioApi = usuarios.FirstOrDefault(item => string.Equals(item.Email, usuario, StringComparison.OrdinalIgnoreCase));
+                if (usuarioApi == null || usuarioApi.ResolveId() <= 0)
+                {
+                    TempData["ErrorMessage"] = "No se encontró el usuario de la sesión para registrar la compra.";
+                    return RedirectToAction("Pago");
+                }
+
                 var productosResponse = await _httpClient.GetFromJsonAsync<List<ProductoDto>>("api/productos") ?? new List<ProductoDto>();
                 var productosPorNombre = productosResponse
                     .Where(producto => !string.IsNullOrWhiteSpace(producto.Nombre))
@@ -123,15 +139,34 @@ namespace FRFront.Controllers
 
                 var costoEnvioTexto = HttpContext.Session.GetString(UserSessionKeys.ForUser(HttpContext.Session, "CostoEnvio"));
                 decimal.TryParse(costoEnvioTexto, out var costoEnvio);
-                var total = carrito.Sum(item => item.Total) + costoEnvio;
+                var subtotal = carrito.Sum(item => item.Total);
+                var ajustePago = metodoPago.Equals("Efectivo", StringComparison.OrdinalIgnoreCase)
+                    ? subtotal * -0.20m
+                    : metodoPago.Equals("Credito", StringComparison.OrdinalIgnoreCase) && cuotas == 6
+                        ? subtotal * 0.20m
+                        : metodoPago.Equals("Credito", StringComparison.OrdinalIgnoreCase) && cuotas == 12
+                            ? subtotal * 0.40m
+                            : 0m;
+                var total = subtotal + ajustePago + costoEnvio;
+                var tipoEnvio = HttpContext.Session.GetString(UserSessionKeys.ForUser(HttpContext.Session, "TipoEnvioSeleccionado"));
+                var esRetiroLocal = string.Equals(tipoEnvio, "RetiroLocal", StringComparison.OrdinalIgnoreCase);
+                HttpContext.Session.SetString(UserSessionKeys.ForUser(HttpContext.Session, "UltimoTotalCompra"), total.ToString(System.Globalization.CultureInfo.InvariantCulture));
 
                 var pedidoRequest = new
                 {
-                    Cliente = usuario.Split('@')[0],
-                    Email = usuario,
+                    DireccionEntrega = esRetiroLocal
+                        ? "RETIRO_LOCAL"
+                        : HttpContext.Session.GetString(UserSessionKeys.ForUser(HttpContext.Session, "CodigoPostalEnvio")) ?? "",
+                    MetodoPago = metodoPago.Equals("Credito", StringComparison.OrdinalIgnoreCase)
+                        ? "Tarjeta de crédito"
+                        : metodoPago.Equals("Debito", StringComparison.OrdinalIgnoreCase)
+                            ? "Tarjeta de débito"
+                            : metodoPago.Equals("Transferencia", StringComparison.OrdinalIgnoreCase)
+                                ? "Transferencia"
+                                : "Efectivo",
                     Total = total,
-                    TipoEntrega = metodoPago,
-                    Detalle = detalles
+                    UsuarioId = usuarioApi.ResolveId(),
+                    Estado = esRetiroLocal ? "Confirmado" : "EnCamino"
                 };
 
                 using var response = await _httpClient.PostAsJsonAsync("api/pedidos", pedidoRequest);
@@ -139,6 +174,31 @@ namespace FRFront.Controllers
                 {
                     TempData["ErrorMessage"] = "No se pudo guardar la compra en la base de datos.";
                     return RedirectToAction("Pago");
+                }
+
+                var contenidoRespuesta = await response.Content.ReadAsStringAsync();
+                var idPedido = ObtenerIdPedido(contenidoRespuesta);
+                if (idPedido <= 0 && response.Headers.Location != null)
+                {
+                    var ultimoSegmento = response.Headers.Location.Segments.LastOrDefault()?.Trim('/');
+                    int.TryParse(ultimoSegmento, out idPedido);
+                }
+
+                if (idPedido > 0)
+                {
+                    HttpContext.Session.SetString(UserSessionKeys.ForUser(HttpContext.Session, "PedidoPersistidoSesion"), idPedido.ToString());
+
+                    foreach (var detalle in detalles.Where(detalle => detalle.ProductoId > 0))
+                    {
+                        try
+                        {
+                            await _httpClient.PostAsJsonAsync($"api/pedidos/{idPedido}/detalles", detalle);
+                        }
+                        catch (HttpRequestException)
+                        {
+                            // El pedido ya fue creado; el historial de sesión conserva los productos comprados.
+                        }
+                    }
                 }
             }
             catch (HttpRequestException)
@@ -149,6 +209,28 @@ namespace FRFront.Controllers
 
             // Redirige a la pantalla de éxito
             return RedirectToAction("CompraExitosas");
+        }
+
+        private static int ObtenerIdPedido(string contenidoRespuesta)
+        {
+            if (string.IsNullOrWhiteSpace(contenidoRespuesta))
+                return 0;
+
+            try
+            {
+                using var documento = JsonDocument.Parse(contenidoRespuesta);
+                var raiz = documento.RootElement;
+                if ((raiz.TryGetProperty("idPedido", out var idPedido) || raiz.TryGetProperty("IdPedido", out idPedido)) && idPedido.TryGetInt32(out var id))
+                    return id;
+                if ((raiz.TryGetProperty("id", out var idAlternativo) || raiz.TryGetProperty("Id", out idAlternativo)) && idAlternativo.TryGetInt32(out id))
+                    return id;
+            }
+            catch (JsonException)
+            {
+                return 0;
+            }
+
+            return 0;
         }
 
         // 5. Pantallas de éxito o rechazo
@@ -179,8 +261,10 @@ namespace FRFront.Controllers
                 detalleFecha = $"Llega entre el {hoy.AddDays(2):dd} y el {hoy.AddDays(dias):dd} de {hoy:MMMM}";
             }
 
-            Random rnd = new Random();
-            string nroPedido = "#" + rnd.Next(10000, 99999).ToString();
+            var pedidoPersistido = HttpContext.Session.GetString(UserSessionKeys.ForUser(HttpContext.Session, "PedidoPersistidoSesion"));
+            string nroPedido = int.TryParse(pedidoPersistido, out var pedidoId)
+                ? $"#{pedidoId:D5}"
+                : "#" + new Random().Next(10000, 99999).ToString();
 
             // Creamos el nuevo pedido
             var nuevoPedido = new PedidoModel
@@ -188,6 +272,8 @@ namespace FRFront.Controllers
                 NroPedido = nroPedido,
                 Estado = "En Camino",
                 DetalleFecha = detalleFecha,
+                Total = decimal.TryParse(HttpContext.Session.GetString(UserSessionKeys.ForUser(HttpContext.Session, "UltimoTotalCompra")), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var totalCompra) ? totalCompra : carrito.Sum(x => x.Total),
+                EsRetiroLocal = tipoEnvio == "RetiroLocal",
                 TotalProductos = carrito.Sum(x => x.Cantidad),
                 ImagenProducto = carrito.FirstOrDefault()?.Imagen ?? "~/images/logo-fr.png",
                 Productos = carrito

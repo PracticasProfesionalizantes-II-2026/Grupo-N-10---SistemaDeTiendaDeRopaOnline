@@ -590,6 +590,9 @@ namespace FYR_API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("CarritoJson")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Dni")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");

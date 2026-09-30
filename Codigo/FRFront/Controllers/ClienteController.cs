@@ -31,6 +31,14 @@ namespace FRFront.Controllers
 
             var listaCompras = await ObtenerComprasPersistidasAsync();
 
+            var historialJson = HttpContext.Session.GetString(UserSessionKeys.ForUser(HttpContext.Session, "HistorialComprasSession"));
+            if (!string.IsNullOrEmpty(historialJson))
+            {
+                var historial = JsonSerializer.Deserialize<List<PedidoModel>>(historialJson) ?? new List<PedidoModel>();
+                var numerosExistentes = historial.Select(pedido => pedido.NroPedido).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                listaCompras = historial.Concat(listaCompras.Where(pedido => !numerosExistentes.Contains(pedido.NroPedido))).ToList();
+            }
+
             return View(listaCompras);
         }
 
@@ -140,14 +148,13 @@ namespace FRFront.Controllers
 
             try
             {
-                var usuarios = await _httpClient.GetFromJsonAsync<List<UsuarioSimpleDto>>("api/usuarios") ?? new List<UsuarioSimpleDto>();
-                var usuario = usuarios.FirstOrDefault(item => string.Equals(item.Email, email, StringComparison.OrdinalIgnoreCase));
-                if (usuario == null || usuario.ResolveId() <= 0)
+                var usuarioId = await ObtenerUsuarioApiIdAsync(email);
+                if (usuarioId <= 0)
                 {
                     return new List<NotificacionModel>();
                 }
 
-                var notificaciones = await _httpClient.GetFromJsonAsync<List<NotificacionResponseDto>>($"api/notificaciones/usuario/{usuario.ResolveId()}") ?? new List<NotificacionResponseDto>();
+                var notificaciones = await _httpClient.GetFromJsonAsync<List<NotificacionResponseDto>>($"api/notificaciones/usuario/{usuarioId}") ?? new List<NotificacionResponseDto>();
                 return notificaciones.Select(n => new NotificacionModel
                 {
                     Titulo = "Nueva notificación",
@@ -173,26 +180,67 @@ namespace FRFront.Controllers
 
             try
             {
-                var usuarios = await _httpClient.GetFromJsonAsync<List<UsuarioSimpleDto>>("api/usuarios") ?? new List<UsuarioSimpleDto>();
-                var usuario = usuarios.FirstOrDefault(item => string.Equals(item.Email, email, StringComparison.OrdinalIgnoreCase));
-                if (usuario == null || usuario.ResolveId() <= 0)
+                var usuarioId = await ObtenerUsuarioApiIdAsync(email);
+                if (usuarioId <= 0)
                 {
                     return new List<PedidoModel>();
                 }
 
-                var pedidos = await _httpClient.GetFromJsonAsync<List<PedidoDto>>($"api/usuarios/{usuario.ResolveId()}/pedidos") ?? new List<PedidoDto>();
-                return pedidos.Select(pedido => new PedidoModel
+                var pedidos = await _httpClient.GetFromJsonAsync<List<PedidoDto>>($"api/usuarios/{usuarioId}/pedidos") ?? new List<PedidoDto>();
+                var productos = await _httpClient.GetFromJsonAsync<List<ProductoDto>>("api/productos") ?? new List<ProductoDto>();
+                var productosPorId = productos.ToDictionary(producto => producto.Id);
+                var resultado = new List<PedidoModel>();
+
+                foreach (var pedido in pedidos)
                 {
-                    NroPedido = pedido.NumeroPedido,
-                    Estado = pedido.Estado,
-                    DetalleFecha = pedido.FechaPedido.ToLocalTime().ToString("dd/MM/yyyy HH:mm"),
-                    TotalProductos = pedido.Detalle.Sum(detalle => detalle.Cantidad)
-                }).ToList();
+                    var detalles = await _httpClient.GetFromJsonAsync<List<DetallePedidoDto>>($"api/pedidos/{pedido.IdPedido}/detalles") ?? new List<DetallePedidoDto>();
+                    var items = detalles
+                        .Where(detalle => productosPorId.ContainsKey(detalle.ProductoId))
+                        .Select(detalle =>
+                        {
+                            var producto = productosPorId[detalle.ProductoId];
+                            return new ItemCarrito
+                            {
+                                Nombre = producto.Nombre,
+                                Codigo = producto.Id.ToString(),
+                                Precio = detalle.PrecioUnitario,
+                                Imagen = string.IsNullOrWhiteSpace(producto.ImagenUrl) ? "~/images/logo-fr.png" : producto.ImagenUrl,
+                                Cantidad = detalle.Cantidad
+                            };
+                        }).ToList();
+
+                    resultado.Add(new PedidoModel
+                    {
+                        NroPedido = pedido.NumeroPedido,
+                        Estado = pedido.Estado,
+                        DetalleFecha = pedido.FechaPedido.ToLocalTime().ToString("dd/MM/yyyy HH:mm"),
+                        Total = pedido.Total,
+                        EsRetiroLocal = pedido.DireccionEntrega.Equals("RETIRO_LOCAL", StringComparison.OrdinalIgnoreCase),
+                        TotalProductos = detalles.Sum(detalle => detalle.Cantidad),
+                        ImagenProducto = items.FirstOrDefault()?.Imagen ?? "~/images/logo-fr.png",
+                        Productos = items
+                    });
+                }
+
+                return resultado;
             }
             catch (HttpRequestException)
             {
                 return new List<PedidoModel>();
             }
+        }
+
+        private async Task<int> ObtenerUsuarioApiIdAsync(string email)
+        {
+            if (int.TryParse(HttpContext.Session.GetString("UsuarioApiId"), out var usuarioApiId) && usuarioApiId > 0)
+                return usuarioApiId;
+
+            var usuarios = await _httpClient.GetFromJsonAsync<List<UsuarioSimpleDto>>("api/usuarios") ?? new List<UsuarioSimpleDto>();
+            var usuario = usuarios.FirstOrDefault(item => string.Equals(item.Email, email, StringComparison.OrdinalIgnoreCase));
+            var id = usuario?.ResolveId() ?? 0;
+            if (id > 0)
+                HttpContext.Session.SetString("UsuarioApiId", id.ToString());
+            return id;
         }
     }
 }

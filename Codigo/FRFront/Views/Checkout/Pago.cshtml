@@ -33,6 +33,10 @@
     </div>
 
     <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger rounded-3 fw-semibold" role="alert">@TempData["ErrorMessage"]</div>
+        }
         <h3 class="fw-bold text-uppercase mb-4" style="letter-spacing: 1.5px; font-size: 1.4rem;">Método de pago</h3>
 
         <form asp-controller="Checkout" asp-action="ProcesarPago" method="post">
@@ -149,6 +153,11 @@
                     <span id="txtInteres" class="fw-bold">+ $ 0,00</span>
                 </div>
 
+                <div id="filaCuota" class="d-flex justify-content-between mb-2 text-primary d-none">
+                    <span>Valor de cada cuota</span>
+                    <span id="txtCuota" class="fw-bold">$ 0,00</span>
+                </div>
+
                 <hr>
 
                 <div class="d-flex justify-content-between align-items-center">
@@ -191,6 +200,8 @@
         const txtDescuento = document.getElementById('txtDescuento');
         const filaInteres = document.getElementById('filaInteres');
         const txtInteres = document.getElementById('txtInteres');
+        const filaCuota = document.getElementById('filaCuota');
+        const txtCuota = document.getElementById('txtCuota');
 
         const subtotalBase = parseFloat(txtSubtotal.getAttribute('data-valor')) || 0;
         const costoEnvio = parseFloat(txtEnvio.getAttribute('data-valor')) || 0;
@@ -229,6 +240,8 @@
             const metodoSeleccionado = radioSeleccionado.value;
             let subtotalConAjuste = subtotalBase;
             let interesMonto = 0;
+            let cantidadCuotas = 1;
+            filaCuota.classList.add('d-none');
 
             if (metodoSeleccionado === 'Debito') {
                 seccionFormTarjeta.classList.remove('d-none');
@@ -256,6 +269,7 @@
                 } else {
                     filaInteres.classList.add('d-none');
                 }
+                cantidadCuotas = cuotas;
             } 
             else if (metodoSeleccionado === 'Efectivo') {
                 seccionFormTarjeta.classList.add('d-none');
@@ -275,6 +289,10 @@
             }
 
             const totalFinal = subtotalConAjuste + costoEnvio + interesMonto;
+            if (metodoSeleccionado === 'Credito') {
+                filaCuota.classList.remove('d-none');
+                txtCuota.textContent = "$ " + (totalFinal / cantidadCuotas).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
             txtSubtotal.textContent = "$ " + subtotalConAjuste.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             txtTotal.textContent = "$ " + totalFinal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }

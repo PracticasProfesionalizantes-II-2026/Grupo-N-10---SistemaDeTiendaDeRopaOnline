@@ -3,11 +3,20 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using FRFront.Models;
+using FRFront.Helpers;
+using System.Net.Http.Json;
 
 namespace FRFront.Controllers
 {
     public class AccountController : Controller
     {
+        private readonly HttpClient _httpClient;
+
+        public AccountController(IHttpClientFactory httpClientFactory)
+        {
+            _httpClient = httpClientFactory.CreateClient("BackendApi");
+        }
+
         // GET: /Account/Login
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
@@ -48,11 +57,15 @@ namespace FRFront.Controllers
             if (emailLower.Contains("admin"))
             {
                 HttpContext.Session.SetString("RolSesion", "Administrador");
+                await AsegurarUsuarioApiAsync(model.Email, model.Password, 3);
+                await RestaurarCarritoApiAsync();
                 return RedirectToAction("Index", "Home");
             }
             else if (emailLower.Contains("empleado") || emailLower.Contains("cajero"))
             {
                 HttpContext.Session.SetString("RolSesion", "Empleado");
+                await AsegurarUsuarioApiAsync(model.Email, model.Password, 4);
+                await RestaurarCarritoApiAsync();
                 return RedirectToAction("Index", "Home");
             }
             else
@@ -69,6 +82,8 @@ namespace FRFront.Controllers
                 HttpContext.Session.SetString("RolSesion", "Cliente");
                 HttpContext.Session.SetString("EstadoCliente", "ACTIVO");
                 HttpContext.Session.SetString("UltimoIngreso", DateTime.Now.ToString("o"));
+                await AsegurarUsuarioApiAsync(model.Email, model.Password, 5);
+                await RestaurarCarritoApiAsync();
 
                 // Si hay una ruta de retorno válida (ej. el carrito), volvemos ahí
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -84,8 +99,18 @@ namespace FRFront.Controllers
         [HttpGet]
         public IActionResult Logout()
         {
-            // Resguardar la clave personalizada antes de limpiar variables de usuario
-            string? claveGuardada = HttpContext.Session.GetString("PasswordSesion");
+            var usuario = HttpContext.Session.GetString("UsuarioSesion")?.Trim().ToLowerInvariant();
+            var claveGuardada = HttpContext.Session.GetString("PasswordSesion");
+            var carrito = !string.IsNullOrWhiteSpace(usuario)
+                ? HttpContext.Session.GetString($"CarritoSession:{usuario}")
+                : null;
+            var historial = !string.IsNullOrWhiteSpace(usuario)
+                ? HttpContext.Session.GetString($"HistorialComprasSession:{usuario}")
+                : null;
+            var pedidoPersistido = !string.IsNullOrWhiteSpace(usuario)
+                ? HttpContext.Session.GetString($"PedidoPersistidoSesion:{usuario}")
+                : null;
+            var usuarioApiId = HttpContext.Session.GetString("UsuarioApiId");
 
             HttpContext.Session.Clear();
 
@@ -93,6 +118,18 @@ namespace FRFront.Controllers
             {
                 HttpContext.Session.SetString("PasswordSesion", claveGuardada);
             }
+
+            if (!string.IsNullOrWhiteSpace(usuario))
+            {
+                if (carrito != null)
+                    HttpContext.Session.SetString($"CarritoSession:{usuario}", carrito);
+                if (historial != null)
+                    HttpContext.Session.SetString($"HistorialComprasSession:{usuario}", historial);
+                if (pedidoPersistido != null)
+                    HttpContext.Session.SetString($"PedidoPersistidoSesion:{usuario}", pedidoPersistido);
+            }
+            if (usuarioApiId != null)
+                HttpContext.Session.SetString("UsuarioApiId", usuarioApiId);
 
             return RedirectToAction("Index", "Home");
         }
@@ -114,8 +151,88 @@ namespace FRFront.Controllers
                 return View(model);
             }
 
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("api/usuarios", new
+                {
+                    Nombre = model.Nombre,
+                    Apellido = model.Nombre,
+                    Email = model.Email,
+                    Password = model.Password,
+                    Rol = 5,
+                    Activo = true
+                });
+
+                if (!response.IsSuccessStatusCode && response.StatusCode != System.Net.HttpStatusCode.Conflict)
+                {
+                    ModelState.AddModelError(string.Empty, "No se pudo guardar la cuenta en la base de datos.");
+                    return View(model);
+                }
+            }
+            catch (HttpRequestException)
+            {
+                ModelState.AddModelError(string.Empty, "No se pudo conectar con la base de datos.");
+                return View(model);
+            }
+
             TempData["SuccessMessage"] = "Registro completado con éxito. Ya puedes iniciar sesión.";
             return RedirectToAction("Login", "Account");
+        }
+
+        private async Task AsegurarUsuarioApiAsync(string email, string password, int rol)
+        {
+            try
+            {
+                var usuarios = await _httpClient.GetFromJsonAsync<List<UsuarioSimpleDto>>("api/usuarios") ?? new List<UsuarioSimpleDto>();
+                var usuario = usuarios.FirstOrDefault(item => string.Equals(item.Email, email, StringComparison.OrdinalIgnoreCase));
+
+                if (usuario == null)
+                {
+                    var nombre = email.Split('@')[0];
+                    using var response = await _httpClient.PostAsJsonAsync("api/usuarios", new
+                    {
+                        Nombre = nombre,
+                        Apellido = nombre,
+                        Email = email,
+                        Password = password,
+                        Rol = rol,
+                        Activo = true
+                    });
+
+                    if (response.IsSuccessStatusCode)
+                        usuario = await response.Content.ReadFromJsonAsync<UsuarioSimpleDto>();
+                }
+
+                if (usuario != null && usuario.ResolveId() > 0)
+                    HttpContext.Session.SetString("UsuarioApiId", usuario.ResolveId().ToString());
+            }
+            catch (HttpRequestException)
+            {
+                // El login local sigue funcionando si la API está temporalmente fuera de servicio.
+            }
+        }
+
+        private async Task RestaurarCarritoApiAsync()
+        {
+            if (string.IsNullOrWhiteSpace(HttpContext.Session.GetString("UsuarioApiId")))
+                return;
+
+            var claveCarrito = UserSessionKeys.ForUser(HttpContext.Session, "CarritoSession");
+            if (!string.IsNullOrWhiteSpace(HttpContext.Session.GetString(claveCarrito)))
+                return;
+
+            if (!int.TryParse(HttpContext.Session.GetString("UsuarioApiId"), out var usuarioId))
+                return;
+
+            try
+            {
+                var carrito = await _httpClient.GetFromJsonAsync<List<ItemCarrito>>($"api/usuarios/{usuarioId}/carrito") ?? new List<ItemCarrito>();
+                HttpContext.Session.SetString(claveCarrito, JsonSerializer.Serialize(carrito));
+            }
+            catch (HttpRequestException)
+            {
+                // El carrito podrá restaurarse cuando la API vuelva a estar disponible.
+            }
         }
 
         // GET: /Account/ForgotPassword
@@ -151,49 +268,12 @@ namespace FRFront.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult CambiarContrasena(CambiarContrasenaViewModel model)
         {
-            string claveAlmacenada = HttpContext.Session.GetString("PasswordSesion") ?? "Admin123";
-
-            // Validar clave actual
-            if (!string.IsNullOrEmpty(model.ContrasenaActual) && model.ContrasenaActual != claveAlmacenada)
-            {
-                ModelState.AddModelError("ContrasenaActual", "La contraseña actual ingresada es incorrecta.");
-            }
-
-            // Validar requerimientos de la nueva clave (Mayúscula y Número)
-            if (!string.IsNullOrEmpty(model.NuevaContrasena))
-            {
-                bool tieneMayuscula = model.NuevaContrasena.Any(char.IsUpper);
-                bool tieneNumero = model.NuevaContrasena.Any(char.IsDigit);
-
-                if (!tieneMayuscula || !tieneNumero)
-                {
-                    ModelState.AddModelError("NuevaContrasena", "La nueva contraseña debe incluir al menos una letra mayúscula y un número.");
-                }
-
-                if (model.NuevaContrasena == model.ContrasenaActual)
-                {
-                    ModelState.AddModelError("NuevaContrasena", "La nueva contraseña no puede ser igual a la contraseña actual.");
-                }
-            }
-
-            // Validar coincidencia entre nueva clave y confirmación
-            if (!string.IsNullOrEmpty(model.NuevaContrasena) && !string.IsNullOrEmpty(model.ConfirmarContrasena))
-            {
-                if (model.NuevaContrasena != model.ConfirmarContrasena)
-                {
-                    ModelState.AddModelError("ConfirmarContrasena", "La nueva contraseña y su confirmación no coinciden.");
-                }
-            }
-
             if (!ModelState.IsValid)
             {
                 return View("~/Views/Account/CambiarContrasena.cshtml", model);
             }
 
-            // Actualizar la clave para las próximas validaciones
-            HttpContext.Session.SetString("PasswordSesion", model.NuevaContrasena);
-
-            TempData["SuccessMessage"] = "Tu contraseña ha sido actualizada con éxito.";
+            TempData["SuccessMessage"] = $"Se envió un correo de recuperación a {model.Email}.";
             return RedirectToAction("CambiarContrasena");
         }
     }
