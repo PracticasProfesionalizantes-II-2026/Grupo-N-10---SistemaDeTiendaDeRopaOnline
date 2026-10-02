@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Hosting;
 using FRFront.Models;
 using System.Text.Json;
 using System.Net.Http.Json;
@@ -9,13 +10,20 @@ namespace FRFront.Controllers
     {
         private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonOptions;
+        private readonly IWebHostEnvironment _environment;
+        private readonly ILogger<ProductoController> _logger;
 
         // Lista estática en memoria para conservar los cambios (crear, modificar, eliminar) cuando la API no está disponible
         private static List<ProductoDto>? _productosEnMemoria;
 
-        public ProductoController(IHttpClientFactory httpClientFactory)
+        public ProductoController(
+            IHttpClientFactory httpClientFactory,
+            IWebHostEnvironment environment,
+            ILogger<ProductoController> logger)
         {
             _httpClient = httpClientFactory.CreateClient("BackendApi");
+            _environment = environment;
+            _logger = logger;
             _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
             if (_productosEnMemoria == null)
@@ -37,6 +45,13 @@ namespace FRFront.Controllers
                 {
                     var content = await response.Content.ReadAsStringAsync();
                     productos = JsonSerializer.Deserialize<List<ProductoDto>>(content, _jsonOptions) ?? new List<ProductoDto>();
+                    foreach (var producto in productos)
+                    {
+                        if (string.IsNullOrWhiteSpace(producto.Color))
+                        {
+                            producto.Color = producto.Colores ?? string.Empty;
+                        }
+                    }
                 }
             }
             catch
@@ -44,8 +59,18 @@ namespace FRFront.Controllers
                 // API no disponible
             }
 
-            // Si la API falla o no devuelve datos, utilizamos el estado actual en memoria local
-            if (!productos.Any())
+            var imagenesPersistidas = productos
+                .Where(p => !string.IsNullOrWhiteSpace(p.ImagenUrl))
+                .Select(p => p.ImagenUrl!.Trim().TrimStart('~'))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            if (productos.Any())
+            {
+                productos.AddRange(HomeController.ObtenerProductosLocalesDto()
+                    .Where(p => string.IsNullOrWhiteSpace(p.ImagenUrl) ||
+                        !imagenesPersistidas.Contains(p.ImagenUrl.Trim().TrimStart('~'))));
+            }
+            else
             {
                 productos = _productosEnMemoria!;
             }
@@ -72,8 +97,9 @@ namespace FRFront.Controllers
 
         // GET: /Producto/Crear
         [HttpGet]
-        public IActionResult Crear()
+        public async Task<IActionResult> Crear()
         {
+            await PrepararCategoriasAsync();
             return View("~/Views/Productos/Crear.cshtml");
         }
 
@@ -84,44 +110,69 @@ namespace FRFront.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Guardado local
-                nuevoProducto.Id = _productosEnMemoria!.Any() ? _productosEnMemoria!.Max(p => p.Id) + 1 : 1;
-                nuevoProducto.Disponible = true;
+                try
+                {
+                    if (imagenFile is not null && imagenFile.Length > 0)
+                    {
+                        nuevoProducto.ImagenUrl = await GuardarImagenAsync(imagenFile);
+                    }
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError(nameof(imagenFile), ex.Message);
+                    await PrepararCategoriasAsync();
+                    return View("~/Views/Productos/Crear.cshtml", nuevoProducto);
+                }
+
                 if (string.IsNullOrEmpty(nuevoProducto.ImagenUrl))
                 {
                     nuevoProducto.ImagenUrl = "/images/hombres.png";
                 }
 
-                _productosEnMemoria!.Add(nuevoProducto);
-
-                using var content = new MultipartFormDataContent();
-                content.Add(new StringContent(nuevoProducto.Nombre ?? ""), nameof(nuevoProducto.Nombre));
-                content.Add(new StringContent(nuevoProducto.Precio.ToString()), nameof(nuevoProducto.Precio));
-                content.Add(new StringContent(nuevoProducto.PrecioAnterior?.ToString() ?? ""), nameof(nuevoProducto.PrecioAnterior));
-                content.Add(new StringContent(nuevoProducto.EsOferta.ToString()), nameof(nuevoProducto.EsOferta));
-                content.Add(new StringContent(nuevoProducto.Talles ?? ""), nameof(nuevoProducto.Talles));
-                content.Add(new StringContent(nuevoProducto.Color ?? ""), nameof(nuevoProducto.Color));
-                content.Add(new StringContent(nuevoProducto.Stock.ToString()), nameof(nuevoProducto.Stock));
-                content.Add(new StringContent(nuevoProducto.Categoria ?? ""), nameof(nuevoProducto.Categoria));
-                content.Add(new StringContent(nuevoProducto.Descripcion ?? ""), nameof(nuevoProducto.Descripcion));
-
-                if (imagenFile != null && imagenFile.Length > 0)
-                {
-                    var streamContent = new StreamContent(imagenFile.OpenReadStream());
-                    content.Add(streamContent, "imagenFile", imagenFile.FileName);
-                }
-
                 try
                 {
-                    var response = await _httpClient.PostAsync("api/productos", content);
-                    if (response.IsSuccessStatusCode && nuevoProducto.EsOferta)
+                    var categoria = await ObtenerCategoriaAsync(nuevoProducto.Categoria);
+                    if (categoria == null)
                     {
-                        await EnviarDifusionOfertaAsync(nuevoProducto);
+                        categoria = await CrearCategoriaAsync(nuevoProducto.Categoria);
                     }
+
+                    if (categoria == null)
+                    {
+                        ModelState.AddModelError(nameof(nuevoProducto.Categoria), "No se pudo crear la categoría en la base de datos.");
+                        await PrepararCategoriasAsync();
+                        return View("~/Views/Productos/Crear.cshtml", nuevoProducto);
+                    }
+
+                    var response = await _httpClient.PostAsJsonAsync("api/productos", new
+                    {
+                        nuevoProducto.Nombre,
+                        nuevoProducto.Descripcion,
+                        nuevoProducto.Precio,
+                        nuevoProducto.PrecioAnterior,
+                        nuevoProducto.EsOferta,
+                        nuevoProducto.ImagenUrl,
+                        nuevoProducto.Talles,
+                        Colores = nuevoProducto.Color,
+                        EmpresaId = categoria.EmpresaId,
+                        CategoriaId = categoria.Id
+                    });
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        ModelState.AddModelError(string.Empty, "No se pudo guardar el producto en la base de datos.");
+                        await PrepararCategoriasAsync();
+                        return View("~/Views/Productos/Crear.cshtml", nuevoProducto);
+                    }
+
+                    if (nuevoProducto.EsOferta)
+                        await EnviarDifusionOfertaAsync(nuevoProducto);
                 }
-                catch
+                catch (HttpRequestException)
                 {
-                    // Manejo local
+                    ModelState.AddModelError(string.Empty, "No se pudo conectar con la API para guardar el producto.");
+                    await PrepararCategoriasAsync();
+                    return View("~/Views/Productos/Crear.cshtml", nuevoProducto);
                 }
 
                 TempData["SuccessMessage"] = "Producto creado con éxito.";
@@ -129,6 +180,67 @@ namespace FRFront.Controllers
             }
 
             return View("~/Views/Productos/Crear.cshtml", nuevoProducto);
+        }
+
+        private async Task PrepararCategoriasAsync()
+        {
+            try
+            {
+                ViewBag.Categorias = await _httpClient.GetFromJsonAsync<List<CategoriaLookupDto>>("api/categorias")
+                    ?? new List<CategoriaLookupDto>();
+                ViewBag.CategoriasError = null;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogWarning(ex, "No se pudieron cargar las categorías desde la API.");
+                ViewBag.Categorias = new List<CategoriaLookupDto>();
+                ViewBag.CategoriasError = "No se pudieron cargar las categorías. Verificá que la API esté ejecutándose.";
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "La API devolvió una respuesta inválida al cargar categorías.");
+                ViewBag.Categorias = new List<CategoriaLookupDto>();
+                ViewBag.CategoriasError = "La API devolvió una respuesta inválida al cargar las categorías.";
+            }
+        }
+
+        private async Task<CategoriaLookupDto?> CrearCategoriaAsync(string? nombre)
+        {
+            if (string.IsNullOrWhiteSpace(nombre))
+                return null;
+
+            var empresas = await _httpClient.GetFromJsonAsync<List<EmpresaLookup>>("api/empresa");
+            var empresa = empresas?.FirstOrDefault();
+            if (empresa is null)
+                return null;
+
+            var response = await _httpClient.PostAsJsonAsync("api/categorias", new
+            {
+                Nombre = nombre.Trim(),
+                EmpresaId = empresa.Id
+            });
+
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            return await response.Content.ReadFromJsonAsync<CategoriaLookupDto>(_jsonOptions);
+        }
+
+        private async Task<string> GuardarImagenAsync(IFormFile imagenFile)
+        {
+            var imagesPath = Path.Combine(_environment.WebRootPath, "images");
+            Directory.CreateDirectory(imagesPath);
+
+            var extension = Path.GetExtension(imagenFile.FileName).ToLowerInvariant();
+            var extensionesPermitidas = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif", ".jfif" };
+            if (!extensionesPermitidas.Contains(extension))
+                throw new InvalidOperationException("El formato de imagen no está permitido.");
+
+            var fileName = $"{Guid.NewGuid():N}{extension}";
+            var filePath = Path.Combine(imagesPath, fileName);
+            await using var stream = System.IO.File.Create(filePath);
+            await imagenFile.CopyToAsync(stream);
+            return $"/images/{fileName}";
         }
 
         // GET: /Producto/Modificar/5
@@ -144,6 +256,10 @@ namespace FRFront.Controllers
                 {
                     var content = await response.Content.ReadAsStringAsync();
                     producto = JsonSerializer.Deserialize<ProductoDto>(content, _jsonOptions);
+                    if (producto != null && string.IsNullOrWhiteSpace(producto.Color))
+                    {
+                        producto.Color = producto.Colores ?? string.Empty;
+                    }
                 }
             }
             catch
@@ -154,6 +270,12 @@ namespace FRFront.Controllers
             if (producto == null)
             {
                 producto = _productosEnMemoria!.FirstOrDefault(p => p.Id == id);
+            }
+
+            if (producto == null && id >= 10000)
+            {
+                producto = HomeController.ObtenerProductosLocalesDto()
+                    .FirstOrDefault(p => p.Id == id);
             }
 
             if (producto == null)
@@ -171,55 +293,106 @@ namespace FRFront.Controllers
         {
             if (ModelState.IsValid)
             {
+                try
+                {
+                    if (imagenFile is not null && imagenFile.Length > 0)
+                    {
+                        productoModificado.ImagenUrl = await GuardarImagenAsync(imagenFile);
+                    }
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError(nameof(imagenFile), ex.Message);
+                    return View("~/Views/Productos/Modificar.cshtml", productoModificado);
+                }
+
                 var productoAnterior = await ObtenerProductoApiAsync(productoModificado.Id);
-                // Actualización local
-                var productoLocal = _productosEnMemoria!.FirstOrDefault(p => p.Id == productoModificado.Id);
-                if (productoLocal != null)
+
+                var categoria = productoModificado.CategoriaId > 0
+                    ? new CategoriaLookupDto
+                    {
+                        Id = productoModificado.CategoriaId,
+                        EmpresaId = 0,
+                        Nombre = productoModificado.Categoria
+                    }
+                    : await ObtenerCategoriaAsync(productoModificado.Categoria);
+
+                if (categoria == null)
                 {
-                    productoLocal.Nombre = productoModificado.Nombre;
-                    productoLocal.Precio = productoModificado.Precio;
-                    productoLocal.Talles = productoModificado.Talles;
-                    productoLocal.Color = productoModificado.Color;
-                    productoLocal.Stock = productoModificado.Stock;
-                    productoLocal.Categoria = productoModificado.Categoria;
-                    productoLocal.Descripcion = productoModificado.Descripcion;
-                    productoLocal.Disponible = productoModificado.Disponible;
+                    ModelState.AddModelError(nameof(productoModificado.Categoria), "La categoría del producto no existe en la base de datos.");
+                    return View("~/Views/Productos/Modificar.cshtml", productoModificado);
                 }
 
-                using var content = new MultipartFormDataContent();
-                content.Add(new StringContent(productoModificado.Id.ToString()), nameof(productoModificado.Id));
-                content.Add(new StringContent(productoModificado.Nombre ?? ""), nameof(productoModificado.Nombre));
-                content.Add(new StringContent(productoModificado.Precio.ToString()), nameof(productoModificado.Precio));
-                content.Add(new StringContent(productoModificado.PrecioAnterior?.ToString() ?? ""), nameof(productoModificado.PrecioAnterior));
-                content.Add(new StringContent(productoModificado.EsOferta.ToString()), nameof(productoModificado.EsOferta));
-                content.Add(new StringContent(productoModificado.Talles ?? ""), nameof(productoModificado.Talles));
-                content.Add(new StringContent(productoModificado.Color ?? ""), nameof(productoModificado.Color));
-                content.Add(new StringContent(productoModificado.Stock.ToString()), nameof(productoModificado.Stock));
-                content.Add(new StringContent(productoModificado.Categoria ?? ""), nameof(productoModificado.Categoria));
-                content.Add(new StringContent(productoModificado.Descripcion ?? ""), nameof(productoModificado.Descripcion));
-                content.Add(new StringContent(productoModificado.Disponible.ToString()), nameof(productoModificado.Disponible));
-
-                if (imagenFile != null && imagenFile.Length > 0)
+                var request = new
                 {
-                    var streamContent = new StreamContent(imagenFile.OpenReadStream());
-                    content.Add(streamContent, "imagenFile", imagenFile.FileName);
-                }
+                    productoModificado.Nombre,
+                    productoModificado.Descripcion,
+                    productoModificado.Precio,
+                    productoModificado.PrecioAnterior,
+                    productoModificado.EsOferta,
+                    ImagenUrl = productoModificado.ImagenUrl,
+                    productoModificado.Talles,
+                    Colores = productoModificado.Color,
+                    productoModificado.CategoriaId,
+                    productoModificado.SubcategoriaId
+                };
 
                 try
                 {
-                    var response = await _httpClient.PutAsync($"api/productos/{productoModificado.Id}", content);
+                    HttpResponseMessage response;
+                    if (productoModificado.Id >= 10000)
+                    {
+                        response = await _httpClient.PostAsJsonAsync("api/productos", new
+                        {
+                            productoModificado.Nombre,
+                            productoModificado.Descripcion,
+                            productoModificado.Precio,
+                            productoModificado.PrecioAnterior,
+                            productoModificado.EsOferta,
+                            productoModificado.ImagenUrl,
+                            productoModificado.Talles,
+                            Colores = productoModificado.Color,
+                            EmpresaId = categoria.EmpresaId,
+                            CategoriaId = categoria.Id,
+                            productoModificado.SubcategoriaId
+                        });
+                    }
+                    else
+                    {
+                        response = await _httpClient.PutAsJsonAsync($"api/productos/{productoModificado.Id}", request);
+                    }
+
                     if (response.IsSuccessStatusCode && productoModificado.EsOferta && !(productoAnterior?.EsOferta ?? false))
                     {
                         await EnviarDifusionOfertaAsync(productoModificado);
                     }
+                    else if (!response.IsSuccessStatusCode)
+                    {
+                        ModelState.AddModelError(string.Empty, "No se pudo guardar el producto en la base de datos.");
+                        return View("~/Views/Productos/Modificar.cshtml", productoModificado);
+                    }
+
+                    var productoLocal = _productosEnMemoria!.FirstOrDefault(p => p.Id == productoModificado.Id);
+                    if (productoLocal != null)
+                    {
+                        productoLocal.Nombre = productoModificado.Nombre;
+                        productoLocal.Precio = productoModificado.Precio;
+                        productoLocal.Talles = productoModificado.Talles;
+                        productoLocal.Color = productoModificado.Color;
+                        productoLocal.Stock = productoModificado.Stock;
+                        productoLocal.Categoria = productoModificado.Categoria;
+                        productoLocal.Descripcion = productoModificado.Descripcion;
+                        productoLocal.Disponible = productoModificado.Disponible;
+                    }
                 }
-                catch
+                catch (HttpRequestException)
                 {
-                    // Fallback
+                    ModelState.AddModelError(string.Empty, "No se pudo conectar con la API para guardar el producto.");
+                    return View("~/Views/Productos/Modificar.cshtml", productoModificado);
                 }
 
                 TempData["SuccessMessage"] = "Producto modificado con éxito.";
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Productos", "Administrador");
             }
 
             return View("~/Views/Productos/Modificar.cshtml", productoModificado);
@@ -235,6 +408,21 @@ namespace FRFront.Controllers
             {
                 return null;
             }
+        }
+
+        private async Task<CategoriaLookupDto?> ObtenerCategoriaAsync(string? nombre)
+        {
+            if (string.IsNullOrWhiteSpace(nombre))
+                return null;
+
+            var categorias = await _httpClient.GetFromJsonAsync<List<CategoriaLookupDto>>("api/categorias");
+            return categorias?.FirstOrDefault(c =>
+                c.Nombre.Equals(nombre, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private sealed class EmpresaLookup
+        {
+            public int Id { get; set; }
         }
 
         private async Task EnviarDifusionOfertaAsync(ProductoDto producto)

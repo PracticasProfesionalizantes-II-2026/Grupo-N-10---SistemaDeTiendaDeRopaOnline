@@ -34,7 +34,10 @@ public class ProductoRepository : IProductoRepository
                 Talles = p.Talles,
                 Colores = p.Colores,
                 Empresa = p.Empresa.NombreComercial,
+                EmpresaId = p.EmpresaId,
                 Categoria = p.Categoria.Nombre,
+                CategoriaId = p.CategoriaId,
+                SubcategoriaId = p.SubcategoriaId,
                 Subcategoria = p.Subcategoria != null ? p.Subcategoria.Nombre : null
             })
             .ToListAsync();
@@ -63,7 +66,10 @@ public class ProductoRepository : IProductoRepository
             Talles = p.Talles,
             Colores = p.Colores,
             Empresa = p.Empresa.NombreComercial,
+            EmpresaId = p.EmpresaId,
             Categoria = p.Categoria.Nombre,
+            CategoriaId = p.CategoriaId,
+            SubcategoriaId = p.SubcategoriaId,
             Subcategoria = p.Subcategoria?.Nombre
         };
     }

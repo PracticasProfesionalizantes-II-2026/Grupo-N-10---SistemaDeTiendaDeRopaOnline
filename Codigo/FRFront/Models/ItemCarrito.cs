@@ -2,6 +2,7 @@ namespace FRFront.Models
 {
     public class ItemCarrito
     {
+        public int ProductoId { get; set; }
         public string Nombre { get; set; } = "";
         public string Codigo { get; set; } = "";
         public decimal Precio { get; set; }

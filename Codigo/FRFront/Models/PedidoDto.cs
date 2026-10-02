@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace FRFront.Models
 {
@@ -12,6 +13,7 @@ namespace FRFront.Models
         public string Cliente { get; set; } = string.Empty;
         public DateTime Fecha { get; set; } = DateTime.Now;
         public decimal Total { get; set; }
+        [JsonConverter(typeof(EstadoPedidoJsonConverter))]
         public string Estado { get; set; } = "CONFIRMADO"; // CONFIRMADO, EN CAMINO, ENTREGADO, CANCELADO
         public string TipoEntrega { get; set; } = "RETIRO LOCAL"; // RETIRO LOCAL, ENVÍO A DOMICILIO
         public List<DetallePedidoDto> Detalle { get; set; } = new List<DetallePedidoDto>();

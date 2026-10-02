@@ -280,6 +280,13 @@ namespace FRFront.Controllers
                     var apiProds = JsonSerializer.Deserialize<List<ProductoDto>>(content, _jsonOptions);
                     if (apiProds != null)
                     {
+                        foreach (var producto in apiProds)
+                        {
+                            if (string.IsNullOrWhiteSpace(producto.Color))
+                            {
+                                producto.Color = producto.Colores ?? string.Empty;
+                            }
+                        }
                         productos = apiProds;
                     }
                 }

@@ -25,7 +25,7 @@ public static class UsuarioEndpoints
         group.MapGet("/{id}/carrito", async (int id, AppDbContext db) =>
         {
             var carrito = await db.Usuarios.Where(usuario => usuario.Id == id).Select(usuario => usuario.CarritoJson).FirstOrDefaultAsync();
-            return carrito == null ? Results.NotFound() : Results.Content(carrito, "application/json");
+            return carrito == null ? Results.Content("[]", "application/json") : Results.Content(carrito, "application/json");
         });
 
         group.MapPut("/{id}/carrito", async (int id, CarritoRequest request, AppDbContext db) =>

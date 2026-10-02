@@ -19,16 +19,17 @@ public class AuthService : IAuthService
 
     public async Task<UsuarioResponse> RegisterAsync(RegisterRequest request)
     {
-        var existing = await _repository.GetByEmailAsync(request.Email);
+        var email = request.Email.Trim().ToLowerInvariant();
+        var existing = await _repository.GetByEmailAsync(email);
 
         if (existing != null)
-            throw new Exception("El usuario ya existe");
+            throw new InvalidOperationException("El usuario ya existe");
 
         var usuario = new Usuario
         {
             Nombre = request.Nombre,
             Apellido = request.Apellido,
-            Email = request.Email,
+            Email = email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
             Rol = Rol.Cliente,
             Telefono = request.Telefono,
@@ -51,13 +52,24 @@ public class AuthService : IAuthService
     {
         var usuario = await _repository.GetByEmailAsync(request.Email);
 
-        if (usuario == null)
+        if (usuario == null || !usuario.Activo)
             return null;
 
-        var validPassword = BCrypt.Net.BCrypt.Verify(
-            request.Password,
-            usuario.PasswordHash
-        );
+        bool validPassword;
+        try
+        {
+            validPassword = BCrypt.Net.BCrypt.Verify(request.Password, usuario.PasswordHash);
+        }
+        catch (ArgumentException)
+        {
+            // Compatibilidad única con cuentas antiguas que todavía tenían la clave sin hash.
+            validPassword = string.Equals(request.Password, usuario.PasswordHash, StringComparison.Ordinal);
+            if (validPassword)
+            {
+                usuario.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+                await _repository.UpdateAsync(usuario);
+            }
+        }
 
         if (!validPassword)
             return null;

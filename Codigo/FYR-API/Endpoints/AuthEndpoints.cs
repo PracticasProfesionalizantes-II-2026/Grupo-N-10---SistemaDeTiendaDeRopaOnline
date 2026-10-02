@@ -7,8 +7,15 @@ public static class AuthEndpoints
             
         group.MapPost("/register", async (RegisterRequest request, IAuthService service) =>
         {
-            var user = await service.RegisterAsync(request);
-            return Results.Created($"/api/usuarios/{user.IdUsuario}", user);
+            try
+            {
+                var user = await service.RegisterAsync(request);
+                return Results.Created($"/api/usuarios/{user.IdUsuario}", user);
+            }
+            catch (InvalidOperationException)
+            {
+                return Results.Conflict(new { mensaje = "El correo ya está registrado." });
+            }
         });
 
         group.MapPost("/login", async (LoginRequest request, IAuthService service) =>

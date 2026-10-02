@@ -71,6 +71,12 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await CatalogoInicialSeeder.SeedAsync(db);
+}
+
 app.UseCors("AllowFrontend");
 app.MapOpenApi();
 app.MapScalarApiReference();
@@ -118,6 +124,18 @@ app.MapGet("/api/pedidos", async (AppDbContext db) =>
     }
 });
 
+app.MapGet("/api/usuarios/{usuarioId:int}/pedidos", async (int usuarioId, AppDbContext db) =>
+{
+    var pedidos = await db.Pedidos
+        .AsNoTracking()
+        .Where(pedido => pedido.UsuarioId == usuarioId)
+        .OrderByDescending(pedido => pedido.FechaPedido)
+        .ThenByDescending(pedido => pedido.Id)
+        .ToListAsync();
+
+    return Results.Ok(pedidos);
+});
+
 // Limpieza puntual de ventas creadas sin cliente válido o sin importe.
 app.MapDelete("/api/pedidos/invalidos", async (AppDbContext db) =>
 {
@@ -160,6 +178,12 @@ app.MapPost("/api/pedidos", async (AppDbContext db, PedidoRequest pedidoDto) =>
 {
     try
     {
+        Modelos.Usuario? usuario = null;
+        if (pedidoDto.UsuarioId > 0)
+        {
+            usuario = await db.Usuarios.FirstOrDefaultAsync(u => u.Id == pedidoDto.UsuarioId);
+        }
+
         string emailBuscado = string.IsNullOrWhiteSpace(pedidoDto.Email) 
             ? $"cliente_{DateTime.Now.Ticks}@fyr.com" 
             : pedidoDto.Email.Trim().ToLower();
@@ -169,7 +193,7 @@ app.MapPost("/api/pedidos", async (AppDbContext db, PedidoRequest pedidoDto) =>
             : pedidoDto.Cliente.Trim();
 
         // Buscar o crear Usuario
-        var usuario = await db.Usuarios.FirstOrDefaultAsync(u => u.Email == emailBuscado);
+        usuario ??= await db.Usuarios.FirstOrDefaultAsync(u => u.Email == emailBuscado);
 
         if (usuario == null)
         {
@@ -215,8 +239,10 @@ app.MapPost("/api/pedidos", async (AppDbContext db, PedidoRequest pedidoDto) =>
             FechaPedido = DateTime.Now,
             Total = pedidoDto.Total,
             Estado = Entidades.Enums.EstadoPedido.Pagado,
-            MetodoPago = string.IsNullOrWhiteSpace(pedidoDto.TipoEntrega) ? "EFECTIVO" : pedidoDto.TipoEntrega,
-            DireccionEntrega = $"Cliente: {clienteNombre} - DNI: {pedidoDto.Dni} - Email: {pedidoDto.Email} - Tel: {pedidoDto.Telefono}",
+            MetodoPago = string.IsNullOrWhiteSpace(pedidoDto.MetodoPago) ? "EFECTIVO" : pedidoDto.MetodoPago,
+            DireccionEntrega = string.IsNullOrWhiteSpace(pedidoDto.DireccionEntrega)
+                ? $"Cliente: {clienteNombre} - DNI: {pedidoDto.Dni} - Email: {pedidoDto.Email} - Tel: {pedidoDto.Telefono}"
+                : pedidoDto.DireccionEntrega,
             NumeroSeguimiento = $"SEG-{Random.Shared.Next(10000, 99999)}"
         };
 
@@ -272,6 +298,10 @@ app.Run();
 
 public sealed class PedidoRequest
 {
+    public int UsuarioId { get; set; }
+    public string DireccionEntrega { get; set; } = string.Empty;
+    public string MetodoPago { get; set; } = string.Empty;
+    public string Estado { get; set; } = string.Empty;
     public string Cliente { get; set; } = string.Empty;
     public string Dni { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;

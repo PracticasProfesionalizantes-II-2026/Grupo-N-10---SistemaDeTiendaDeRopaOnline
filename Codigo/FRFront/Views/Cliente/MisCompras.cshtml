@@ -20,6 +20,7 @@
             <div class="d-flex flex-column gap-4">
                 @foreach (var pedido in Model)
                 {
+                    var identificadorDetalle = pedido.NroPedido.Replace("#", "pedido-", StringComparison.OrdinalIgnoreCase);
                     bool esEntregado = pedido.Estado.Equals("Entregado", StringComparison.OrdinalIgnoreCase);
                     string colorEstado = "text-success";
 
@@ -89,16 +90,44 @@
                                     </div>
                                 </div>
 
-                                <!-- Listado rápido de nombres y talles de productos -->
-                                <div>
+                                <button class="btn btn-outline-dark btn-sm rounded-pill mb-3" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#@identificadorDetalle"
+                                        aria-expanded="false" aria-controls="@identificadorDetalle">
+                                    Ver detalle de la compra
+                                </button>
+
+                                <div class="collapse" id="@identificadorDetalle">
                                     @if (pedido.Productos != null && pedido.Productos.Any())
                                     {
                                         @foreach (var prod in pedido.Productos)
                                         {
-                                            <div class="text-dark small fw-semibold">
-                                                • @prod.Nombre <span class="text-muted">(Talle: @prod.Talle)</span>
+                                            <div class="d-flex align-items-center gap-3 border-top py-3">
+                                                <img src="@Url.Content(prod.Imagen)" alt="@prod.Nombre"
+                                                     class="rounded border bg-light object-fit-contain"
+                                                     style="width: 64px; height: 64px;" />
+                                                <div class="flex-grow-1">
+                                                    <div class="text-dark small fw-bold">@prod.Nombre</div>
+                                                    <div class="text-muted small">
+                                                        Cantidad: @prod.Cantidad
+                                                        @if (!string.IsNullOrWhiteSpace(prod.Talle) && !prod.Talle.Equals("Único", StringComparison.OrdinalIgnoreCase))
+                                                        {
+                                                            <span> · Talle: @prod.Talle</span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <div class="text-end">
+                                                    <div class="text-muted small">Precio unitario</div>
+                                                    <div class="fw-bold">$ @prod.Precio.ToString("N2")</div>
+                                                    <div class="text-muted small">Subtotal: $ @prod.Total.ToString("N2")</div>
+                                                </div>
                                             </div>
                                         }
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted small border-top pt-3 mb-0">
+                                            El detalle de esta compra todavía no está disponible.
+                                        </p>
                                     }
                                 </div>
                             </div>

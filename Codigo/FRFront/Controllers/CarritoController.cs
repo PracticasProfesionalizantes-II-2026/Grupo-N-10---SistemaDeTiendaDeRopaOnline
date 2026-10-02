@@ -23,14 +23,15 @@ namespace FRFront.Controllers
 
         // Agregar al carrito (Funciona sin estar logueado, ahora incluye el talle)
         [HttpPost]
-        public async Task<IActionResult> Agregar(string nombre, decimal precio, string imagen, string talle, int cantidad = 1)
+        public async Task<IActionResult> Agregar(int productoId, string nombre, decimal precio, string imagen, string talle, int cantidad = 1)
         {
             var carrito = await ObtenerCarritoAsync();
             var talleNormalizado = string.IsNullOrWhiteSpace(talle) ? "Único" : talle;
 
-            // Buscamos si ya existe el producto con el MISMO NOMBRE y el MISMO TALLE
+            // El ID identifica el producto aunque existan productos con el mismo nombre.
             var itemExistente = carrito.FirstOrDefault(p => 
-                p.Nombre.Equals(nombre, StringComparison.OrdinalIgnoreCase) && 
+                (productoId > 0 && p.ProductoId == productoId ||
+                 productoId <= 0 && p.Nombre.Equals(nombre, StringComparison.OrdinalIgnoreCase)) &&
                 p.Talle.Equals(talleNormalizado, StringComparison.OrdinalIgnoreCase));
 
             if (itemExistente != null)
@@ -41,6 +42,7 @@ namespace FRFront.Controllers
             {
                 carrito.Add(new ItemCarrito
                 {
+                    ProductoId = productoId,
                     Nombre = nombre,
                     Precio = precio,
                     Imagen = imagen,
@@ -134,13 +136,18 @@ namespace FRFront.Controllers
         private async Task<List<ItemCarrito>> ObtenerCarritoAsync()
         {
             var sessionData = HttpContext.Session.GetString(UserSessionKeys.ForUser(HttpContext.Session, "CarritoSession"));
-            if (!string.IsNullOrEmpty(sessionData))
+            if (!string.IsNullOrEmpty(sessionData) &&
+                !int.TryParse(HttpContext.Session.GetString("UsuarioApiId"), out _))
             {
                 return JsonSerializer.Deserialize<List<ItemCarrito>>(sessionData) ?? new List<ItemCarrito>();
             }
 
             if (!int.TryParse(HttpContext.Session.GetString("UsuarioApiId"), out var usuarioId) || usuarioId <= 0)
+            {
+                if (!string.IsNullOrEmpty(sessionData))
+                    return JsonSerializer.Deserialize<List<ItemCarrito>>(sessionData) ?? new List<ItemCarrito>();
                 return new List<ItemCarrito>();
+            }
 
             try
             {
@@ -150,7 +157,9 @@ namespace FRFront.Controllers
             }
             catch (HttpRequestException)
             {
-                return new List<ItemCarrito>();
+                return string.IsNullOrEmpty(sessionData)
+                    ? new List<ItemCarrito>()
+                    : JsonSerializer.Deserialize<List<ItemCarrito>>(sessionData) ?? new List<ItemCarrito>();
             }
         }
 

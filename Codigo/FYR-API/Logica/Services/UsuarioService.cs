@@ -51,8 +51,7 @@ public class UsuarioService : IUsuarioService
             Apellido = request.Apellido,
             Email = request.Email,
 
-            // Después pueden reemplazar esto por un hash real
-            PasswordHash = request.Password,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
 
             Rol = request.Rol,
             Telefono = request.Telefono,

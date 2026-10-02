@@ -103,51 +103,54 @@ namespace FRFront.Controllers
             return View(await ObtenerProductosAsync());
         }
 
-        public async Task<IActionResult> Lanzamientos(string? categoria, string? color, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
+        public async Task<IActionResult> Lanzamientos(string? categoria, string? color, string? talle, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
         {
-            var productos = await AplicarOrdenAsync(AplicarFiltros(await ObtenerProductosAsync(), categoria, color, entrega, precioMin, precioMax, orden), orden);
-            PrepararFiltros(categoria, color, entrega, precioMin, precioMax, orden);
+            var ordenLanzamientos = string.IsNullOrWhiteSpace(orden) ? "masNuevos" : orden;
+            var productos = await AplicarOrdenAsync(
+                AplicarFiltros(await ObtenerProductosAsync(), categoria, color, talle, entrega, precioMin, precioMax, ordenLanzamientos),
+                ordenLanzamientos);
+            PrepararFiltros(categoria, color, talle, entrega, precioMin, precioMax, ordenLanzamientos, productos.Count == 0);
             return View(productos);
         }
 
         // Acción para la sección de HOMBRE
-        public async Task<IActionResult> Hombre(string? categoria, string? color, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
+        public async Task<IActionResult> Hombre(string? categoria, string? color, string? talle, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
         {
             var query = (await ObtenerProductosAsync()).Where(p => p.Genero.Equals("Hombre", System.StringComparison.OrdinalIgnoreCase));
             
-            var productos = await AplicarOrdenAsync(AplicarFiltros(query, categoria, color, entrega, precioMin, precioMax, orden), orden);
+            var productos = await AplicarOrdenAsync(AplicarFiltros(query, categoria, color, talle, entrega, precioMin, precioMax, orden), orden);
 
             ViewData["TituloSeccion"] = "SECCIÓN HOMBRES";
             ViewData["GeneroActual"] = "Hombre";
             
-            PrepararFiltros(categoria, color, entrega, precioMin, precioMax, orden);
+            PrepararFiltros(categoria, color, talle, entrega, precioMin, precioMax, orden, productos.Count == 0);
             return View("Seccion", productos);
         }
 
         // Acción para la sección de MUJER
-        public async Task<IActionResult> Mujer(string? categoria, string? color, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
+        public async Task<IActionResult> Mujer(string? categoria, string? color, string? talle, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
         {
             var query = (await ObtenerProductosAsync()).Where(p => p.Genero.Equals("Mujer", System.StringComparison.OrdinalIgnoreCase));
 
-            var productos = await AplicarOrdenAsync(AplicarFiltros(query, categoria, color, entrega, precioMin, precioMax, orden), orden);
+            var productos = await AplicarOrdenAsync(AplicarFiltros(query, categoria, color, talle, entrega, precioMin, precioMax, orden), orden);
 
             ViewData["TituloSeccion"] = "SECCIÓN MUJERES";
             ViewData["GeneroActual"] = "Mujer";
 
-            PrepararFiltros(categoria, color, entrega, precioMin, precioMax, orden);
+            PrepararFiltros(categoria, color, talle, entrega, precioMin, precioMax, orden, productos.Count == 0);
             return View("Seccion", productos);
         }
 
         // Acción para ver la sección de Ofertas
-        public async Task<IActionResult> Ofertas(string? categoria, string? color, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
+        public async Task<IActionResult> Ofertas(string? categoria, string? color, string? talle, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
         {
-            var productosOferta = await AplicarOrdenAsync(AplicarFiltros((await ObtenerProductosAsync()).Where(p => p.EsOferta), categoria, color, entrega, precioMin, precioMax, orden), orden);
-            PrepararFiltros(categoria, color, entrega, precioMin, precioMax, orden);
+            var productosOferta = await AplicarOrdenAsync(AplicarFiltros((await ObtenerProductosAsync()).Where(p => p.EsOferta), categoria, color, talle, entrega, precioMin, precioMax, orden), orden);
+            PrepararFiltros(categoria, color, talle, entrega, precioMin, precioMax, orden, productosOferta.Count == 0);
             return View(productosOferta);
         }
 
         // Acción para mostrar el Catálogo General
-        public async Task<IActionResult> Catalogo(string? busqueda, string? categoria, string? color, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
+        public async Task<IActionResult> Catalogo(string? busqueda, string? categoria, string? color, string? talle, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
         {
             var productos = (await ObtenerProductosAsync()).AsEnumerable();
 
@@ -156,19 +159,17 @@ namespace FRFront.Controllers
                 productos = productos.Where(producto => producto.Nombre.Contains(busqueda.Trim(), System.StringComparison.OrdinalIgnoreCase));
             }
 
-            var filtrados = await AplicarOrdenAsync(AplicarFiltros(productos, categoria, color, entrega, precioMin, precioMax, orden), orden);
+            var filtrados = await AplicarOrdenAsync(AplicarFiltros(productos, categoria, color, talle, entrega, precioMin, precioMax, orden), orden);
             ViewData["Busqueda"] = busqueda;
-            PrepararFiltros(categoria, color, entrega, precioMin, precioMax, orden);
+            PrepararFiltros(categoria, color, talle, entrega, precioMin, precioMax, orden, filtrados.Count == 0);
             return View(filtrados);
         }
 
         // Acción dinámica para el Detalle de un Producto
-        public async Task<IActionResult> DetalleProducto(string nombre)
+        public async Task<IActionResult> DetalleProducto(int id)
         {
-            string productoBuscado = !string.IsNullOrEmpty(nombre) ? nombre.ToUpper().Trim() : "BUZO VCV";
-            
             var productos = await ObtenerProductosAsync();
-            var productoEncontrado = productos.FirstOrDefault(p => p.Nombre.ToUpper() == productoBuscado) ?? productos.FirstOrDefault();
+            var productoEncontrado = productos.FirstOrDefault(p => p.Id == id);
 
             if (productoEncontrado == null)
             {
@@ -176,6 +177,7 @@ namespace FRFront.Controllers
             }
 
             ViewData["Nombre"] = productoEncontrado.Nombre;
+            ViewData["ProductoId"] = productoEncontrado.Id;
             ViewData["Codigo"] = productoEncontrado.Codigo;
             ViewData["Precio"] = $"$ {productoEncontrado.Precio:N2}";
             ViewData["PrecioNumerico"] = productoEncontrado.Precio; // <--- AQUÍ SE AGREGA EL VALOR NUMÉRICO PARA EL CARRITO
@@ -186,6 +188,10 @@ namespace FRFront.Controllers
             ViewData["Descripcion"] = productoEncontrado.Descripcion;
             ViewData["Imagen"] = productoEncontrado.Imagen;
             ViewData["Talles"] = productoEncontrado.Talles;
+            ViewData["Colores"] = productoEncontrado.Color
+                .Split(new[] { ',', ';', '/', '|' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
             ViewData["SinStock"] = productoEncontrado.SinStock;
 
             return View();
@@ -241,11 +247,11 @@ namespace FRFront.Controllers
 
         private static void AgregarProductosLocalesSinRepetir(List<Producto> productos)
         {
-            foreach (var productoLocal in _productos)
+            foreach (var (productoLocal, indice) in _productos.Select((producto, indice) => (producto, indice)))
             {
                 var imagenRepetida = productos.Any(actual => NormalizarImagen(actual.Imagen).Equals(NormalizarImagen(productoLocal.Imagen), StringComparison.OrdinalIgnoreCase));
                 if (!imagenRepetida)
-                    AgregarProductoRespaldo(productos, productoLocal);
+                    AgregarProductoRespaldo(productos, productoLocal, 10000 + indice);
             }
         }
 
@@ -254,11 +260,11 @@ namespace FRFront.Controllers
             return (imagen ?? string.Empty).Replace("~/", "/", StringComparison.OrdinalIgnoreCase).Trim();
         }
 
-        private static void AgregarProductoRespaldo(List<Producto> productos, Producto respaldo)
+        private static void AgregarProductoRespaldo(List<Producto> productos, Producto respaldo, int id)
         {
             productos.Add(new Producto
             {
-                Id = respaldo.Id,
+                Id = id,
                 Nombre = respaldo.Nombre,
                 Codigo = respaldo.Codigo,
                 Precio = respaldo.Precio,
@@ -275,7 +281,7 @@ namespace FRFront.Controllers
             });
         }
 
-        private static List<Producto> AplicarFiltros(IEnumerable<Producto> productos, string? categoria, string? color, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
+        private static List<Producto> AplicarFiltros(IEnumerable<Producto> productos, string? categoria, string? color, string? talle, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
         {
             var resultado = productos;
             if (!string.IsNullOrWhiteSpace(categoria))
@@ -290,6 +296,8 @@ namespace FRFront.Controllers
             if (!string.IsNullOrWhiteSpace(color))
                 resultado = resultado.Where(p => p.Color.Split(',', ';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                     .Any(colorProducto => colorProducto.Equals(color.Trim(), StringComparison.OrdinalIgnoreCase)));
+            if (!string.IsNullOrWhiteSpace(talle))
+                resultado = resultado.Where(p => p.Talles.Any(t => t.Equals(talle.Trim(), StringComparison.OrdinalIgnoreCase)));
             if (entrega.HasValue)
                 resultado = resultado.Where(p => p.TiempoEntregaDias <= entrega.Value);
             if (precioMin.HasValue)
@@ -305,6 +313,14 @@ namespace FRFront.Controllers
 
         private async Task<List<Producto>> AplicarOrdenAsync(List<Producto> productos, string? orden)
         {
+            if (string.Equals(orden, "masNuevos", StringComparison.OrdinalIgnoreCase))
+            {
+                return productos
+                    .OrderByDescending(producto => producto.Id < 10000)
+                    .ThenByDescending(producto => producto.Id)
+                    .ToList();
+            }
+
             if (!string.Equals(orden, "masComprados", StringComparison.OrdinalIgnoreCase))
             {
                 return orden?.ToLowerInvariant() switch
@@ -343,14 +359,17 @@ namespace FRFront.Controllers
                 .ToList();
         }
 
-        private void PrepararFiltros(string? categoria, string? color, int? entrega, decimal? precioMin, decimal? precioMax, string? orden)
+        private void PrepararFiltros(string? categoria, string? color, string? talle, int? entrega, decimal? precioMin, decimal? precioMax, string? orden, bool sinResultados)
         {
             ViewData["Categoria"] = categoria;
             ViewData["Color"] = color;
+            ViewData["Talle"] = talle;
             ViewData["Entrega"] = entrega;
             ViewData["PrecioMin"] = precioMin;
             ViewData["PrecioMax"] = precioMax;
             ViewData["Orden"] = orden;
+            ViewData["FiltroNoEncontrado"] = sinResultados &&
+                (!string.IsNullOrWhiteSpace(categoria) || !string.IsNullOrWhiteSpace(color) || !string.IsNullOrWhiteSpace(talle));
         }
 
         [HttpGet]

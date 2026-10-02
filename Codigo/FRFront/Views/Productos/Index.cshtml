@@ -143,15 +143,6 @@
             border-radius: 20px;
         }
 
-        .color-dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 6px;
-            border: 1px solid rgba(0,0,0,0.15);
-            vertical-align: middle;
-        }
     </style>
 </head>
 <body>
@@ -189,7 +180,7 @@
                 <p class="text-muted mb-0">Administra el catálogo de la tienda, stock y precios</p>
             </div>
             <div>
-                <a asp-controller="Administrador" asp-action="CrearProducto" class="btn-add-product d-inline-flex align-items-center gap-2 shadow-sm">
+                <a asp-controller="Producto" asp-action="Crear" class="btn-add-product d-inline-flex align-items-center gap-2 shadow-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
                         <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z"/>
                     </svg>
@@ -263,14 +254,6 @@
                                 <span class="badge badge-talle">@prod.Talles</span>
                             </div>
                             <div class="col-12 col-md-2 mb-2 mb-md-0 text-center">
-                                @{
-                                    string colorLower = prod.Color?.ToLower() ?? "";
-                                    string dotColor = colorLower == "beige" ? "#f5f5dc" : 
-                                                     colorLower == "negro" ? "#000000" : 
-                                                     colorLower == "verde" ? "#2d6a4f" : 
-                                                     colorLower == "blanco" ? "#ffffff" : "#6c757d";
-                                }
-                                <span class="color-dot" style="background-color: @dotColor;"></span>
                                 <span class="small fw-bold text-uppercase">@prod.Color</span>
                             </div>
                             <div class="col-12 col-md-1 mb-2 mb-md-0 text-center">
@@ -280,7 +263,7 @@
                             </div>
                             <div class="col-12 col-md-1 text-end d-flex justify-content-center justify-content-md-end gap-1">
                                 <!-- MODIFICAR -->
-                                <a asp-controller="Administrador" asp-action="EditarProducto" asp-route-id="@prod.Id" class="action-btn" title="Modificar">
+                                <a asp-controller="Producto" asp-action="Modificar" asp-route-id="@prod.Id" class="action-btn" title="Modificar">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -322,7 +305,7 @@
                     <h3 class="fw-bold text-uppercase mb-2">ELIMINAR PRODUCTO</h3>
                     <p class="text-muted mb-4">¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.</p>
                     
-                    <form asp-controller="Administrador" asp-action="EliminarProducto" method="post">
+                    <form asp-controller="Producto" asp-action="Eliminar" method="post">
                         @Html.AntiForgeryToken()
                         <input type="hidden" id="productoIdEliminar" name="id" />
                         <div class="d-flex justify-content-center gap-2">

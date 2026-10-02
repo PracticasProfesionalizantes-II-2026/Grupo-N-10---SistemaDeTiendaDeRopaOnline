@@ -22,6 +22,12 @@ public class ProductoResponse
 
     public string Categoria { get; set; } = string.Empty;
 
+    public int EmpresaId { get; set; }
+
+    public int CategoriaId { get; set; }
+
+    public int? SubcategoriaId { get; set; }
+
     public string? Subcategoria { get; set; }
 
     public string Empresa { get; set; } = string.Empty;

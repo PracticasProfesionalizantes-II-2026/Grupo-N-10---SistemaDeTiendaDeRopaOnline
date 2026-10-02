@@ -5,6 +5,9 @@
     ViewData["Title"] = "Modificar Producto";
     var usuarioLogueado = Context.Session.GetString("UsuarioSesion");
     var nombreUsuario = !string.IsNullOrEmpty(usuarioLogueado) ? usuarioLogueado.Split('@')[0] : "Administrador";
+    var imagenProducto = string.IsNullOrWhiteSpace(Model.ImagenUrl)
+        ? "/images/logo-fr.png"
+        : Model.ImagenUrl.Replace("~/", "/", StringComparison.OrdinalIgnoreCase);
 }
 
 <!DOCTYPE html>
@@ -143,6 +146,11 @@
         <form id="formModificarProducto" method="post" asp-controller="Producto" asp-action="Modificar" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
             <input asp-for="Id" type="hidden" />
+            <input asp-for="Descripcion" type="hidden" />
+            <input asp-for="ImagenUrl" type="hidden" />
+            <input asp-for="Colores" type="hidden" />
+            <input asp-for="CategoriaId" type="hidden" />
+            <input asp-for="SubcategoriaId" type="hidden" />
             <div class="edit-card">
                 <div class="row g-4">
                     
@@ -150,9 +158,9 @@
                     <div class="col-md-5">
                         <label class="form-label fw-bold">IMAGEN DEL PRODUCTO</label>
                         <div class="img-preview-container mb-3">
-                            <img src="~/images/hombres.png" alt="Buzo VCV" class="img-preview" id="previewImg" />
+                            <img src="@Url.Content(imagenProducto)" alt="@Model.Nombre" class="img-preview" id="previewImg" />
                         </div>
-                        <input type="file" class="form-control form-control-custom" id="inputImg" accept="image/*" />
+                        <input type="file" class="form-control form-control-custom" id="inputImg" name="imagenFile" accept="image/*" />
                         <span class="form-text text-muted small ms-2">Formatos recomendados: .PNG, .JPG</span>
                     </div>
 
@@ -161,17 +169,17 @@
                         
                         <div class="mb-3">
                             <label class="form-label fw-bold">NOMBRE DEL PRODUCTO</label>
-                            <input type="text" class="form-control form-control-custom" value="BUZO VCV" placeholder="Ej: BUZO VCV" required />
+                            <input asp-for="Nombre" type="text" class="form-control form-control-custom" placeholder="Ej: BUZO VCV" required />
                         </div>
 
                         <div class="row g-3 mb-3">
                             <div class="col-6">
                                 <label class="form-label fw-bold">PRECIO ($)</label>
-                                <input type="text" class="form-control form-control-custom" value="80.000,00" required />
+                                <input asp-for="Precio" type="number" step="0.01" class="form-control form-control-custom" required />
                             </div>
                             <div class="col-6">
                                 <label class="form-label fw-bold">STOCK (UNIDADES)</label>
-                                <input type="number" class="form-control form-control-custom" value="10" min="0" required />
+                                <input asp-for="Stock" type="number" class="form-control form-control-custom" min="0" required />
                             </div>
                         </div>
 
@@ -190,21 +198,22 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-bold d-block">TALLES DISPONIBLES</label>
+                            <input asp-for="Talles" type="hidden" id="talles" />
                             <div class="d-flex flex-wrap gap-2 mt-1">
                                 <div>
-                                    <input type="checkbox" id="sizeS" class="size-checkbox" />
+                                    <input type="checkbox" id="sizeS" class="size-checkbox" value="S" />
                                     <label for="sizeS" class="size-label">S</label>
                                 </div>
                                 <div>
-                                    <input type="checkbox" id="sizeM" class="size-checkbox" checked />
+                                    <input type="checkbox" id="sizeM" class="size-checkbox" value="M" />
                                     <label for="sizeM" class="size-label">M</label>
                                 </div>
                                 <div>
-                                    <input type="checkbox" id="sizeL" class="size-checkbox" checked />
+                                    <input type="checkbox" id="sizeL" class="size-checkbox" value="L" />
                                     <label for="sizeL" class="size-label">L</label>
                                 </div>
                                 <div>
-                                    <input type="checkbox" id="sizeXL" class="size-checkbox" />
+                                    <input type="checkbox" id="sizeXL" class="size-checkbox" value="XL" />
                                     <label for="sizeXL" class="size-label">XL</label>
                                 </div>
                             </div>
@@ -212,18 +221,40 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">COLOR</label>
-                            <select class="form-select form-select-custom">
-                                <option value="BEIGE" selected>BEIGE</option>
-                                <option value="NEGRO">NEGRO</option>
-                                <option value="BLANCO">BLANCO</option>
-                                <option value="GRIS">GRIS</option>
-                            </select>
+                            <input asp-for="Color" class="form-control form-control-custom" list="coloresDisponibles" placeholder="Buscá o escribí un color" />
+                            <datalist id="coloresDisponibles">
+                                <option value="Negro"></option>
+                                <option value="Blanco"></option>
+                                <option value="Gris"></option>
+                                <option value="Rojo"></option>
+                                <option value="Bordó"></option>
+                                <option value="Rosa"></option>
+                                <option value="Fucsia"></option>
+                                <option value="Naranja"></option>
+                                <option value="Amarillo"></option>
+                                <option value="Verde"></option>
+                                <option value="Verde oliva"></option>
+                                <option value="Turquesa"></option>
+                                <option value="Celeste"></option>
+                                <option value="Azul"></option>
+                                <option value="Azul marino"></option>
+                                <option value="Violeta"></option>
+                                <option value="Lila"></option>
+                                <option value="Marrón"></option>
+                                <option value="Beige"></option>
+                                <option value="Crema"></option>
+                                <option value="Dorado"></option>
+                                <option value="Plateado"></option>
+                                <option value="Natural"></option>
+                                <option value="Multicolor"></option>
+                            </datalist>
+                            <div class="form-text">Podés seleccionar un color o escribir uno personalizado.</div>
                         </div>
 
                         <div class="mb-4">
                             <label class="form-label fw-bold d-block">ESTADO DEL PRODUCTO</label>
                             <div class="form-check form-switch d-flex align-items-center gap-2 mt-2">
-                                <input class="form-check-input" type="checkbox" id="estadoDisponible" checked />
+                                <input asp-for="Disponible" class="form-check-input" type="checkbox" id="estadoDisponible" />
                                 <label class="form-check-label fw-bold text-success" for="estadoDisponible" id="estadoText">DISPONIBLE</label>
                             </div>
                         </div>
@@ -289,10 +320,15 @@
         });
 
         // VÍNCULO DEL MODAL AL BOTÓN GUARDAR (FORMULARIO)
-        document.querySelector('form').addEventListener('submit', function (e) {
-            e.preventDefault();
-            var modal = new bootstrap.Modal(document.getElementById('modalModificado'));
-            modal.show();
+        const tallesInput = document.getElementById('talles');
+        const tallesIniciales = (tallesInput.value || '').split(',').map(talle => talle.trim().toUpperCase());
+        document.querySelectorAll('.size-checkbox').forEach(function (checkbox) {
+            checkbox.checked = tallesIniciales.includes(checkbox.value);
+            checkbox.addEventListener('change', function () {
+                tallesInput.value = Array.from(document.querySelectorAll('.size-checkbox:checked'))
+                    .map(item => item.value)
+                    .join(',');
+            });
         });
     </script>
 </body>

@@ -4,12 +4,27 @@
     var busqueda = ViewData["Busqueda"]?.ToString();
     var categoria = ViewData["Categoria"]?.ToString();
     var color = ViewData["Color"]?.ToString();
-    var entrega = ViewData["Entrega"]?.ToString();
+    var talle = ViewData["Talle"]?.ToString();
     var precioMin = ViewData["PrecioMin"]?.ToString();
     var precioMax = ViewData["PrecioMax"]?.ToString();
     var orden = ViewData["Orden"]?.ToString();
     var colores = Model.SelectMany(p => (p.Color ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         .Where(c => !string.IsNullOrWhiteSpace(c)).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(c => c).ToList();
+    if (!string.IsNullOrWhiteSpace(color) && !colores.Contains(color, StringComparer.OrdinalIgnoreCase))
+    {
+        colores.Add(color);
+    }
+    var talles = Model.SelectMany(p => p.Talles ?? Array.Empty<string>())
+        .Where(t => !string.IsNullOrWhiteSpace(t)).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(t => t).ToList();
+    foreach (var talleBase in new[] { "XS", "S", "M", "L", "XL", "XXL", "Único" })
+    {
+        if (!talles.Contains(talleBase, StringComparer.OrdinalIgnoreCase))
+            talles.Add(talleBase);
+    }
+    if (!string.IsNullOrWhiteSpace(talle) && !talles.Contains(talle, StringComparer.OrdinalIgnoreCase))
+    {
+        talles.Add(talle);
+    }
 }
 
 <div class="container-fluid px-4 my-4">
@@ -22,31 +37,47 @@
                 }
                 <div class="mb-3">
                     <label class="form-label fw-bold text-uppercase small">Categoría</label>
-                    <select name="categoria" class="form-select">
+                    <input name="categoria" value="@categoria" class="form-control mb-2" list="categoriasDisponibles" placeholder="Elegí o escribí una categoría" />
+                    <datalist id="categoriasDisponibles">
+                        @foreach (var item in new[] { "Remeras", "Pantalones", "Buzos", "Camperas", "Abrigos", "Polleras", "Vestidos" })
+                        {
+                            <option value="@item"></option>
+                        }
+                    </datalist>
+                    <select class="form-select" onchange="this.form.categoria.value=this.value">
                         <option value="">Todas</option>
                         @foreach (var item in new[] { "Remeras", "Pantalones", "Buzos", "Camperas", "Abrigos", "Polleras", "Vestidos" })
                         {
-                            <option value="@item" selected="@(categoria == item)">@item</option>
+                            <option value="@item">@item</option>
                         }
                     </select>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold text-uppercase small">Color</label>
-                    <select name="color" class="form-select">
+                    <input name="color" value="@color" class="form-control mb-2" list="coloresDisponibles" placeholder="Elegí o escribí un color" />
+                    <datalist id="coloresDisponibles">
+                        @foreach (var item in colores)
+                        {
+                            <option value="@item"></option>
+                        }
+                    </datalist>
+                    <select class="form-select" onchange="this.form.color.value=this.value">
                         <option value="">Todos</option>
                         @foreach (var item in colores)
                         {
-                            <option value="@item" selected="@(string.Equals(color, item, StringComparison.OrdinalIgnoreCase))">@item</option>
+                            <option value="@item">@item</option>
                         }
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-bold text-uppercase small">Tiempo de entrega</label>
-                    <select name="entrega" class="form-select">
-                        <option value="">Cualquier plazo</option>
-                        <option value="2" selected="@(entrega == "2")">Hasta 2 días</option>
-                        <option value="7" selected="@(entrega == "7")">Hasta 7 días</option>
-                    </select>
+                    <label class="form-label fw-bold text-uppercase small">Talle</label>
+                    <input name="talle" value="@talle" class="form-control mb-2" list="tallesDisponibles" placeholder="Elegí o escribí un talle" />
+                    <datalist id="tallesDisponibles">
+                        @foreach (var item in talles)
+                        {
+                            <option value="@item"></option>
+                        }
+                    </datalist>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold text-uppercase small">Rango de precio</label>
@@ -58,6 +89,7 @@
                 <div class="mb-3">
                     <label class="form-label fw-bold text-uppercase small">Ordenar por</label>
                     <select name="orden" class="form-select">
+                        <option value="masNuevos" selected="@(orden == "masNuevos")">Más nuevos</option>
                         <option value="masComprados" selected="@(orden == "masComprados")">Más comprados</option>
                         <option value="precioAsc" selected="@(orden == "precioAsc")">Más barato a más caro</option>
                         <option value="precioDesc" selected="@(orden == "precioDesc")">Más caro a más barato</option>
@@ -75,7 +107,7 @@
                     @foreach (var prod in Model)
                     {
                         <div class="col-md-4 col-sm-6">
-                            <a asp-controller="Home" asp-action="DetalleProducto" asp-route-nombre="@prod.Nombre" class="card h-100 text-decoration-none text-dark border shadow-sm bg-light" style="border-radius: 10px; overflow: hidden;">
+                            <a asp-controller="Home" asp-action="DetalleProducto" asp-route-id="@prod.Id" class="card h-100 text-decoration-none text-dark border shadow-sm bg-light" style="border-radius: 10px; overflow: hidden;">
                                 <div class="bg-light p-3 text-center position-relative" style="height: 250px; display: flex; align-items: center; justify-content: center;">
                                     @if (prod.SinStock)
                                     {
@@ -101,7 +133,9 @@
                 }
                 else
                 {
-                    <div class="col-12 text-center py-5"><p class="text-muted">No hay productos que coincidan con los filtros.</p></div>
+                    <div class="col-12 text-center py-5">
+                        <p class="text-muted">@(ViewData["FiltroNoEncontrado"] is true ? "No se encontró ningún producto con el filtro ingresado." : "No hay productos que coincidan con los filtros.")</p>
+                    </div>
                 }
             </div>
         </section>

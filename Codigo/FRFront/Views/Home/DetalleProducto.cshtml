@@ -9,6 +9,7 @@ dddddddd
     <!-- Formulario único para enviar los datos al CarritoController -->
     <form asp-controller="Carrito" asp-action="Agregar" method="post" id="formDetalleProducto">
         <!-- Campos ocultos que viajarán al controlador -->
+        <input type="hidden" name="productoId" value="@ViewData["ProductoId"]" />
         <input type="hidden" name="nombre" value="@ViewData["Nombre"]" />
         <input type="hidden" name="precio" value="@ViewData["PrecioNumerico"]" />
         <input type="hidden" name="imagen" value="@ViewData["Imagen"]" />
@@ -51,6 +52,18 @@ dddddddd
                             }
                         }
                     </div>
+                    <div id="errorTalle" class="alert alert-warning mt-3 mb-0 d-none" role="alert">
+                        Elegí un talle para continuar con la compra.
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="fw-bold small text-uppercase d-block mb-2">Color:</label>
+                    <span class="badge bg-light text-dark border px-3 py-2 text-uppercase">
+                        @(ViewData["Colores"] is string[] coloresVisibles && coloresVisibles.Length > 0
+                            ? string.Join(", ", coloresVisibles)
+                            : "No especificado")
+                    </span>
                 </div>
 
                 <!-- Cantidad -->
@@ -133,6 +146,12 @@ dddddddd
 
             // BOTÓN COMPRAR (Envía el formulario y redirige directo al carrito)
             $('#btnComprar').click(function () {
+                if ($('input[name="talleOptions"]:checked').length === 0) {
+                    $('#errorTalle').removeClass('d-none');
+                    $('#grupoTalles').addClass('border border-warning rounded p-2');
+                    return;
+                }
+
                 $('#formDetalleProducto').submit();
             });
 

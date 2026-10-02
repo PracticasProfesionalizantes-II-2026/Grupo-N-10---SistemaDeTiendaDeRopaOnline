@@ -193,18 +193,21 @@ namespace FRFront.Controllers
 
                 foreach (var pedido in pedidos)
                 {
-                    var detalles = await _httpClient.GetFromJsonAsync<List<DetallePedidoDto>>($"api/pedidos/{pedido.IdPedido}/detalles") ?? new List<DetallePedidoDto>();
+                    var pedidoId = pedido.Id > 0 ? pedido.Id : pedido.IdPedido;
+                    var detalles = pedidoId > 0
+                        ? await _httpClient.GetFromJsonAsync<List<DetallePedidoDto>>($"api/pedidos/{pedidoId}/detalles") ?? new List<DetallePedidoDto>()
+                        : new List<DetallePedidoDto>();
                     var items = detalles
-                        .Where(detalle => productosPorId.ContainsKey(detalle.ProductoId))
                         .Select(detalle =>
                         {
-                            var producto = productosPorId[detalle.ProductoId];
+                            productosPorId.TryGetValue(detalle.ProductoId, out var producto);
                             return new ItemCarrito
                             {
-                                Nombre = producto.Nombre,
-                                Codigo = producto.Id.ToString(),
+                                ProductoId = detalle.ProductoId,
+                                Nombre = producto?.Nombre ?? detalle.ProductoNombre ?? "Producto no disponible",
+                                Codigo = detalle.ProductoId.ToString(),
                                 Precio = detalle.PrecioUnitario,
-                                Imagen = string.IsNullOrWhiteSpace(producto.ImagenUrl) ? "~/images/logo-fr.png" : producto.ImagenUrl,
+                                Imagen = string.IsNullOrWhiteSpace(producto?.ImagenUrl) ? "~/images/logo-fr.png" : producto.ImagenUrl,
                                 Cantidad = detalle.Cantidad
                             };
                         }).ToList();
@@ -232,9 +235,6 @@ namespace FRFront.Controllers
 
         private async Task<int> ObtenerUsuarioApiIdAsync(string email)
         {
-            if (int.TryParse(HttpContext.Session.GetString("UsuarioApiId"), out var usuarioApiId) && usuarioApiId > 0)
-                return usuarioApiId;
-
             var usuarios = await _httpClient.GetFromJsonAsync<List<UsuarioSimpleDto>>("api/usuarios") ?? new List<UsuarioSimpleDto>();
             var usuario = usuarios.FirstOrDefault(item => string.Equals(item.Email, email, StringComparison.OrdinalIgnoreCase));
             var id = usuario?.ResolveId() ?? 0;

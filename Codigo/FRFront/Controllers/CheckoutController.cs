@@ -126,13 +126,22 @@ namespace FRFront.Controllers
                 }
 
                 var productosResponse = await _httpClient.GetFromJsonAsync<List<ProductoDto>>("api/productos") ?? new List<ProductoDto>();
+                var productosPorId = productosResponse
+                    .Where(producto => producto.Id > 0)
+                    .GroupBy(producto => producto.Id)
+                    .ToDictionary(grupo => grupo.Key, grupo => grupo.First());
                 var productosPorNombre = productosResponse
                     .Where(producto => !string.IsNullOrWhiteSpace(producto.Nombre))
-                    .ToDictionary(producto => producto.Nombre.Trim(), StringComparer.OrdinalIgnoreCase);
+                    .GroupBy(producto => producto.Nombre.Trim(), StringComparer.OrdinalIgnoreCase)
+                    .ToDictionary(grupo => grupo.Key, grupo => grupo.First(), StringComparer.OrdinalIgnoreCase);
 
                 var detalles = carrito.Select(item => new
                 {
-                    ProductoId = productosPorNombre.TryGetValue(item.Nombre.Trim(), out var producto) ? producto.Id : 0,
+                    ProductoId = item.ProductoId > 0 && productosPorId.TryGetValue(item.ProductoId, out var productoPorId)
+                        ? productoPorId.Id
+                        : productosPorNombre.TryGetValue(item.Nombre.Trim(), out var productoPorNombre)
+                            ? productoPorNombre.Id
+                            : 0,
                     Cantidad = item.Cantidad,
                     PrecioUnitario = item.Precio
                 }).ToList();
@@ -198,6 +207,18 @@ namespace FRFront.Controllers
                         {
                             // El pedido ya fue creado; el historial de sesión conserva los productos comprados.
                         }
+                    }
+
+                    // El carrito persistido también debe quedar vacío después de una compra confirmada.
+                    try
+                    {
+                        await _httpClient.PutAsJsonAsync(
+                            $"api/usuarios/{usuarioApi.ResolveId()}/carrito",
+                            new { Contenido = "[]" });
+                    }
+                    catch (HttpRequestException)
+                    {
+                        // La compra ya fue guardada; se informa para que pueda reintentarse la sincronización.
                     }
                 }
             }
