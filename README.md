@@ -33,4 +33,3 @@ Funcionalidades previstas Alta, baja y modificación de productos (por ejemplo: 
 
 [Documentación de Endpoints de API](https://docs.google.com/document/d/1nY_3ClcNVSr5X0UoFQVAcXR8z_F3VfA1OR9ROWO5bpo/edit?usp=sharing)
 
-[Codigo 2026 (APIS) Visual Code]()
