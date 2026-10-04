@@ -3,7 +3,7 @@ Francisco Aguirre y Rocio Milanese
 
 TP_GestionDeTiendaDeRopa_Aguirre_Milanese
 
-Descripción del sistema
+DESCRIPCIÓN DEL SISTEMA
 
 El sistema permite gestionar una tienda de ropa, administrando los productos disponibles, los clientes y las ventas realizadas. 
 
