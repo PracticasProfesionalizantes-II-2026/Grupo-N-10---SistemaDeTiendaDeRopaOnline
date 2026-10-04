@@ -2,20 +2,34 @@
 Francisco Aguirre y Rocio Milanese
 
 TP_GestionDeTiendaDeRopa_Aguirre_Milanese
+
 Descripción del sistema
 
-El sistema permite gestionar una tienda de ropa, administrando los productos disponibles, los clientes y las ventas realizadas. Su objetivo principal es facilitar el control del stock y el registro de las operaciones de manera simple y ordenada.
+El sistema permite gestionar una tienda de ropa, administrando los productos disponibles, los clientes y las ventas realizadas. 
 
-Objetivos principales
+Su objetivo principal es facilitar el control del stock y el registro de las operaciones de manera simple y ordenada.
+
+Objetivos principales:
+
+
 Mantener un registro actualizado de los productos que comercializa la tienda.
+
 Registrar las ventas realizadas a los clientes.
+
 Consultar información útil a través de reportes simples.
-Funcionalidades previstas
+
+Funcionalidades previstas:
+
 Gestión de productos: alta, baja y modificación de productos (por ejemplo: remeras, pantalones, buzos, etc.).
+
 Gestión de clientes: alta, baja y modificación de clientes.
+
 Registro de ventas: registro de las ventas realizadas, seleccionando el cliente y los productos correspondientes.
+
 Reportes:
+
 Listado de productos con stock bajo.
+
 Listado de ventas realizadas en un período de tiempo determinado.
 
 2025
