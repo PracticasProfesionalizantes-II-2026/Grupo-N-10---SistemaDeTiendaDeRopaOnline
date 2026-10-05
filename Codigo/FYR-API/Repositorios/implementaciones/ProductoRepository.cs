@@ -38,7 +38,9 @@ public class ProductoRepository : IProductoRepository
                 Categoria = p.Categoria.Nombre,
                 CategoriaId = p.CategoriaId,
                 SubcategoriaId = p.SubcategoriaId,
-                Subcategoria = p.Subcategoria != null ? p.Subcategoria.Nombre : null
+                Subcategoria = p.Subcategoria != null ? p.Subcategoria.Nombre : null,
+                Activo = p.Activo,
+                Stock = p.Stocks.Sum(stock => stock.CantidadDisponible)
             })
             .ToListAsync();
     }
@@ -49,6 +51,7 @@ public class ProductoRepository : IProductoRepository
             .Include(x => x.Empresa)
             .Include(x => x.Categoria)
             .Include(x => x.Subcategoria)
+            .Include(x => x.Stocks)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (p == null)
@@ -70,7 +73,9 @@ public class ProductoRepository : IProductoRepository
             Categoria = p.Categoria.Nombre,
             CategoriaId = p.CategoriaId,
             SubcategoriaId = p.SubcategoriaId,
-            Subcategoria = p.Subcategoria?.Nombre
+            Subcategoria = p.Subcategoria?.Nombre,
+            Activo = p.Activo,
+            Stock = p.Stocks.Sum(stock => stock.CantidadDisponible)
         };
     }
 
@@ -95,6 +100,8 @@ public class ProductoRepository : IProductoRepository
 
         await _context.SaveChangesAsync();
 
+        await GuardarStockAsync(producto.Id, request.EmpresaId, request.Stock);
+
         return (await GetByIdAsync(producto.Id))!;
     }
 
@@ -118,7 +125,53 @@ public class ProductoRepository : IProductoRepository
 
         await _context.SaveChangesAsync();
 
+        await GuardarStockAsync(producto.Id, null, request.Stock);
+
         return true;
+    }
+
+    private async Task GuardarStockAsync(int productoId, int? empresaId, int cantidad)
+    {
+        var stock = await _context.Stocks
+            .FirstOrDefaultAsync(item => item.ProductoId == productoId);
+
+        if (stock is null)
+        {
+            var sucursal = await _context.Sucursales
+                .FirstOrDefaultAsync(item => !empresaId.HasValue || item.EmpresaId == empresaId.Value);
+
+            if (sucursal is null)
+            {
+                if (!empresaId.HasValue)
+                    return;
+
+                sucursal = new Sucursal
+                {
+                    Nombre = "Sucursal principal",
+                    Direccion = "Sin especificar",
+                    EmpresaId = empresaId.Value
+                };
+                _context.Sucursales.Add(sucursal);
+                await _context.SaveChangesAsync();
+            }
+
+            stock = new Stock
+            {
+                ProductoId = productoId,
+                SucursalId = sucursal.Id,
+                CantidadDisponible = cantidad,
+                Estado = cantidad > 0 ? Entidades.Enums.EstadoStock.Disponible : Entidades.Enums.EstadoStock.Agotado
+            };
+            _context.Stocks.Add(stock);
+        }
+        else
+        {
+            stock.CantidadDisponible = cantidad;
+            stock.Estado = cantidad > 0 ? Entidades.Enums.EstadoStock.Disponible : Entidades.Enums.EstadoStock.Agotado;
+            stock.FechaActualizacion = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
     }
 
     public async Task<bool> DeleteAsync(int id)
@@ -128,7 +181,7 @@ public class ProductoRepository : IProductoRepository
         if (producto == null)
             return false;
 
-        _context.Productos.Remove(producto);
+        producto.Activo = false;
 
         await _context.SaveChangesAsync();
 

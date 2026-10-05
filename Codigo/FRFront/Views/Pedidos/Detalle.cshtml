@@ -151,12 +151,14 @@
                         <select name="nuevoEstado" class="form-select form-select-custom shadow-sm" required>
                             @if (esPanelCajero)
                             {
-                                <option value="PAGADO" selected="selected">PAGADO</option>
+                                <option value="PAGO EN CUOTAS" selected="@(Model.Estado.ToUpper() == "PAGO EN CUOTAS")">PAGO EN CUOTAS</option>
+                                <option value="PAGADO" selected="@(Model.Estado.ToUpper() == "PAGADO")">PAGADO</option>
                             }
                             else
                             {
                                 <option value="CONFIRMADO" selected="@(Model.Estado.ToUpper() == "CONFIRMADO")">CONFIRMADO</option>
                                 <option value="PAGADO" selected="@(Model.Estado.ToUpper() == "PAGADO")">PAGADO</option>
+                                <option value="PAGO EN CUOTAS" selected="@(Model.Estado.ToUpper() == "PAGO EN CUOTAS")">PAGO EN CUOTAS</option>
                                 <option value="EN CAMINO" selected="@(Model.Estado.ToUpper() == "EN CAMINO")">EN CAMINO</option>
                                 <option value="ENTREGADO" selected="@(Model.Estado.ToUpper() == "ENTREGADO")">ENTREGADO</option>
                                 <option value="CANCELADO" selected="@(Model.Estado.ToUpper() == "CANCELADO")">CANCELADO</option>

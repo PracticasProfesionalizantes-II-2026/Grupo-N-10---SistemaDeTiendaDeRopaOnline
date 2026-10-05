@@ -90,6 +90,7 @@ namespace FRFront.Controllers
                 Genero = genero,
                 Categoria = categoria,
                 Color = color,
+                Stock = 10,
                 Descripcion = $"{nombre} de colección F&R.",
                 Imagen = $"~/images/{imagen}",
                 Talles = new[] { "S", "M", "L", "XL" },
@@ -192,6 +193,7 @@ namespace FRFront.Controllers
                 .Split(new[] { ',', ';', '/', '|' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
+            ViewData["Stock"] = productoEncontrado.Stock;
             ViewData["SinStock"] = productoEncontrado.SinStock;
 
             return View();
@@ -201,7 +203,9 @@ namespace FRFront.Controllers
         {
             try
             {
-                var productosApi = await _httpClient.GetFromJsonAsync<List<ProductoDto>>("api/productos") ?? new List<ProductoDto>();
+                var productosApi = (await _httpClient.GetFromJsonAsync<List<ProductoDto>>("api/productos") ?? new List<ProductoDto>())
+                    .Where(producto => producto.Activo)
+                    .ToList();
                 if (productosApi.Count > 0)
                 {
                     var productos = productosApi.Select(producto => new Producto
@@ -218,10 +222,10 @@ namespace FRFront.Controllers
                         Color = string.IsNullOrWhiteSpace(producto.Colores) ? producto.Color : producto.Colores,
                         Genero = DeterminarGenero(producto),
                         EsOferta = producto.EsOferta,
+                        Stock = producto.Stock,
+                        SinStock = producto.Stock <= 0,
                         TiempoEntregaDias = producto.Categoria.Contains("abrigo", StringComparison.OrdinalIgnoreCase) ? 7 : 2
                     }).ToList();
-
-                    AgregarProductosLocalesSinRepetir(productos);
 
                     return productos;
                 }
@@ -277,6 +281,7 @@ namespace FRFront.Controllers
                 Talles = respaldo.Talles,
                 Color = respaldo.Color,
                 TiempoEntregaDias = respaldo.TiempoEntregaDias,
+                Stock = respaldo.Stock,
                 SinStock = respaldo.SinStock
             });
         }

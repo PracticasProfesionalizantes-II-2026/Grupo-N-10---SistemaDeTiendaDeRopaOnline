@@ -71,6 +71,15 @@
                                             @pedido.DetalleFecha
                                         </p>
                                         <p class="text-dark fw-bold mb-1">Total: $ @pedido.Total.ToString("N2")</p>
+                                        <p class="text-dark mb-1">
+                                            <strong>Método de pago:</strong> @pedido.MetodoPago
+                                        </p>
+                                        @if (pedido.Cuotas > 1)
+                                        {
+                                            <p class="text-primary fw-bold mb-1">
+                                                Pago en @pedido.Cuotas cuotas de $ @pedido.ValorCuota.ToString("N2") cada una
+                                            </p>
+                                        }
                                         <span class="text-muted" style="font-size: 0.75rem;">
                                             @(pedido.Productos?.Sum(p => p.Cantidad) ?? pedido.TotalProductos) producto(s)
                                         </span>

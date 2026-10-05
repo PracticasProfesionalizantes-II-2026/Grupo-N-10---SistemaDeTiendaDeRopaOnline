@@ -6,5 +6,6 @@ public enum EstadoPedido
     EnCamino = 2,
     Entregado = 3,
     Rechazado = 4,
-    Pagado = 5
+    Pagado = 5,
+    PagoEnCuotas = 6
 }

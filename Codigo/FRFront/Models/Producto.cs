@@ -15,6 +15,7 @@ namespace FRFront.Models
         public string Descripcion { get; set; }= string.Empty;
         public string Imagen { get; set; }= string.Empty;
         public string[] Talles { get; set; } = Array.Empty<string>();
+        public int Stock { get; set; }
         public bool SinStock { get; set; }
     }
 }

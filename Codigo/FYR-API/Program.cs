@@ -238,7 +238,9 @@ app.MapPost("/api/pedidos", async (AppDbContext db, PedidoRequest pedidoDto) =>
             UsuarioId = usuario.Id,
             FechaPedido = DateTime.Now,
             Total = pedidoDto.Total,
-            Estado = Entidades.Enums.EstadoPedido.Pagado,
+            Estado = (pedidoDto.MetodoPago?.Contains("cuota", StringComparison.OrdinalIgnoreCase) ?? false)
+                ? Entidades.Enums.EstadoPedido.PagoEnCuotas
+                : Entidades.Enums.EstadoPedido.Pagado,
             MetodoPago = string.IsNullOrWhiteSpace(pedidoDto.MetodoPago) ? "EFECTIVO" : pedidoDto.MetodoPago,
             DireccionEntrega = string.IsNullOrWhiteSpace(pedidoDto.DireccionEntrega)
                 ? $"Cliente: {clienteNombre} - DNI: {pedidoDto.Dni} - Email: {pedidoDto.Email} - Tel: {pedidoDto.Telefono}"

@@ -23,16 +23,51 @@ namespace FRFront.Controllers
 
         // Agregar al carrito (Funciona sin estar logueado, ahora incluye el talle)
         [HttpPost]
-        public async Task<IActionResult> Agregar(int productoId, string nombre, decimal precio, string imagen, string talle, int cantidad = 1)
+        public async Task<IActionResult> Agregar(int productoId, string nombre, decimal precio, string imagen, string talle, string color, bool modoCompra = false, int cantidad = 1)
         {
+            var talleNormalizado = string.IsNullOrWhiteSpace(talle) ? "Único" : talle.Trim();
+            var colorNormalizado = string.IsNullOrWhiteSpace(color) ? "Único" : color.Trim();
+            if (productoId > 0)
+            {
+                try
+                {
+                    var producto = await _httpClient.GetFromJsonAsync<ProductoDto>($"api/productos/{productoId}");
+                    if (producto is not null && (!producto.Activo || producto.Stock <= 0))
+                    {
+                        TempData["ErrorCarrito"] = "El producto no tiene stock disponible.";
+                        return RedirectToAction("Index", "Home");
+                    }
+
+                    if (modoCompra && producto is not null)
+                    {
+                        var talles = SepararOpciones(producto.Talles);
+                        var colores = SepararOpciones(string.IsNullOrWhiteSpace(producto.Colores) ? producto.Color : producto.Colores);
+                        if (talles.Length > 0 && talleNormalizado.Equals("Único", StringComparison.OrdinalIgnoreCase))
+                        {
+                            TempData["ErrorCarrito"] = "Debés elegir un talle para comprar el producto.";
+                            return RedirectToAction("Index", "Home");
+                        }
+                        if (colores.Length > 1 && colorNormalizado.Equals("Único", StringComparison.OrdinalIgnoreCase))
+                        {
+                            TempData["ErrorCarrito"] = "Debés elegir un color para comprar el producto.";
+                            return RedirectToAction("Index", "Home");
+                        }
+                    }
+                }
+                catch (HttpRequestException)
+                {
+                    // El carrito puede seguir funcionando con productos del catálogo local si la API no está disponible.
+                }
+            }
+
             var carrito = await ObtenerCarritoAsync();
-            var talleNormalizado = string.IsNullOrWhiteSpace(talle) ? "Único" : talle;
 
             // El ID identifica el producto aunque existan productos con el mismo nombre.
             var itemExistente = carrito.FirstOrDefault(p => 
                 (productoId > 0 && p.ProductoId == productoId ||
                  productoId <= 0 && p.Nombre.Equals(nombre, StringComparison.OrdinalIgnoreCase)) &&
-                p.Talle.Equals(talleNormalizado, StringComparison.OrdinalIgnoreCase));
+                p.Talle.Equals(talleNormalizado, StringComparison.OrdinalIgnoreCase) &&
+                p.Color.Equals(colorNormalizado, StringComparison.OrdinalIgnoreCase));
 
             if (itemExistente != null)
             {
@@ -47,6 +82,7 @@ namespace FRFront.Controllers
                     Precio = precio,
                     Imagen = imagen,
                     Talle = talleNormalizado,
+                    Color = colorNormalizado,
                     Cantidad = cantidad
                 });
             }
@@ -57,13 +93,15 @@ namespace FRFront.Controllers
 
         // Sumar cantidad de un ítem específico en el carrito
         [HttpGet]
-        public async Task<IActionResult> SumarCantidad(string nombre, string talle)
+        public async Task<IActionResult> SumarCantidad(string nombre, string talle, string color)
         {
             var carrito = await ObtenerCarritoAsync();
             var talleNormalizado = string.IsNullOrWhiteSpace(talle) ? "Único" : talle;
+            var colorNormalizado = string.IsNullOrWhiteSpace(color) ? "Único" : color;
             var item = carrito.FirstOrDefault(p => 
                 p.Nombre.Equals(nombre, StringComparison.OrdinalIgnoreCase) && 
-                p.Talle.Equals(talleNormalizado, StringComparison.OrdinalIgnoreCase));
+                p.Talle.Equals(talleNormalizado, StringComparison.OrdinalIgnoreCase) &&
+                p.Color.Equals(colorNormalizado, StringComparison.OrdinalIgnoreCase));
 
             if (item != null)
             {
@@ -75,13 +113,15 @@ namespace FRFront.Controllers
 
         // Restar cantidad de un ítem (si llega a 0 o menos, lo elimina)
         [HttpGet]
-        public async Task<IActionResult> RestarCantidad(string nombre, string talle)
+        public async Task<IActionResult> RestarCantidad(string nombre, string talle, string color)
         {
             var carrito = await ObtenerCarritoAsync();
             var talleNormalizado = string.IsNullOrWhiteSpace(talle) ? "Único" : talle;
+            var colorNormalizado = string.IsNullOrWhiteSpace(color) ? "Único" : color;
             var item = carrito.FirstOrDefault(p => 
                 p.Nombre.Equals(nombre, StringComparison.OrdinalIgnoreCase) && 
-                p.Talle.Equals(talleNormalizado, StringComparison.OrdinalIgnoreCase));
+                p.Talle.Equals(talleNormalizado, StringComparison.OrdinalIgnoreCase) &&
+                p.Color.Equals(colorNormalizado, StringComparison.OrdinalIgnoreCase));
 
             if (item != null)
             {
@@ -97,13 +137,15 @@ namespace FRFront.Controllers
 
         // Eliminar por completo un ítem del carrito
         [HttpGet]
-        public async Task<IActionResult> EliminarItem(string nombre, string talle)
+        public async Task<IActionResult> EliminarItem(string nombre, string talle, string color)
         {
             var carrito = await ObtenerCarritoAsync();
             var talleNormalizado = string.IsNullOrWhiteSpace(talle) ? "Único" : talle;
+            var colorNormalizado = string.IsNullOrWhiteSpace(color) ? "Único" : color;
             var item = carrito.FirstOrDefault(p => 
                 p.Nombre.Equals(nombre, StringComparison.OrdinalIgnoreCase) && 
-                p.Talle.Equals(talleNormalizado, StringComparison.OrdinalIgnoreCase));
+                p.Talle.Equals(talleNormalizado, StringComparison.OrdinalIgnoreCase) &&
+                p.Color.Equals(colorNormalizado, StringComparison.OrdinalIgnoreCase));
 
             if (item != null)
             {
@@ -111,6 +153,14 @@ namespace FRFront.Controllers
                 await GuardarCarritoAsync(carrito);
             }
             return RedirectToAction("Index");
+        }
+
+        private static string[] SepararOpciones(string? valor)
+        {
+            return (valor ?? string.Empty)
+                .Split(new[] { ',', ';', '/', '|' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
         }
 
        // Botón "FINALIZAR COMPRA"

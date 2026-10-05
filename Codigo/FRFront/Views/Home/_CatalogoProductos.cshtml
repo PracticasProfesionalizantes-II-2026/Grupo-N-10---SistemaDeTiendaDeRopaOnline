@@ -126,6 +126,9 @@
                                         <span class="text-muted text-decoration-line-through small me-2">$@prod.PrecioAnterior.Value.ToString("N0")</span>
                                     }
                                     <span class="fw-bold @(prod.EsOferta ? "text-danger" : "text-dark")">$@prod.Precio.ToString("N0")</span>
+                                    <div class="small mt-2 @(prod.SinStock ? "text-danger fw-bold" : "text-muted")">
+                                        @(prod.SinStock ? "Sin stock disponible" : $"Stock disponible: {prod.Stock}")
+                                    </div>
                                 </div>
                             </a>
                         </div>

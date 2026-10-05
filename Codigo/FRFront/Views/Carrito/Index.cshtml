@@ -37,6 +37,7 @@
                                         <div>
                                             <h5 class="fw-bold text-uppercase mb-1 fs-5">@item.Nombre</h5>
                                             <span class="badge bg-dark text-white fw-bold px-3 py-1 rounded-pill" style="font-size: 0.8rem;">Talle: @item.Talle</span>
+                                            <span class="badge bg-secondary text-white fw-bold px-3 py-1 rounded-pill" style="font-size: 0.8rem;">Color: @item.Color</span>
                                         </div>
                                     </div>
                                 </td>
@@ -46,16 +47,16 @@
                                 <td class="text-center">
                                     <!-- Controles de cantidad más grandes e interactivos -->
                                     <div class="input-group justify-content-center" style="width: 140px; margin: 0 auto;">
-                                        <a asp-action="RestarCantidad" asp-route-nombre="@item.Nombre" asp-route-talle="@item.Talle" class="btn btn-outline-dark fw-bold px-3">-</a>
+                                        <a asp-action="RestarCantidad" asp-route-nombre="@item.Nombre" asp-route-talle="@item.Talle" asp-route-color="@item.Color" class="btn btn-outline-dark fw-bold px-3">-</a>
                                         <input type="text" class="form-control text-center fw-bold bg-white fs-5" value="@item.Cantidad" readonly style="max-width: 50px;">
-                                        <a asp-action="SumarCantidad" asp-route-nombre="@item.Nombre" asp-route-talle="@item.Talle" class="btn btn-outline-dark fw-bold px-3">+</a>
+                                        <a asp-action="SumarCantidad" asp-route-nombre="@item.Nombre" asp-route-talle="@item.Talle" asp-route-color="@item.Color" class="btn btn-outline-dark fw-bold px-3">+</a>
                                     </div>
                                 </td>
                                 <td class="text-end fw-bold fs-5 text-dark">
                                     $ @((item.Precio * item.Cantidad).ToString("N0"))
                                 </td>
                                 <td class="text-center">
-                                    <a asp-action="EliminarItem" asp-route-nombre="@item.Nombre" asp-route-talle="@item.Talle" class="text-danger text-decoration-none fw-bold fs-5" title="Eliminar producto">
+                                    <a asp-action="EliminarItem" asp-route-nombre="@item.Nombre" asp-route-talle="@item.Talle" asp-route-color="@item.Color" class="text-danger text-decoration-none fw-bold fs-5" title="Eliminar producto">
                                         &times;
                                     </a>
                                 </td>

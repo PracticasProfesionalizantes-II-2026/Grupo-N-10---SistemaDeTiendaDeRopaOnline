@@ -12,8 +12,10 @@ public class AuthRepository : IAuthRepository
 
     public async Task<Usuario?> GetByEmailAsync(string email)
     {
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+
         return await _context.Usuarios
-            .FirstOrDefaultAsync(x => x.Email == email);
+            .FirstOrDefaultAsync(x => x.Email.ToLower() == normalizedEmail);
     }
 
     public async Task<Usuario?> GetByIdAsync(int id)

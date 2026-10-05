@@ -91,14 +91,86 @@ namespace FRFront.Controllers
             return 0;
         }
 
-        private static string ObtenerNombreCliente(Dictionary<int, string> mapaUsuarios, int usuarioId)
+        private static bool TryGetPropertyIgnoreCase(JsonElement elemento, string nombre, out JsonElement valor)
+        {
+            foreach (var propiedad in elemento.EnumerateObject())
+            {
+                if (propiedad.Name.Equals(nombre, StringComparison.OrdinalIgnoreCase))
+                {
+                    valor = propiedad.Value;
+                    return true;
+                }
+            }
+
+            valor = default;
+            return false;
+        }
+
+        private static int ObtenerEntero(JsonElement elemento, params string[] nombres)
+        {
+            foreach (var nombre in nombres)
+            {
+                if (TryGetPropertyIgnoreCase(elemento, nombre, out var valor) &&
+                    valor.ValueKind != JsonValueKind.Null &&
+                    valor.TryGetInt32(out var entero))
+                {
+                    return entero;
+                }
+            }
+
+            return 0;
+        }
+
+        private static string ObtenerNombreCliente(Dictionary<int, string> mapaUsuarios, int usuarioId, string? direccionEntrega = null)
         {
             if (usuarioId > 0 && mapaUsuarios.TryGetValue(usuarioId, out var nombre) && !string.IsNullOrWhiteSpace(nombre))
+            {
+                if (!nombre.Equals("CLIENTE MOSTRADOR", StringComparison.OrdinalIgnoreCase))
+                {
+                    return nombre;
+                }
+            }
+
+            const string prefijoCliente = "Cliente:";
+            if (!string.IsNullOrWhiteSpace(direccionEntrega) &&
+                direccionEntrega.StartsWith(prefijoCliente, StringComparison.OrdinalIgnoreCase))
+            {
+                var nombreHistorico = direccionEntrega[prefijoCliente.Length..]
+                    .Split(" - ", StringSplitOptions.RemoveEmptyEntries)[0]
+                    .Trim();
+                if (!string.IsNullOrWhiteSpace(nombreHistorico) &&
+                    !nombreHistorico.Equals("CLIENTE MOSTRADOR", StringComparison.OrdinalIgnoreCase))
+                {
+                    return nombreHistorico;
+                }
+            }
+
+            return usuarioId > 0 ? $"Cliente #{usuarioId}" : "Cliente Mostrador";
+        }
+
+        private async Task<string> ObtenerNombreClienteAsync(Dictionary<int, string> mapaUsuarios, int usuarioId, string? direccionEntrega = null)
+        {
+            var nombre = ObtenerNombreCliente(mapaUsuarios, usuarioId, direccionEntrega);
+            if (usuarioId <= 0 || !nombre.StartsWith("Cliente #", StringComparison.OrdinalIgnoreCase))
             {
                 return nombre;
             }
 
-            return usuarioId > 0 ? $"Cliente #{usuarioId}" : "Cliente Mostrador";
+            try
+            {
+                var usuario = await _httpClient.GetFromJsonAsync<UsuarioSimpleDto>($"api/usuarios/{usuarioId}", _jsonOptions);
+                var nombreReal = $"{usuario?.Nombre} {usuario?.Apellido}".Trim();
+                if (!string.IsNullOrWhiteSpace(nombreReal))
+                {
+                    return nombreReal;
+                }
+            }
+            catch (HttpRequestException)
+            {
+                // Se conserva el identificador como fallback si la consulta directa no está disponible.
+            }
+
+            return nombre;
         }
 
         private static List<ClienteDto> NormalizarClientes(IEnumerable<ClienteDto> clientes)
@@ -209,7 +281,10 @@ namespace FRFront.Controllers
                             string metodoPago = item.TryGetProperty("metodoPago", out var pagoProp) ? pagoProp.GetString() ?? "EFECTIVO" : "EFECTIVO";
                             DateTime fechaPedido = item.TryGetProperty("fechaPedido", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
 
-                            string clienteNombre = ObtenerNombreCliente(mapaUsuarios, usuarioId);
+                            string direccionEntrega = item.TryGetProperty("direccionEntrega", out var direccionProp)
+                                ? direccionProp.GetString() ?? string.Empty
+                                : string.Empty;
+                            string clienteNombre = ObtenerNombreCliente(mapaUsuarios, usuarioId, direccionEntrega);
 
                             listaPedidos.Add(new PedidoDto
                             {
@@ -287,7 +362,7 @@ namespace FRFront.Controllers
                                 producto.Color = producto.Colores ?? string.Empty;
                             }
                         }
-                        productos = apiProds;
+                        productos = apiProds.Where(producto => producto.Activo).ToList();
                     }
                 }
             }
@@ -295,14 +370,6 @@ namespace FRFront.Controllers
             {
                 Console.WriteLine($"[ERROR EN PRODUCTOS API]: {ex.Message}");
             }
-
-            var imagenesExistentes = productos
-                .Where(producto => !string.IsNullOrWhiteSpace(producto.ImagenUrl))
-                .Select(producto => producto.ImagenUrl!.Trim().TrimStart('~'))
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-            productos.AddRange(HomeController.ObtenerProductosLocalesDto()
-                .Where(producto => string.IsNullOrWhiteSpace(producto.ImagenUrl) ||
-                    !imagenesExistentes.Contains(producto.ImagenUrl.Trim().TrimStart('~'))));
 
             if (!string.IsNullOrEmpty(categoria) && !categoria.Equals("Todos", StringComparison.OrdinalIgnoreCase))
             {
@@ -397,15 +464,20 @@ namespace FRFront.Controllers
                     {
                         foreach (var item in doc.RootElement.EnumerateArray())
                         {
-                            int idPedido = item.TryGetProperty("id", out var idProp) ? idProp.GetInt32() : 0;
-                            int usuarioId = item.TryGetProperty("usuarioId", out var uProp) ? uProp.GetInt32() : 0;
-                            decimal totalPedido = item.TryGetProperty("total", out var totalProp) ? totalProp.GetDecimal() : 0;
-                            string metodoPago = item.TryGetProperty("metodoPago", out var pagoProp) ? pagoProp.GetString() ?? "EFECTIVO" : "EFECTIVO";
-                            DateTime fechaPedido = item.TryGetProperty("fechaPedido", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
+                            int idPedido = ObtenerEntero(item, "id", "idPedido");
+                            int usuarioId = ObtenerEntero(item, "usuarioId");
+                            decimal totalPedido = TryGetPropertyIgnoreCase(item, "total", out var totalProp) ? totalProp.GetDecimal() : 0;
+                            string metodoPago = TryGetPropertyIgnoreCase(item, "metodoPago", out var pagoProp) ? pagoProp.GetString() ?? "EFECTIVO" : "EFECTIVO";
+                            DateTime fechaPedido = TryGetPropertyIgnoreCase(item, "fechaPedido", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
 
-                            string nombreCliente = mapaUsuarios.TryGetValue(usuarioId, out var nombre) && !string.IsNullOrWhiteSpace(nombre) 
-                                ? nombre 
-                                : $"Cliente #{usuarioId}";
+                            string direccionEntrega = TryGetPropertyIgnoreCase(item, "direccionEntrega", out var direccionProp)
+                                ? direccionProp.GetString() ?? string.Empty
+                                : string.Empty;
+                            string nombreCliente = await ObtenerNombreClienteAsync(mapaUsuarios, usuarioId, direccionEntrega);
+                            string estadoPedido = TryGetPropertyIgnoreCase(item, "estado", out var estadoProp)
+                                ? estadoProp.ToString()
+                                : "PAGADO";
+                            estadoPedido = estadoPedido == "6" ? "PAGO EN CUOTAS" : estadoPedido == "5" ? "PAGADO" : estadoPedido;
 
                             listaPedidos.Add(new PedidoDto
                             {
@@ -414,7 +486,7 @@ namespace FRFront.Controllers
                                 Cliente = nombreCliente,
                                 Fecha = fechaPedido,
                                 Total = totalPedido,
-                                Estado = "PAGADO",
+                                Estado = estadoPedido,
                                 TipoEntrega = metodoPago
                             });
                         }
@@ -456,15 +528,17 @@ namespace FRFront.Controllers
 
                         if (elemento.ValueKind != JsonValueKind.Undefined)
                         {
-                            int idItem = elemento.TryGetProperty("id", out var idProp) ? idProp.GetInt32() : id;
-                            int usuarioId = elemento.TryGetProperty("usuarioId", out var uProp) ? uProp.GetInt32() : 0;
-                            decimal total = elemento.TryGetProperty("total", out var totalProp) ? totalProp.GetDecimal() : 0;
-                            string metodo = elemento.TryGetProperty("metodoPago", out var pagoProp) ? pagoProp.GetString() ?? "EFECTIVO" : "EFECTIVO";
-                            DateTime fecha = elemento.TryGetProperty("fechaPedido", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
+                            int idItem = ObtenerEntero(elemento, "id", "idPedido");
+                            idItem = idItem > 0 ? idItem : id;
+                            int usuarioId = ObtenerEntero(elemento, "usuarioId");
+                            decimal total = TryGetPropertyIgnoreCase(elemento, "total", out var totalProp) ? totalProp.GetDecimal() : 0;
+                            string metodo = TryGetPropertyIgnoreCase(elemento, "metodoPago", out var pagoProp) ? pagoProp.GetString() ?? "EFECTIVO" : "EFECTIVO";
+                            DateTime fecha = TryGetPropertyIgnoreCase(elemento, "fechaPedido", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
 
-                            string nombreCliente = mapaUsuarios.TryGetValue(usuarioId, out var nombre) && !string.IsNullOrWhiteSpace(nombre) 
-                                ? nombre 
-                                : $"Cliente #{usuarioId}";
+                            string direccionEntrega = TryGetPropertyIgnoreCase(elemento, "direccionEntrega", out var direccionProp)
+                                ? direccionProp.GetString() ?? string.Empty
+                                : string.Empty;
+                            string nombreCliente = await ObtenerNombreClienteAsync(mapaUsuarios, usuarioId, direccionEntrega);
 
                             var estadoPedido = elemento.TryGetProperty("estado", out var estadoProp)
                                 ? estadoProp.ToString()
@@ -472,6 +546,10 @@ namespace FRFront.Controllers
                             if (estadoPedido == "5")
                             {
                                 estadoPedido = "PAGADO";
+                            }
+                            else if (estadoPedido == "6")
+                            {
+                                estadoPedido = "PAGO EN CUOTAS";
                             }
                             if (string.IsNullOrWhiteSpace(estadoPedido) || metodo.Equals("EFECTIVO", StringComparison.OrdinalIgnoreCase))
                             {

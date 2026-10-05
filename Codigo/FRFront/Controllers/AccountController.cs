@@ -97,6 +97,13 @@ namespace FRFront.Controllers
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 return Redirect(returnUrl);
 
+            if (string.Equals(login.TipoUsuario, "Administrador", StringComparison.OrdinalIgnoreCase))
+                return RedirectToAction("Index", "Administrador");
+
+            if (string.Equals(login.TipoUsuario, "Empleado", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(login.TipoUsuario, "CAJERO", StringComparison.OrdinalIgnoreCase))
+                return RedirectToAction("Index", "Empleado");
+
             return RedirectToAction("Index", "Home");
         }
 

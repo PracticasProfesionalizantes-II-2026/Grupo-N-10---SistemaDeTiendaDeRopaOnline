@@ -84,14 +84,56 @@ namespace FRFront.Controllers
             return 0;
         }
 
-        private static string ObtenerNombreCliente(Dictionary<int, string> mapaUsuarios, int usuarioId)
+        private static string ObtenerNombreCliente(Dictionary<int, string> mapaUsuarios, int usuarioId, string? direccionEntrega = null)
         {
             if (usuarioId > 0 && mapaUsuarios.TryGetValue(usuarioId, out var nombre) && !string.IsNullOrWhiteSpace(nombre))
+            {
+                if (!nombre.Equals("CLIENTE MOSTRADOR", StringComparison.OrdinalIgnoreCase))
+                {
+                    return nombre;
+                }
+            }
+
+            const string prefijoCliente = "Cliente:";
+            if (!string.IsNullOrWhiteSpace(direccionEntrega) &&
+                direccionEntrega.StartsWith(prefijoCliente, StringComparison.OrdinalIgnoreCase))
+            {
+                var nombreHistorico = direccionEntrega[prefijoCliente.Length..]
+                    .Split(" - ", StringSplitOptions.RemoveEmptyEntries)[0]
+                    .Trim();
+                if (!string.IsNullOrWhiteSpace(nombreHistorico) &&
+                    !nombreHistorico.Equals("CLIENTE MOSTRADOR", StringComparison.OrdinalIgnoreCase))
+                {
+                    return nombreHistorico;
+                }
+            }
+
+            return usuarioId > 0 ? $"Cliente #{usuarioId}" : "Cliente Mostrador";
+        }
+
+        private async Task<string> ObtenerNombreClienteAsync(Dictionary<int, string> mapaUsuarios, int usuarioId, string? direccionEntrega = null)
+        {
+            var nombre = ObtenerNombreCliente(mapaUsuarios, usuarioId, direccionEntrega);
+            if (usuarioId <= 0 || !nombre.StartsWith("Cliente #", StringComparison.OrdinalIgnoreCase))
             {
                 return nombre;
             }
 
-            return usuarioId > 0 ? $"Cliente #{usuarioId}" : "Cliente Mostrador";
+            try
+            {
+                var usuario = await _httpClient.GetFromJsonAsync<UsuarioSimpleDto>($"api/usuarios/{usuarioId}", _jsonOptions);
+                var nombreReal = $"{usuario?.Nombre} {usuario?.Apellido}".Trim();
+                if (!string.IsNullOrWhiteSpace(nombreReal))
+                {
+                    return nombreReal;
+                }
+            }
+            catch (HttpRequestException)
+            {
+                // Se conserva el identificador como fallback si la consulta directa no está disponible.
+            }
+
+            return nombre;
         }
 
         [HttpGet]
@@ -242,8 +284,15 @@ namespace FRFront.Controllers
                             decimal totalPedido = item.TryGetProperty("total", out var totalProp) ? totalProp.GetDecimal() : 0;
                             string metodoPago = item.TryGetProperty("metodoPago", out var pagoProp) ? pagoProp.GetString() ?? "EFECTIVO" : "EFECTIVO";
                             DateTime fechaPedido = item.TryGetProperty("fechaPedido", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
+                            string direccionEntrega = item.TryGetProperty("direccionEntrega", out var direccionProp)
+                                ? direccionProp.GetString() ?? string.Empty
+                                : string.Empty;
 
-                            string nombreCliente = ObtenerNombreCliente(mapaUsuarios, usuarioId);
+                            string nombreCliente = await ObtenerNombreClienteAsync(mapaUsuarios, usuarioId, direccionEntrega);
+                            string estadoPedido = item.TryGetProperty("estado", out var estadoProp)
+                                ? estadoProp.ToString()
+                                : "PAGADO";
+                            estadoPedido = estadoPedido == "6" ? "PAGO EN CUOTAS" : estadoPedido == "5" ? "PAGADO" : estadoPedido;
 
                             listaPedidos.Add(new PedidoDto
                             {
@@ -251,7 +300,7 @@ namespace FRFront.Controllers
                                 Cliente = nombreCliente,
                                 Fecha = fechaPedido,
                                 Total = totalPedido,
-                                Estado = "PAGADO",
+                                Estado = estadoPedido,
                                 TipoEntrega = metodoPago
                             });
                         }

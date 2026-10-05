@@ -13,7 +13,9 @@ dddddddd
         <input type="hidden" name="nombre" value="@ViewData["Nombre"]" />
         <input type="hidden" name="precio" value="@ViewData["PrecioNumerico"]" />
         <input type="hidden" name="imagen" value="@ViewData["Imagen"]" />
-            <input type="hidden" name="talle" id="talleSeleccionadoInput" value="Único" />
+        <input type="hidden" name="talle" id="talleSeleccionadoInput" value="Único" />
+        <input type="hidden" name="color" id="colorSeleccionadoInput" value="Único" />
+        <input type="hidden" name="modoCompra" id="modoCompraInput" value="false" />
         <input type="hidden" name="cantidad" id="cantidadInput" value="1" />
 
         <div class="row g-5">
@@ -39,13 +41,20 @@ dddddddd
                 
                 <h3 class="fw-bold text-dark mb-4">@ViewData["Precio"]</h3>
 
-                <!-- Selección de Talles (SIN SELECCIÓN POR DEFECTO) -->
+                @{
+                    var tallesDisponibles = ViewData["Talles"] as string[] ?? Array.Empty<string>();
+                    var coloresDisponibles = ViewData["Colores"] as string[] ?? Array.Empty<string>();
+                    var talleRequiereSeleccion = tallesDisponibles.Length > 1;
+                    var colorRequiereSeleccion = coloresDisponibles.Length > 1;
+                }
+
+                <!-- Selección de Talles -->
                 <div class="mb-3">
                     <label class="fw-bold small text-uppercase d-block mb-2">Talle:</label>
                     <div class="d-flex gap-2" id="grupoTalles">
-                        @if (ViewData["Talles"] is string[] talles && talles.Length > 0)
+                        @if (tallesDisponibles.Length > 0)
                         {
-                            @foreach (var talle in talles)
+                            @foreach (var talle in tallesDisponibles)
                             {
                                 <input type="radio" class="btn-check" name="talleOptions" id="talle-@talle" autocomplete="off" value="@talle">
                                 <label class="btn btn-outline-dark px-3 py-1" for="talle-@talle">@talle</label>
@@ -59,31 +68,57 @@ dddddddd
 
                 <div class="mb-4">
                     <label class="fw-bold small text-uppercase d-block mb-2">Color:</label>
-                    <span class="badge bg-light text-dark border px-3 py-2 text-uppercase">
-                        @(ViewData["Colores"] is string[] coloresVisibles && coloresVisibles.Length > 0
-                            ? string.Join(", ", coloresVisibles)
-                            : "No especificado")
-                    </span>
+                    <div class="d-flex flex-wrap gap-2" id="grupoColores">
+                        @if (coloresDisponibles.Length > 0)
+                        {
+                            @foreach (var color in coloresDisponibles)
+                            {
+                                <input type="radio" class="btn-check" name="colorOptions" id="color-@color" autocomplete="off" value="@color">
+                                <label class="btn btn-outline-dark px-3 py-1" for="color-@color">@color</label>
+                            }
+                        }
+                        else
+                        {
+                            <span class="badge bg-light text-dark border px-3 py-2 text-uppercase">No especificado</span>
+                        }
+                    </div>
+                    <div id="errorColor" class="alert alert-warning mt-3 mb-0 d-none" role="alert">
+                        Elegí un color para continuar con la compra.
+                    </div>
                 </div>
 
                 <!-- Cantidad -->
                 <div class="mb-4">
                     <label class="fw-bold small text-uppercase d-block mb-2">Cantidad:</label>
+                    <p class="mb-2 @(ViewData["SinStock"] is true ? "text-danger" : "text-muted")">
+                        @(ViewData["SinStock"] is true
+                            ? "Sin stock disponible"
+                            : $"Stock disponible: {ViewData["Stock"]}")
+                    </p>
                     <div class="input-group" style="width: 130px;">
-                        <button class="btn btn-outline-dark" type="button" id="btnRestar">-</button>
+                        <button class="btn btn-outline-dark" type="button" id="btnRestar" @(ViewData["SinStock"] is true ? "disabled" : "")>-</button>
                         <input type="text" id="txtCantidad" class="form-control text-center fw-bold" value="1" readonly>
-                        <button class="btn btn-outline-dark" type="button" id="btnSumar">+</button>
+                        <button class="btn btn-outline-dark" type="button" id="btnSumar" @(ViewData["SinStock"] is true ? "disabled" : "")>+</button>
                     </div>
                 </div>
 
                 <!-- Botones de Acción -->
                 <div class="d-grid gap-3 mb-4">
-                    <button type="button" id="btnComprar" class="btn btn-primary btn-lg fw-bold text-uppercase py-3" style="background-color: #3b55ff; border: none;">
-                        Comprar
-                    </button>
-                    <button type="button" id="btnAgregarCarrito" class="btn btn-outline-dark btn-lg fw-bold text-uppercase py-3">
-                        Agregar al Carrito
-                    </button>
+                    @if (ViewData["SinStock"] is true)
+                    {
+                        <div class="alert alert-warning text-center fw-bold text-uppercase mb-0">
+                            Producto sin stock disponible
+                        </div>
+                    }
+                    else
+                    {
+                        <button type="button" id="btnComprar" class="btn btn-primary btn-lg fw-bold text-uppercase py-3" style="background-color: #3b55ff; border: none;">
+                            Comprar
+                        </button>
+                        <button type="button" id="btnAgregarCarrito" class="btn btn-outline-dark btn-lg fw-bold text-uppercase py-3">
+                            Agregar al Carrito
+                        </button>
+                    }
                 </div>
 
                 <!-- Alerta flotante de éxito al agregar -->
@@ -113,8 +148,11 @@ dddddddd
             // Control de cantidad
             $('#btnSumar').click(function () {
                 let val = parseInt($('#txtCantidad').val()) + 1;
-                $('#txtCantidad').val(val);
-                $('#cantidadInput').val(val);
+                const stock = parseInt('@(ViewData["Stock"] ?? 0)');
+                if (val <= stock) {
+                    $('#txtCantidad').val(val);
+                    $('#cantidadInput').val(val);
+                }
             });
             $('#btnRestar').click(function () {
                 let val = parseInt($('#txtCantidad').val());
@@ -129,9 +167,14 @@ dddddddd
                 $('#talleSeleccionadoInput').val($(this).val());
                 $('#errorTalle').addClass('d-none');
             });
+            $('input[name="colorOptions"]').change(function () {
+                $('#colorSeleccionadoInput').val($(this).val());
+                $('#errorColor').addClass('d-none');
+            });
 
             // BOTÓN AGREGAR AL CARRITO (Usa AJAX para quedarse en la pantalla y mostrar aviso)
             $('#btnAgregarCarrito').click(function () {
+                $('#modoCompraInput').val('false');
                 let formData = $('#formDetalleProducto').serialize();
 
                 $.post('@Url.Action("Agregar", "Carrito")', formData, function () {
@@ -146,11 +189,25 @@ dddddddd
 
             // BOTÓN COMPRAR (Envía el formulario y redirige directo al carrito)
             $('#btnComprar').click(function () {
-                if ($('input[name="talleOptions"]:checked').length === 0) {
+                $('#modoCompraInput').val('true');
+                let requiereTalle = @(((ViewData["Talles"] as string[] ?? Array.Empty<string>()).Length > 0).ToString().ToLowerInvariant());
+                let requiereColor = @(((ViewData["Colores"] as string[] ?? Array.Empty<string>()).Length > 1).ToString().ToLowerInvariant());
+                let faltanOpciones = false;
+
+                if (requiereTalle && $('input[name="talleOptions"]:checked').length === 0) {
                     $('#errorTalle').removeClass('d-none');
                     $('#grupoTalles').addClass('border border-warning rounded p-2');
-                    return;
+                    faltanOpciones = true;
                 }
+
+                if (requiereColor && $('input[name="colorOptions"]:checked').length === 0) {
+                    $('#errorColor').removeClass('d-none');
+                    $('#grupoColores').addClass('border border-warning rounded p-2');
+                    faltanOpciones = true;
+                }
+
+                if (faltanOpciones)
+                    return;
 
                 $('#formDetalleProducto').submit();
             });

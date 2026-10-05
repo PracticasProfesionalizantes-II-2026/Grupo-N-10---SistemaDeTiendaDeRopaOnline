@@ -8,6 +8,7 @@ namespace FRFront.Models
         public decimal Precio { get; set; }
         public string Imagen { get; set; } = "";
         public string Talle { get; set; } = ""; // <-- Asegúrate de tener esta propiedad
+        public string Color { get; set; } = "";
         public int Cantidad { get; set; } = 1;
         public decimal Total => Precio * Cantidad;
     }

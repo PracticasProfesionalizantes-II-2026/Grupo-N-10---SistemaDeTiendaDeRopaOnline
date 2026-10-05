@@ -37,14 +37,17 @@ namespace FRFront.Controllers
         public async Task<IActionResult> Index(string? categoria, string? busqueda)
         {
             var productos = new List<ProductoDto>();
+            var apiDisponible = false;
 
             try
             {
                 var response = await _httpClient.GetAsync("api/productos");
                 if (response.IsSuccessStatusCode)
                 {
+                    apiDisponible = true;
                     var content = await response.Content.ReadAsStringAsync();
                     productos = JsonSerializer.Deserialize<List<ProductoDto>>(content, _jsonOptions) ?? new List<ProductoDto>();
+                    productos = productos.Where(producto => producto.Activo).ToList();
                     foreach (var producto in productos)
                     {
                         if (string.IsNullOrWhiteSpace(producto.Color))
@@ -59,18 +62,7 @@ namespace FRFront.Controllers
                 // API no disponible
             }
 
-            var imagenesPersistidas = productos
-                .Where(p => !string.IsNullOrWhiteSpace(p.ImagenUrl))
-                .Select(p => p.ImagenUrl!.Trim().TrimStart('~'))
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-            if (productos.Any())
-            {
-                productos.AddRange(HomeController.ObtenerProductosLocalesDto()
-                    .Where(p => string.IsNullOrWhiteSpace(p.ImagenUrl) ||
-                        !imagenesPersistidas.Contains(p.ImagenUrl.Trim().TrimStart('~'))));
-            }
-            else
+            if (!apiDisponible)
             {
                 productos = _productosEnMemoria!;
             }
@@ -154,6 +146,7 @@ namespace FRFront.Controllers
                         nuevoProducto.ImagenUrl,
                         nuevoProducto.Talles,
                         Colores = nuevoProducto.Color,
+                        Stock = nuevoProducto.Stock,
                         EmpresaId = categoria.EmpresaId,
                         CategoriaId = categoria.Id
                     });
@@ -333,6 +326,7 @@ namespace FRFront.Controllers
                     ImagenUrl = productoModificado.ImagenUrl,
                     productoModificado.Talles,
                     Colores = productoModificado.Color,
+                    productoModificado.Stock,
                     productoModificado.CategoriaId,
                     productoModificado.SubcategoriaId
                 };
@@ -352,6 +346,7 @@ namespace FRFront.Controllers
                             productoModificado.ImagenUrl,
                             productoModificado.Talles,
                             Colores = productoModificado.Color,
+                            Stock = productoModificado.Stock,
                             EmpresaId = categoria.EmpresaId,
                             CategoriaId = categoria.Id,
                             productoModificado.SubcategoriaId
@@ -456,11 +451,15 @@ namespace FRFront.Controllers
             // 2. Intento de borrado en API Backend
             try
             {
-                await _httpClient.DeleteAsync($"api/productos/{id}");
+                var response = await _httpClient.DeleteAsync($"api/productos/{id}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("La API no pudo descontinuar el producto {ProductoId}. Código HTTP: {StatusCode}", id, response.StatusCode);
+                }
             }
-            catch
+            catch (HttpRequestException ex)
             {
-                // Continuación con borrado local
+                _logger.LogError(ex, "No se pudo conectar con la API para descontinuar el producto {ProductoId}.", id);
             }
 
             TempData["SuccessMessage"] = "Producto eliminado correctamente.";

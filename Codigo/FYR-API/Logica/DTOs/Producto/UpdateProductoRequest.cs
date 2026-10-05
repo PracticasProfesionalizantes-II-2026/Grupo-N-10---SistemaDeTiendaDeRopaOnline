@@ -21,4 +21,6 @@ public class UpdateProductoRequest
     public int CategoriaId { get; set; }
 
     public int? SubcategoriaId { get; set; }
+
+    public int Stock { get; set; }
 }

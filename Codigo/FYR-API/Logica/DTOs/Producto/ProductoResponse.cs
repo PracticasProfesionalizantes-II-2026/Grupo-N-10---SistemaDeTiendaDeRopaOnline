@@ -31,4 +31,8 @@ public class ProductoResponse
     public string? Subcategoria { get; set; }
 
     public string Empresa { get; set; } = string.Empty;
+
+    public bool Activo { get; set; } = true;
+
+    public int Stock { get; set; }
 }

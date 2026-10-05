@@ -218,6 +218,8 @@ namespace FRFront.Controllers
                         Estado = pedido.Estado,
                         DetalleFecha = pedido.FechaPedido.ToLocalTime().ToString("dd/MM/yyyy HH:mm"),
                         Total = pedido.Total,
+                        MetodoPago = pedido.MetodoPago,
+                        Cuotas = ObtenerCantidadCuotas(pedido.MetodoPago),
                         EsRetiroLocal = pedido.DireccionEntrega.Equals("RETIRO_LOCAL", StringComparison.OrdinalIgnoreCase),
                         TotalProductos = detalles.Sum(detalle => detalle.Cantidad),
                         ImagenProducto = items.FirstOrDefault()?.Imagen ?? "~/images/logo-fr.png",
@@ -231,6 +233,23 @@ namespace FRFront.Controllers
             {
                 return new List<PedidoModel>();
             }
+        }
+
+        private static int ObtenerCantidadCuotas(string? metodoPago)
+        {
+            if (string.IsNullOrWhiteSpace(metodoPago))
+                return 1;
+
+            var partes = metodoPago.Split(' ', '-', StringSplitOptions.RemoveEmptyEntries);
+            var indiceCuotas = Array.FindIndex(partes, parte =>
+                parte.Equals("cuota", StringComparison.OrdinalIgnoreCase) ||
+                parte.Equals("cuotas", StringComparison.OrdinalIgnoreCase));
+
+            return indiceCuotas > 0 &&
+                   int.TryParse(partes[indiceCuotas - 1], out var cuotas) &&
+                   cuotas > 1
+                ? cuotas
+                : 1;
         }
 
         private async Task<int> ObtenerUsuarioApiIdAsync(string email)

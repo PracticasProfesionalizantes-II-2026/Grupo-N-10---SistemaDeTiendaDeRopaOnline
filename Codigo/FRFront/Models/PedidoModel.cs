@@ -6,6 +6,9 @@ namespace FRFront.Models
         public string Estado { get; set; } = "En Camino";
         public string DetalleFecha { get; set; } = "";
         public decimal Total { get; set; }
+        public string MetodoPago { get; set; } = "";
+        public int Cuotas { get; set; } = 1;
+        public decimal ValorCuota => Cuotas > 1 ? Total / Cuotas : 0;
         public bool EsRetiroLocal { get; set; }
         public int TotalProductos { get; set; }
         public string ImagenProducto { get; set; } = "";

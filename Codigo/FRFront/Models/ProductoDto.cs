@@ -15,6 +15,7 @@ namespace FRFront.Models
         public string? Descripcion { get; set; }
         public string? ImagenUrl { get; set; }
         public bool Disponible { get; set; } = true;
+        public bool Activo { get; set; } = true;
         public int EmpresaId { get; set; }
         public int CategoriaId { get; set; }
         public int? SubcategoriaId { get; set; }

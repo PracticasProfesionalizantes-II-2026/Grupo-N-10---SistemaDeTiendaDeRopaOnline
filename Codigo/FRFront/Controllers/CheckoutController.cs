@@ -167,7 +167,7 @@ namespace FRFront.Controllers
                         ? "RETIRO_LOCAL"
                         : HttpContext.Session.GetString(UserSessionKeys.ForUser(HttpContext.Session, "CodigoPostalEnvio")) ?? "",
                     MetodoPago = metodoPago.Equals("Credito", StringComparison.OrdinalIgnoreCase)
-                        ? "Tarjeta de crédito"
+                        ? $"Tarjeta de crédito - {cuotas.GetValueOrDefault(1)} cuota{(cuotas.GetValueOrDefault(1) == 1 ? string.Empty : "s")}"
                         : metodoPago.Equals("Debito", StringComparison.OrdinalIgnoreCase)
                             ? "Tarjeta de débito"
                             : metodoPago.Equals("Transferencia", StringComparison.OrdinalIgnoreCase)

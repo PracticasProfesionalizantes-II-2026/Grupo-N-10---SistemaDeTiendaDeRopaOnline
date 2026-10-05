@@ -60,7 +60,7 @@ public class AuthService : IAuthService
         {
             validPassword = BCrypt.Net.BCrypt.Verify(request.Password, usuario.PasswordHash);
         }
-        catch (ArgumentException)
+        catch (BCrypt.Net.SaltParseException)
         {
             // Compatibilidad única con cuentas antiguas que todavía tenían la clave sin hash.
             validPassword = string.Equals(request.Password, usuario.PasswordHash, StringComparison.Ordinal);

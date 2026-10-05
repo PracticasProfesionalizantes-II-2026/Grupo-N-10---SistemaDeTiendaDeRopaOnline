@@ -220,8 +220,8 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">COLOR</label>
-                            <input asp-for="Color" class="form-control form-control-custom" list="coloresDisponibles" placeholder="Buscá o escribí un color" />
+                            <label class="form-label fw-bold">COLORES DISPONIBLES *</label>
+                            <input asp-for="Color" class="form-control form-control-custom" list="coloresDisponibles" placeholder="Ej: Negro / Blanco / Azul" required />
                             <datalist id="coloresDisponibles">
                                 <option value="Negro"></option>
                                 <option value="Blanco"></option>
@@ -248,7 +248,7 @@
                                 <option value="Natural"></option>
                                 <option value="Multicolor"></option>
                             </datalist>
-                            <div class="form-text">Podés seleccionar un color o escribir uno personalizado.</div>
+                            <div class="form-text">Separá los colores con /, coma o punto y coma.</div>
                         </div>
 
                         <div class="mb-4">

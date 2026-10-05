@@ -2,11 +2,30 @@
 Francisco Aguirre y Rocio Milanese
 
 TP_GestionDeTiendaDeRopa_Aguirre_Milanese
-Descripción del sistema Este sistema permite gestionar una tienda de ropa, administrando los productos disponibles, los clientes y las ventas realizadas. El objetivo principal es facilitar el control del stock y el registro de operaciones de manera sencilla.
+## Descripción actual del sistema
 
-Objetivos principales Mantener un registro actualizado de los productos que vende la tienda. Registrar las ventas realizadas a los clientes. Consultar información útil mediante reportes simples.
+El sistema permite gestionar de manera integral una tienda de ropa mediante una aplicación web conectada a una API. La solución administra el catálogo, los usuarios, el inventario, las ventas y los pedidos, y brinda diferentes operaciones según el rol del usuario: **Administrador**, **Empleado** o **Cliente**.
 
-Funcionalidades previstas Alta, baja y modificación de productos (por ejemplo: remeras, pantalones, buzos, etc.) Alta, baja y modificación de clientes Registrar ventas, seleccionando cliente y productos. Reportes: Listado de productos con stock bajo y listado de ventas realizadas en un período de tiempo.
+## Funcionalidades principales
+
+- **Autenticación y cuentas:** registro e inicio de sesión, cierre de sesión, cambio de contraseña y recuperación de contraseña.
+- **Gestión de productos:** alta, modificación y baja de productos, incluyendo datos de categoría, subcategoría, color, talle, precio, stock e imagen.
+- **Catálogo:** consulta de productos con filtrado por categoría y búsqueda por nombre, color o talle.
+- **Gestión administrativa:** administración de clientes, empleados, categorías, subcategorías, proveedores, sucursales, stock y configuración general de la tienda.
+- **Ventas y pedidos:** carrito de compras persistente para clientes, checkout con datos de envío y medios de pago, registro de pedidos y consulta de su detalle y estado.
+- **Operaciones de empleados:** punto de venta para registrar ventas, consulta de pedidos y acceso a facturas.
+- **Administración de ventas:** consulta de pedidos y facturas, generación de reportes de ventas y seguimiento de la información comercial.
+- **Comunicación:** consulta y envío de notificaciones y difusión de mensajes a los clientes.
+
+## Características no funcionales
+
+- Arquitectura modular con el frontend separado de la API.
+- Persistencia de la información en una base de datos SQL Server mediante Entity Framework Core.
+- API organizada mediante endpoints, servicios y repositorios, con documentación y exploración a través de OpenAPI/Scalar.
+- Mantenimiento independiente de los componentes frontend y backend.
+- Interfaz web adaptable a distintos tamaños de pantalla.
+- Validaciones de datos, protección de formularios y mensajes de error para prevenir y comunicar operaciones inválidas.
+- Persistencia del carrito por usuario mediante sesión y almacenamiento asociado en la API.
 
 2025
 
