@@ -60,3 +60,5 @@ Listado de ventas realizadas en un período de tiempo determinado.
 [Casos de uso actuales](https://docs.google.com/document/d/1oSaZe2MVYAlG6VoCUN5fXyPUHIPqRb6cpinY7BU99hs/edit?usp=sharing)
 
 [Presentación ](https://www.canva.com/design/DAHXEkadmHY/wx6l-sAyfFc6emwmFOXUIQ/edit)
+
+[Resumen Del Codigo Del Proyecto ](https://docs.google.com/document/d/1oDc-SoVl3Vh6Rrkfb815UwGDxtJxBeuJPj8jTNrbzu8/edit?usp=sharing)
