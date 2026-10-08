@@ -1,0 +1,22 @@
+# .NET build output
+**/bin/
+**/obj/
+
+# Local Prometheus data
+data/
+prometheus-data/
+
+# Local Grafana data
+grafana-data/
+
+# Generated binaries and diagnostics
+*.dll
+*.exe
+*.pdb
+*.cache
+*.sourcelink.json
+
+# Local IDE and user files
+*.user
+*.suo
+.vs/
