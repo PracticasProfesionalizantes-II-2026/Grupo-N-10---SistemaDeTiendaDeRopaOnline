@@ -1000,3 +1000,5 @@ C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FY
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FYR-API\bin\Debug\net10.0\Codigo\FYR-API\obj\ValidationCartModel\FYR-API.deps.json
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FYR-API\bin\Debug\net10.0\Codigo\FYR-API\obj\ValidationCartModel\FYR-API.runtimeconfig.json
 C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FYR-API\bin\Debug\net10.0\Codigo\FYR-API\obj\ValidationCartModel\FYR-API.staticwebassets.endpoints.json
+C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FYR-API\bin\Debug\net10.0\Prometheus.NetStandard.dll
+C:\Users\Usuario\source\repos\Grupo-N-10---SistemaDeTiendaDeRopaOnline\Codigo\FYR-API\bin\Debug\net10.0\Prometheus.AspNetCore.dll

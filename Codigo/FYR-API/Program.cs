@@ -8,6 +8,8 @@ using Repositorios.Interfaces;
 using Scalar.AspNetCore;
 using Modelos = Entidades.Models;
 using Entidades.Enums;
+using Metricas;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,6 +80,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseCors("AllowFrontend");
+app.UseHttpMetrics();
 app.MapOpenApi();
 app.MapScalarApiReference();
 app.UseHttpsRedirection();
@@ -286,15 +289,19 @@ app.MapPost("/api/pedidos", async (AppDbContext db, PedidoRequest pedidoDto) =>
             await db.SaveChangesAsync();
         }
 
+        MetricasTienda.IntentosPedido.WithLabels("confirmado").Inc();
         return Results.Ok(new { mensaje = "Venta guardada correctamente en FYR_DB", id = nuevoPedido.Id });
     }
     catch (Exception ex)
     {
+        MetricasTienda.IntentosPedido.WithLabels("error").Inc();
         string errorDetallado = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
         Console.WriteLine($"\n[ERROR EXPLICITO SQL SERVER]: {errorDetallado}\n");
         return Results.Problem($"Error en SQL Server: {errorDetallado}");
     }
 });
+
+app.MapMetrics();
 
 app.Run();
 
