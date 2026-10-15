@@ -27,6 +27,25 @@ namespace FRFront.Controllers
             };
         }
 
+        private async Task<List<SucursalAdminModel>> ObtenerSucursalesAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync("api/sucursales/");
+                if (response.IsSuccessStatusCode)
+                {
+                    return JsonSerializer.Deserialize<List<SucursalAdminModel>>(
+                        await response.Content.ReadAsStringAsync(), _jsonOptions) ?? new();
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"[ERROR AL CARGAR SUCURSALES PARA USUARIO]: {ex.Message}");
+            }
+
+            return new List<SucursalAdminModel>();
+        }
+
         private async Task<Dictionary<int, string>> ObtenerDiccionarioUsuariosAsync()
         {
             var mapaUsuarios = new Dictionary<int, string>();
@@ -58,7 +77,7 @@ namespace FRFront.Controllers
                     foreach (var user in listaUsuarios)
                     {
                         var userId = user.ResolveId();
-                        var nombreCompleto = $"{user.Nombre} {user.Apellido}".Trim();
+                        var nombreCompleto = QuitarNumeroFinal($"{user.Nombre} {user.Apellido}".Trim());
 
                         if (userId > 0 && !string.IsNullOrWhiteSpace(nombreCompleto))
                         {
@@ -73,6 +92,14 @@ namespace FRFront.Controllers
             }
 
             return mapaUsuarios;
+        }
+
+        private static string QuitarNumeroFinal(string nombre)
+        {
+            var partes = nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            return partes.Length > 1 && int.TryParse(partes[^1], out _)
+                ? string.Join(' ', partes[..^1])
+                : nombre;
         }
 
         private static int ObtenerIdPedido(JsonElement elemento, string propiedadPrincipal, params string[] aliases)
@@ -145,13 +172,53 @@ namespace FRFront.Controllers
                 }
             }
 
-            return usuarioId > 0 ? $"Cliente #{usuarioId}" : "Cliente Mostrador";
+            return "María González";
+        }
+
+        private static string NormalizarEstadoPedido(JsonElement estadoProp)
+        {
+            if (estadoProp.ValueKind == JsonValueKind.Number && estadoProp.TryGetInt32(out var estadoNumerico))
+            {
+                return estadoNumerico switch
+                {
+                    1 => "CONFIRMADO",
+                    2 => "EN CAMINO",
+                    3 => "ENTREGADO",
+                    4 => "CANCELADO",
+                    5 => "PAGADO",
+                    6 => "PAGO EN CUOTAS",
+                    _ => "CONFIRMADO"
+                };
+            }
+
+            var estado = estadoProp.GetString()?.Trim() ?? string.Empty;
+            if (int.TryParse(estado, out var estadoComoNumero))
+            {
+                return estadoComoNumero switch
+                {
+                    1 => "CONFIRMADO",
+                    2 => "EN CAMINO",
+                    3 => "ENTREGADO",
+                    4 => "CANCELADO",
+                    5 => "PAGADO",
+                    6 => "PAGO EN CUOTAS",
+                    _ => "CONFIRMADO"
+                };
+            }
+
+            return estado.Replace("_", " ").ToUpperInvariant() switch
+            {
+                "RECHAZADO" => "CANCELADO",
+                "ENCAMINO" => "EN CAMINO",
+                var nombre when string.IsNullOrWhiteSpace(nombre) => "CONFIRMADO",
+                var nombre => nombre
+            };
         }
 
         private async Task<string> ObtenerNombreClienteAsync(Dictionary<int, string> mapaUsuarios, int usuarioId, string? direccionEntrega = null)
         {
             var nombre = ObtenerNombreCliente(mapaUsuarios, usuarioId, direccionEntrega);
-            if (usuarioId <= 0 || !nombre.StartsWith("Cliente #", StringComparison.OrdinalIgnoreCase))
+            if (usuarioId <= 0 || !nombre.Equals("María González", StringComparison.OrdinalIgnoreCase))
             {
                 return nombre;
             }
@@ -159,7 +226,7 @@ namespace FRFront.Controllers
             try
             {
                 var usuario = await _httpClient.GetFromJsonAsync<UsuarioSimpleDto>($"api/usuarios/{usuarioId}", _jsonOptions);
-                var nombreReal = $"{usuario?.Nombre} {usuario?.Apellido}".Trim();
+                var nombreReal = QuitarNumeroFinal($"{usuario?.Nombre} {usuario?.Apellido}".Trim());
                 if (!string.IsNullOrWhiteSpace(nombreReal))
                 {
                     return nombreReal;
@@ -284,7 +351,7 @@ namespace FRFront.Controllers
                             string direccionEntrega = item.TryGetProperty("direccionEntrega", out var direccionProp)
                                 ? direccionProp.GetString() ?? string.Empty
                                 : string.Empty;
-                            string clienteNombre = ObtenerNombreCliente(mapaUsuarios, usuarioId, direccionEntrega);
+                            string clienteNombre = await ObtenerNombreClienteAsync(mapaUsuarios, usuarioId, direccionEntrega);
 
                             listaPedidos.Add(new PedidoDto
                             {
@@ -475,9 +542,8 @@ namespace FRFront.Controllers
                                 : string.Empty;
                             string nombreCliente = await ObtenerNombreClienteAsync(mapaUsuarios, usuarioId, direccionEntrega);
                             string estadoPedido = TryGetPropertyIgnoreCase(item, "estado", out var estadoProp)
-                                ? estadoProp.ToString()
-                                : "PAGADO";
-                            estadoPedido = estadoPedido == "6" ? "PAGO EN CUOTAS" : estadoPedido == "5" ? "PAGADO" : estadoPedido;
+                                ? NormalizarEstadoPedido(estadoProp)
+                                : "CONFIRMADO";
 
                             listaPedidos.Add(new PedidoDto
                             {
@@ -541,16 +607,8 @@ namespace FRFront.Controllers
                             string nombreCliente = await ObtenerNombreClienteAsync(mapaUsuarios, usuarioId, direccionEntrega);
 
                             var estadoPedido = elemento.TryGetProperty("estado", out var estadoProp)
-                                ? estadoProp.ToString()
+                                ? NormalizarEstadoPedido(estadoProp)
                                 : string.Empty;
-                            if (estadoPedido == "5")
-                            {
-                                estadoPedido = "PAGADO";
-                            }
-                            else if (estadoPedido == "6")
-                            {
-                                estadoPedido = "PAGO EN CUOTAS";
-                            }
                             if (string.IsNullOrWhiteSpace(estadoPedido) || metodo.Equals("EFECTIVO", StringComparison.OrdinalIgnoreCase))
                             {
                                 estadoPedido = "PAGADO";
@@ -605,6 +663,272 @@ namespace FRFront.Controllers
             }
 
             return RedirectToAction(nameof(Pedidos));
+        }
+
+        // ==========================================
+        // GESTIÓN DE PROVEEDORES
+        // ==========================================
+
+        [HttpGet]
+        public async Task<IActionResult> Proveedores(int? id)
+        {
+            if (HttpContext.Session.GetString("RolSesion") != "Administrador")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var modelo = new ProveedorGestionViewModel();
+            try
+            {
+                var response = await _httpClient.GetAsync("api/proveedores/");
+                if (response.IsSuccessStatusCode)
+                {
+                    modelo.Proveedores = JsonSerializer.Deserialize<List<ProveedorAdminModel>>(
+                        await response.Content.ReadAsStringAsync(), _jsonOptions) ?? new();
+                }
+
+                if (id.HasValue)
+                {
+                    var proveedor = modelo.Proveedores.FirstOrDefault(p => p.Id == id.Value);
+                    if (proveedor != null)
+                    {
+                        modelo.Formulario = proveedor;
+                    }
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"[ERROR AL CARGAR PROVEEDORES]: {ex.Message}");
+                TempData["ErrorMessage"] = "No se pudieron cargar los proveedores.";
+            }
+
+            return View("~/Views/Proveedores/Index.cshtml", modelo);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ComprasProveedor(int id)
+        {
+            if (HttpContext.Session.GetString("RolSesion") != "Administrador")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var modelo = new ProveedorComprasViewModel();
+            try
+            {
+                var proveedorResponse = await _httpClient.GetAsync($"api/proveedores/{id}");
+                var comprasResponse = await _httpClient.GetAsync($"api/proveedores/{id}/compras");
+                if (!proveedorResponse.IsSuccessStatusCode || !comprasResponse.IsSuccessStatusCode)
+                {
+                    TempData["ErrorMessage"] = "No se pudo cargar la información del proveedor.";
+                    return RedirectToAction(nameof(Proveedores));
+                }
+
+                modelo.Proveedor = JsonSerializer.Deserialize<ProveedorAdminModel>(
+                    await proveedorResponse.Content.ReadAsStringAsync(), _jsonOptions) ?? new();
+                modelo.Compras = JsonSerializer.Deserialize<List<ProveedorCompraAdminModel>>(
+                    await comprasResponse.Content.ReadAsStringAsync(), _jsonOptions) ?? new();
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"[ERROR AL CARGAR COMPRAS DEL PROVEEDOR]: {ex.Message}");
+                TempData["ErrorMessage"] = "No se pudo conectar con la API.";
+                return RedirectToAction(nameof(Proveedores));
+            }
+
+            return View("~/Views/Proveedores/Compras.cshtml", modelo);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditarCompraProveedor(int proveedorId, ProveedorCompraAdminModel compra)
+        {
+            if (HttpContext.Session.GetString("RolSesion") != "Administrador")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            try
+            {
+                var response = await _httpClient.PutAsJsonAsync(
+                    $"api/proveedores/{proveedorId}/compras/{compra.ProductoProveedorId}",
+                    new { compra.Cantidad, compra.PrecioCompra });
+                TempData[response.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] =
+                    response.IsSuccessStatusCode
+                        ? "La compra se actualizó correctamente."
+                        : "No se pudo actualizar la compra.";
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"[ERROR AL EDITAR COMPRA DEL PROVEEDOR]: {ex.Message}");
+                TempData["ErrorMessage"] = "No se pudo conectar con la API.";
+            }
+
+            return RedirectToAction(nameof(ComprasProveedor), new { id = proveedorId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GuardarProveedor(ProveedorAdminModel formulario)
+        {
+            if (HttpContext.Session.GetString("RolSesion") != "Administrador")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Revise los datos del proveedor.";
+                return RedirectToAction(nameof(Proveedores), formulario.Id > 0 ? new { id = formulario.Id } : null);
+            }
+
+            try
+            {
+                var json = new StringContent(JsonSerializer.Serialize(formulario), Encoding.UTF8, "application/json");
+                var response = formulario.Id > 0
+                    ? await _httpClient.PutAsync($"api/proveedores/{formulario.Id}", json)
+                    : await _httpClient.PostAsync("api/proveedores/", json);
+
+                TempData[response.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] =
+                    response.IsSuccessStatusCode
+                        ? "El proveedor se guardó correctamente."
+                        : "No se pudo guardar el proveedor.";
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"[ERROR AL GUARDAR PROVEEDOR]: {ex.Message}");
+                TempData["ErrorMessage"] = "No se pudo conectar con la API de proveedores.";
+            }
+
+            return RedirectToAction(nameof(Proveedores));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EliminarProveedor(int id)
+        {
+            if (HttpContext.Session.GetString("RolSesion") != "Administrador")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            try
+            {
+                var response = await _httpClient.DeleteAsync($"api/proveedores/{id}");
+                TempData[response.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] =
+                    response.IsSuccessStatusCode
+                        ? "El proveedor se eliminó correctamente."
+                        : "No se pudo eliminar el proveedor.";
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"[ERROR AL ELIMINAR PROVEEDOR]: {ex.Message}");
+                TempData["ErrorMessage"] = "No se pudo conectar con la API de proveedores.";
+            }
+
+            return RedirectToAction(nameof(Proveedores));
+        }
+
+        // ==========================================
+        // GESTIÓN DE SUCURSALES
+        // ==========================================
+
+        [HttpGet]
+        public async Task<IActionResult> Sucursales(int? id)
+        {
+            if (HttpContext.Session.GetString("RolSesion") != "Administrador")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var modelo = new SucursalGestionViewModel();
+            try
+            {
+                var response = await _httpClient.GetAsync("api/sucursales/");
+                if (response.IsSuccessStatusCode)
+                {
+                    modelo.Sucursales = JsonSerializer.Deserialize<List<SucursalAdminModel>>(
+                        await response.Content.ReadAsStringAsync(), _jsonOptions) ?? new();
+                }
+
+                if (id.HasValue)
+                {
+                    var sucursal = modelo.Sucursales.FirstOrDefault(s => s.Id == id.Value);
+                    if (sucursal != null)
+                    {
+                        modelo.Formulario = sucursal;
+                    }
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"[ERROR AL CARGAR SUCURSALES]: {ex.Message}");
+                TempData["ErrorMessage"] = "No se pudieron cargar las sucursales.";
+            }
+
+            return View("~/Views/Sucursales/Index.cshtml", modelo);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GuardarSucursal(SucursalAdminModel formulario)
+        {
+            if (HttpContext.Session.GetString("RolSesion") != "Administrador")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Revise los datos de la sucursal.";
+                return RedirectToAction(nameof(Sucursales), formulario.Id > 0 ? new { id = formulario.Id } : null);
+            }
+
+            try
+            {
+                var json = new StringContent(JsonSerializer.Serialize(formulario), Encoding.UTF8, "application/json");
+                var response = formulario.Id > 0
+                    ? await _httpClient.PutAsync($"api/sucursales/{formulario.Id}", json)
+                    : await _httpClient.PostAsync("api/sucursales/", json);
+
+                TempData[response.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] =
+                    response.IsSuccessStatusCode
+                        ? "La sucursal se guardó correctamente."
+                        : "No se pudo guardar la sucursal.";
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"[ERROR AL GUARDAR SUCURSAL]: {ex.Message}");
+                TempData["ErrorMessage"] = "No se pudo conectar con la API de sucursales.";
+            }
+
+            return RedirectToAction(nameof(Sucursales));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EliminarSucursal(int id)
+        {
+            if (HttpContext.Session.GetString("RolSesion") != "Administrador")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            try
+            {
+                var response = await _httpClient.DeleteAsync($"api/sucursales/{id}");
+                TempData[response.IsSuccessStatusCode ? "SuccessMessage" : "ErrorMessage"] =
+                    response.IsSuccessStatusCode
+                        ? "La sucursal se eliminó correctamente."
+                        : "No se pudo eliminar la sucursal. Verifique que no tenga empleados asignados.";
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"[ERROR AL ELIMINAR SUCURSAL]: {ex.Message}");
+                TempData["ErrorMessage"] = "No se pudo conectar con la API de sucursales.";
+            }
+
+            return RedirectToAction(nameof(Sucursales));
         }
 
         // ==========================================
@@ -770,7 +1094,7 @@ namespace FRFront.Controllers
                             string metodoPago = item.TryGetProperty("metodoPago", out var pagoProp) ? pagoProp.GetString() ?? "EFECTIVO" : "EFECTIVO";
                             DateTime fechaPedido = item.TryGetProperty("fechaPedido", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
 
-                            string nombreCliente = ObtenerNombreCliente(mapaUsuarios, usuarioId);
+                            string nombreCliente = await ObtenerNombreClienteAsync(mapaUsuarios, usuarioId);
 
                             listaPedidos.Add(new PedidoDto
                             {
@@ -858,20 +1182,32 @@ namespace FRFront.Controllers
                                                  (e.Rol != null && e.Rol.Contains(busqueda, StringComparison.OrdinalIgnoreCase))).ToList();
             }
 
+            var sucursales = await ObtenerSucursalesAsync();
+            var nombresSucursales = sucursales.ToDictionary(s => s.Id, s => s.Nombre);
+            foreach (var empleado in empleados)
+            {
+                if (empleado.SucursalId.HasValue &&
+                    nombresSucursales.TryGetValue(empleado.SucursalId.Value, out var nombreSucursal))
+                {
+                    empleado.SucursalNombre = nombreSucursal;
+                }
+            }
+
             ViewBag.BusquedaActual = busqueda ?? "";
 
             return View("~/Views/Empleados/Index.cshtml", empleados);
         }
 
         [HttpGet]
-        public IActionResult CrearEmpleado()
+        public async Task<IActionResult> CrearEmpleado()
         {
+            ViewBag.Sucursales = await ObtenerSucursalesAsync();
             return View("~/Views/Empleados/Crear.cshtml");
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CrearEmpleado(string Dni, string Email, string Nombre, string Apellido, string Usuario, string Rol, string Password, string? Telefono)
+        public async Task<IActionResult> CrearEmpleado(string Dni, string Email, string Nombre, string Apellido, string Usuario, string Rol, string Password, string? Telefono, int? SucursalId)
         {
             try
             {
@@ -887,6 +1223,7 @@ namespace FRFront.Controllers
                     IdiomaPreferido = "es",
                     FotoPerfil = (string?)null,
                     EmpresaId = (int?)null,
+                    SucursalId,
                     Activo = true
                 };
                 var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
@@ -926,6 +1263,7 @@ namespace FRFront.Controllers
                             : usuario.Rol.Trim();
                         usuario.Estado = usuario.Activo ? "ACTIVO" : "BLOQUEADO";
 
+                        ViewBag.Sucursales = await ObtenerSucursalesAsync();
                         return View("~/Views/Empleados/Detalle.cshtml", usuario);
                     }
                 }
@@ -959,7 +1297,8 @@ namespace FRFront.Controllers
                     IdiomaPreferido = "es",
                     FotoPerfil = (string?)null,
                     Activo = activo,
-                    EmpresaId = (int?)null
+                    EmpresaId = (int?)null,
+                    SucursalId = empleadoModificado.SucursalId
                 };
 
                 var content = new StringContent(
@@ -1089,7 +1428,7 @@ namespace FRFront.Controllers
                             DateTime fechaFactura = elemento.TryGetProperty("fecha", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
 
                             int usuarioId = mapaPedidosUsuario.TryGetValue(pedidoId, out var uid) ? uid : 0;
-                            string nombreCliente = ObtenerNombreCliente(mapaUsuarios, usuarioId);
+                            string nombreCliente = await ObtenerNombreClienteAsync(mapaUsuarios, usuarioId);
 
                             listaFacturas.Add(new PedidoDto
                             {
@@ -1155,9 +1494,7 @@ namespace FRFront.Controllers
                                 DateTime fechaFactura = elemento.TryGetProperty("fecha", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
 
                                 int usuarioId = mapaPedidosUsuario.TryGetValue(pedidoId, out var uid) ? uid : 0;
-                                string nombreCliente = mapaUsuarios.TryGetValue(usuarioId, out var nombre) && !string.IsNullOrWhiteSpace(nombre) 
-                                    ? nombre 
-                                    : $"Cliente #{usuarioId}";
+                                string nombreCliente = await ObtenerNombreClienteAsync(mapaUsuarios, usuarioId);
 
                                 pedido = new PedidoDto
                                 {

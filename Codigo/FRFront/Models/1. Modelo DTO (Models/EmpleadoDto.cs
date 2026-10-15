@@ -32,5 +32,7 @@ namespace FRFront.Models
 
         public string Estado { get; set; } = "ACTIVO";
         public bool Activo { get; set; } = true;
+        public int? SucursalId { get; set; }
+        public string SucursalNombre { get; set; } = string.Empty;
     }
 }

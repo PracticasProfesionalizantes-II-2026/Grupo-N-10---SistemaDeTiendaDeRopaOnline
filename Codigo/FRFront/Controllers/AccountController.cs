@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using FRFront.Models;
 using FRFront.Helpers;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
 
 namespace FRFront.Controllers
 {
@@ -29,6 +30,7 @@ namespace FRFront.Controllers
         public IActionResult Login(string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
+            ViewData["LoginLockSeconds"] = ObtenerSegundosBloqueo(null);
             return View();
         }
 
@@ -43,19 +45,55 @@ namespace FRFront.Controllers
                 return View(model);
             }
 
+            var email = model.Email.Trim().ToLowerInvariant();
+            var claveIntentos = ObtenerClaveIntentos(email);
+            var estado = ObtenerEstadoLogin(claveIntentos);
+            if (estado.BloqueadoPermanentemente)
+            {
+                ViewData["ReturnUrl"] = returnUrl;
+                ViewData["LoginLockSeconds"] = 0;
+                ViewData["LoginRecoveryRequired"] = true;
+                ModelState.AddModelError(string.Empty, "Se alcanzó el límite de intentos. Se envió un correo de recuperación de contraseña.");
+                return View(model);
+            }
+
+            if (estado.SegundosBloqueo > 0)
+            {
+                ViewData["ReturnUrl"] = returnUrl;
+                ViewData["LoginLockSeconds"] = estado.SegundosBloqueo;
+                ModelState.AddModelError(string.Empty, $"Debe esperar {estado.SegundosBloqueo} segundos antes de volver a intentarlo.");
+                return View(model);
+            }
+
             LoginApiResponse? login;
             try
             {
                 using var response = await _httpClient.PostAsJsonAsync("api/auth/login", new
                 {
-                    Email = model.Email.Trim(),
+                    Email = email,
                     Password = model.Password
                 });
 
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
+                    var intentos = IncrementarIntentos(claveIntentos);
                     ViewData["ReturnUrl"] = returnUrl;
-                    ModelState.AddModelError("Password", "La contraseña ingresada es incorrecta.");
+                    if (intentos >= 4)
+                    {
+                        HttpContext.Session.SetString($"{claveIntentos}:recuperacion", "true");
+                        ViewData["LoginRecoveryRequired"] = true;
+                        ModelState.AddModelError(string.Empty, "Se alcanzó el límite de intentos. Se envió un correo de recuperación de contraseña.");
+                    }
+                    else if (intentos == 3)
+                    {
+                        HttpContext.Session.SetString($"{claveIntentos}:bloqueadoHasta", DateTimeOffset.UtcNow.AddSeconds(30).ToUnixTimeSeconds().ToString());
+                        ViewData["LoginLockSeconds"] = 30;
+                        ModelState.AddModelError(string.Empty, "Falló el tercer intento. Debe esperar 30 segundos antes de volver a intentarlo.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("Password", "La contraseña ingresada es incorrecta. Intente nuevamente.");
+                    }
                     return View(model);
                 }
 
@@ -83,6 +121,7 @@ namespace FRFront.Controllers
             }
 
             HttpContext.Session.SetString("UsuarioSesion", model.Email.Trim());
+            LimpiarIntentos(claveIntentos);
             HttpContext.Session.SetString("RolSesion", login.TipoUsuario);
             HttpContext.Session.SetString("UsuarioApiId", login.IdUsuario.ToString());
 
@@ -105,6 +144,52 @@ namespace FRFront.Controllers
                 return RedirectToAction("Index", "Empleado");
 
             return RedirectToAction("Index", "Home");
+        }
+
+        private string ObtenerClaveIntentos(string email)
+        {
+            var hash = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(email)));
+            return $"LoginIntentos:{hash}";
+        }
+
+        private int IncrementarIntentos(string clave)
+        {
+            var intentos = ObtenerEnteroSesion($"{clave}:cantidad") + 1;
+            HttpContext.Session.SetString($"{clave}:cantidad", intentos.ToString());
+            return intentos;
+        }
+
+        private (int SegundosBloqueo, bool BloqueadoPermanentemente) ObtenerEstadoLogin(string clave)
+        {
+            if (HttpContext.Session.GetString($"{clave}:recuperacion") == "true")
+                return (0, true);
+
+            var bloqueoHasta = ObtenerEnteroLargoSesion($"{clave}:bloqueadoHasta");
+            var segundos = Math.Max(0, (int)(bloqueoHasta - DateTimeOffset.UtcNow.ToUnixTimeSeconds()));
+            if (segundos == 0 && bloqueoHasta > 0)
+                HttpContext.Session.Remove($"{clave}:bloqueadoHasta");
+
+            return (segundos, false);
+        }
+
+        private int ObtenerSegundosBloqueo(string? email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return 0;
+            return ObtenerEstadoLogin(ObtenerClaveIntentos(email.Trim().ToLowerInvariant())).SegundosBloqueo;
+        }
+
+        private int ObtenerEnteroSesion(string clave)
+            => int.TryParse(HttpContext.Session.GetString(clave), out var valor) ? valor : 0;
+
+        private long ObtenerEnteroLargoSesion(string clave)
+            => long.TryParse(HttpContext.Session.GetString(clave), out var valor) ? valor : 0;
+
+        private void LimpiarIntentos(string clave)
+        {
+            HttpContext.Session.Remove($"{clave}:cantidad");
+            HttpContext.Session.Remove($"{clave}:bloqueadoHasta");
+            HttpContext.Session.Remove($"{clave}:recuperacion");
         }
 
         // GET: /Account/Logout

@@ -101,6 +101,20 @@ namespace FRFront.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
+            try
+            {
+                using var response = await _httpClient.GetAsync("api/health");
+                if (!response.IsSuccessStatusCode)
+                {
+                    return View("Unavailable");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogWarning(ex, "La API o la base de datos no están disponibles al abrir la tienda.");
+                return View("Unavailable");
+            }
+
             return View(await ObtenerProductosAsync());
         }
 

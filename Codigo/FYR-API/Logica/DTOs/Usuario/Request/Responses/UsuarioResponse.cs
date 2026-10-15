@@ -23,4 +23,6 @@ public class UsuarioResponse
     public DateTime FechaRegistro { get; set; }
 
     public int? EmpresaId { get; set; }
+
+    public int? SucursalId { get; set; }
 }

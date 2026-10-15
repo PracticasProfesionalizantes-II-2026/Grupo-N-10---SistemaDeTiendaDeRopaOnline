@@ -155,6 +155,18 @@
                         <div id="errorRol" class="error-feedback">No se le asignó un ROL</div>
                     </div>
 
+                    <!-- SUCURSAL -->
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label fw-bold small text-uppercase">Sucursal *</label>
+                        <select name="SucursalId" class="form-select form-control-custom" required>
+                            <option value="">-- Seleccionar sucursal --</option>
+                            @foreach (var sucursal in (IEnumerable<FRFront.Models.SucursalAdminModel>)(ViewBag.Sucursales ?? new List<FRFront.Models.SucursalAdminModel>()))
+                            {
+                                <option value="@sucursal.Id">@sucursal.Nombre</option>
+                            }
+                        </select>
+                    </div>
+
                     <!-- CONTRASEÑA -->
                     <div class="col-12 mb-3">
                         <label class="form-label fw-bold small text-uppercase">Contraseña *</label>

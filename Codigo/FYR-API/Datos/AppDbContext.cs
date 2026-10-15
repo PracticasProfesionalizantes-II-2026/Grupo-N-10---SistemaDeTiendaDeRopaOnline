@@ -70,6 +70,12 @@ public class AppDbContext : DbContext
             .HasForeignKey(u => u.EmpresaId)
             .OnDelete(DeleteBehavior.NoAction);
 
+        modelBuilder.Entity<Usuario>()
+            .HasOne(u => u.Sucursal)
+            .WithMany(s => s.Usuarios)
+            .HasForeignKey(u => u.SucursalId)
+            .OnDelete(DeleteBehavior.NoAction);
+
         modelBuilder.Entity<Categoria>()
             .HasOne(c => c.Empresa)
             .WithMany(e => e.Categorias)

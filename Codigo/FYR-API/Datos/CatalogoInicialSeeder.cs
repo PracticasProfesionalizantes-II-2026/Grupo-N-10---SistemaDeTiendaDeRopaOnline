@@ -1,4 +1,5 @@
 using Entidades.Models;
+using Entidades.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Datos;
@@ -121,6 +122,108 @@ public static class CatalogoInicialSeeder
             });
 
             imagenesExistentes.Add(imagenUrl);
+        }
+
+        await db.SaveChangesAsync();
+
+        var clientesConNombreGenerico = await db.Usuarios
+            .Where(u => u.Rol == Rol.Cliente &&
+                        (string.IsNullOrWhiteSpace(u.Nombre) ||
+                         EF.Functions.Like(u.Nombre, "%MOSTRADOR%") ||
+                         EF.Functions.Like(u.Apellido, "%MOSTRADOR%")))
+            .ToListAsync();
+
+        foreach (var cliente in clientesConNombreGenerico)
+        {
+            cliente.Nombre = "María";
+            cliente.Apellido = "González";
+        }
+
+        var clientesConNumeroEnApellido = await db.Usuarios
+            .Where(u => u.Rol == Rol.Cliente)
+            .ToListAsync();
+
+        var clientesActualizados = clientesConNombreGenerico.Count > 0;
+        foreach (var cliente in clientesConNumeroEnApellido)
+        {
+            var partesApellido = cliente.Apellido
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            if (partesApellido.Length > 1 &&
+                int.TryParse(partesApellido[^1], out _))
+            {
+                cliente.Apellido = string.Join(' ', partesApellido[..^1]);
+                clientesActualizados = true;
+            }
+        }
+
+        if (clientesActualizados)
+        {
+            await db.SaveChangesAsync();
+        }
+
+        var proveedor = await db.Proveedores
+            .FirstOrDefaultAsync(p => p.Correo == "ventas@textilrioparana.com");
+        if (proveedor is null)
+        {
+            proveedor = new Proveedor
+            {
+                Nombre = "Carlos",
+                Apellido = "Gómez",
+                Telefono = "5491123456789",
+                Correo = "ventas@textilrioparana.com",
+                Direccion = "Av. Corrientes 2450, CABA",
+                EmpresaId = empresa.Id
+            };
+            db.Proveedores.Add(proveedor);
+            await db.SaveChangesAsync();
+        }
+
+        var sucursalPrincipal = await db.Sucursales
+            .FirstOrDefaultAsync(s => s.EmpresaId == empresa.Id);
+        if (sucursalPrincipal is null)
+        {
+            sucursalPrincipal = new Sucursal
+            {
+                Nombre = "Sucursal principal",
+                Direccion = empresa.Direccion,
+                EmpresaId = empresa.Id
+            };
+            db.Sucursales.Add(sucursalPrincipal);
+            await db.SaveChangesAsync();
+        }
+
+        var productosPersistidos = await db.Productos
+            .Where(p => p.EmpresaId == empresa.Id)
+            .ToListAsync();
+        foreach (var producto in productosPersistidos)
+        {
+            producto.Marca ??= "F&R";
+
+            if (!await db.ProductosProveedor.AnyAsync(pp =>
+                    pp.ProductoId == producto.Id && pp.ProveedorId == proveedor.Id))
+            {
+                db.ProductosProveedor.Add(new ProductoProveedor
+                {
+                    ProductoId = producto.Id,
+                    ProveedorId = proveedor.Id,
+                    PrecioCompra = Math.Round(producto.Precio * 0.55m, 2),
+                    Cantidad = 10
+                });
+            }
+
+            var stock = await db.Stocks.FirstOrDefaultAsync(s =>
+                s.ProductoId == producto.Id && s.SucursalId == sucursalPrincipal.Id);
+            if (stock is null)
+            {
+                db.Stocks.Add(new Stock
+                {
+                    ProductoId = producto.Id,
+                    SucursalId = sucursalPrincipal.Id,
+                    CantidadDisponible = 10,
+                    Estado = EstadoStock.Disponible
+                });
+            }
         }
 
         await db.SaveChangesAsync();

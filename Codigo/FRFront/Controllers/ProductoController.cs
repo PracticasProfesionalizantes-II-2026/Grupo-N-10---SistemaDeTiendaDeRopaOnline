@@ -92,6 +92,7 @@ namespace FRFront.Controllers
         public async Task<IActionResult> Crear()
         {
             await PrepararCategoriasAsync();
+            await PrepararProveedoresAsync();
             return View("~/Views/Productos/Crear.cshtml");
         }
 
@@ -113,6 +114,7 @@ namespace FRFront.Controllers
                 {
                     ModelState.AddModelError(nameof(imagenFile), ex.Message);
                     await PrepararCategoriasAsync();
+                    await PrepararProveedoresAsync();
                     return View("~/Views/Productos/Crear.cshtml", nuevoProducto);
                 }
 
@@ -146,7 +148,10 @@ namespace FRFront.Controllers
                         nuevoProducto.ImagenUrl,
                         nuevoProducto.Talles,
                         Colores = nuevoProducto.Color,
+                        Marca = nuevoProducto.Marca,
                         Stock = nuevoProducto.Stock,
+                        ProveedorId = nuevoProducto.ProveedorId,
+                        PrecioCompra = nuevoProducto.PrecioCompra,
                         EmpresaId = categoria.EmpresaId,
                         CategoriaId = categoria.Id
                     });
@@ -155,6 +160,7 @@ namespace FRFront.Controllers
                     {
                         ModelState.AddModelError(string.Empty, "No se pudo guardar el producto en la base de datos.");
                         await PrepararCategoriasAsync();
+                        await PrepararProveedoresAsync();
                         return View("~/Views/Productos/Crear.cshtml", nuevoProducto);
                     }
 
@@ -183,6 +189,7 @@ namespace FRFront.Controllers
                     ?? new List<CategoriaLookupDto>();
                 ViewBag.CategoriasError = null;
             }
+
             catch (HttpRequestException ex)
             {
                 _logger.LogWarning(ex, "No se pudieron cargar las categorías desde la API.");
@@ -194,6 +201,20 @@ namespace FRFront.Controllers
                 _logger.LogWarning(ex, "La API devolvió una respuesta inválida al cargar categorías.");
                 ViewBag.Categorias = new List<CategoriaLookupDto>();
                 ViewBag.CategoriasError = "La API devolvió una respuesta inválida al cargar las categorías.";
+            }
+        }
+
+        private async Task PrepararProveedoresAsync()
+        {
+            try
+            {
+                ViewBag.Proveedores = await _httpClient.GetFromJsonAsync<List<ProveedorAdminModel>>("api/proveedores/")
+                    ?? new List<ProveedorAdminModel>();
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogWarning(ex, "No se pudieron cargar los proveedores.");
+                ViewBag.Proveedores = new List<ProveedorAdminModel>();
             }
         }
 
@@ -276,6 +297,7 @@ namespace FRFront.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            await PrepararProveedoresAsync();
             return View("~/Views/Productos/Modificar.cshtml", producto);
         }
 
@@ -296,6 +318,7 @@ namespace FRFront.Controllers
                 catch (InvalidOperationException ex)
                 {
                     ModelState.AddModelError(nameof(imagenFile), ex.Message);
+                    await PrepararProveedoresAsync();
                     return View("~/Views/Productos/Modificar.cshtml", productoModificado);
                 }
 
@@ -326,7 +349,10 @@ namespace FRFront.Controllers
                     ImagenUrl = productoModificado.ImagenUrl,
                     productoModificado.Talles,
                     Colores = productoModificado.Color,
+                    Marca = productoModificado.Marca,
                     productoModificado.Stock,
+                    productoModificado.ProveedorId,
+                    productoModificado.PrecioCompra,
                     productoModificado.CategoriaId,
                     productoModificado.SubcategoriaId
                 };
@@ -346,7 +372,10 @@ namespace FRFront.Controllers
                             productoModificado.ImagenUrl,
                             productoModificado.Talles,
                             Colores = productoModificado.Color,
+                            Marca = productoModificado.Marca,
                             Stock = productoModificado.Stock,
+                            productoModificado.ProveedorId,
+                            productoModificado.PrecioCompra,
                             EmpresaId = categoria.EmpresaId,
                             CategoriaId = categoria.Id,
                             productoModificado.SubcategoriaId
@@ -364,6 +393,7 @@ namespace FRFront.Controllers
                     else if (!response.IsSuccessStatusCode)
                     {
                         ModelState.AddModelError(string.Empty, "No se pudo guardar el producto en la base de datos.");
+                        await PrepararProveedoresAsync();
                         return View("~/Views/Productos/Modificar.cshtml", productoModificado);
                     }
 
@@ -383,6 +413,7 @@ namespace FRFront.Controllers
                 catch (HttpRequestException)
                 {
                     ModelState.AddModelError(string.Empty, "No se pudo conectar con la API para guardar el producto.");
+                    await PrepararProveedoresAsync();
                     return View("~/Views/Productos/Modificar.cshtml", productoModificado);
                 }
 

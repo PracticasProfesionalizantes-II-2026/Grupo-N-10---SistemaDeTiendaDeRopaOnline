@@ -1,0 +1,59 @@
+@model FRFront.Models.ProveedorComprasViewModel
+@{
+    Layout = "_LayoutAdministrador";
+    ViewData["Title"] = "Productos del Proveedor";
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold text-uppercase">Productos comprados</h1>
+            <p class="text-muted mb-0">@Model.Proveedor.Nombre @Model.Proveedor.Apellido</p>
+        </div>
+        <a asp-action="Proveedores" class="btn btn-outline-dark rounded-pill">Volver a proveedores</a>
+    </div>
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+    <div class="card-custom p-4">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr><th>Producto</th><th>Marca</th><th>Precio de compra</th><th>Cantidad</th><th></th></tr>
+                </thead>
+                <tbody>
+                @foreach (var compra in Model.Compras)
+                {
+                    <tr>
+                        <td>@compra.NombreProducto</td>
+                        <td>@compra.Marca</td>
+                        <td>
+                            <input class="form-control" form="compra-@compra.ProductoProveedorId" type="number" name="PrecioCompra" value="@compra.PrecioCompra" min="0" step="0.01" />
+                        </td>
+                        <td>
+                            <input class="form-control" form="compra-@compra.ProductoProveedorId" type="number" name="Cantidad" value="@compra.Cantidad" min="0" />
+                        </td>
+                        <td>
+                            <form id="compra-@compra.ProductoProveedorId" asp-action="EditarCompraProveedor" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="proveedorId" value="@Model.Proveedor.Id" />
+                                <input type="hidden" name="ProductoProveedorId" value="@compra.ProductoProveedorId" />
+                                <button type="submit" class="btn btn-sm btn-dark rounded-pill">Guardar</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+            @if (!Model.Compras.Any())
+            {
+                <p class="text-muted text-center mb-0">No hay productos comprados a este proveedor.</p>
+            }
+        </div>
+    </div>
+</div>

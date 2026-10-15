@@ -165,11 +165,31 @@
                             <label class="form-label fw-bold">NOMBRE *</label>
                             <input asp-for="Nombre" type="text" class="form-control form-control-custom" placeholder="Ingresar nombre del producto" required />
                         </div>
+                        <div class="mb-3">
+                            <label asp-for="Marca" class="form-label fw-bold">MARCA</label>
+                            <input asp-for="Marca" class="form-control form-control-custom" />
+                        </div>
 
                         <div class="row g-3 mb-3">
                             <div class="col-6">
-                                <label class="form-label fw-bold">PRECIO ($) *</label>
+                                <label class="form-label fw-bold">PRECIO DE VENTA ($) *</label>
                                 <input asp-for="Precio" type="number" step="0.01" class="form-control form-control-custom" placeholder="Ingresar precio" required />
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label asp-for="PrecioCompra" class="form-label fw-bold">PRECIO DE COMPRA ($)</label>
+                                    <input asp-for="PrecioCompra" type="number" step="0.01" min="0" class="form-control form-control-custom" />
+                                </div>
+                                <div class="col-6">
+                                    <label asp-for="ProveedorId" class="form-label fw-bold">PROVEEDOR</label>
+                                    <select asp-for="ProveedorId" class="form-select form-control-custom">
+                                        <option value="">-- Seleccionar --</option>
+                                        @foreach (var proveedor in (IEnumerable<ProveedorAdminModel>)(ViewBag.Proveedores ?? new List<ProveedorAdminModel>()))
+                                        {
+                                            <option value="@proveedor.Id">@proveedor.Nombre @proveedor.Apellido</option>
+                                        }
+                                    </select>
+                                </div>
                             </div>
                             <div class="col-6">
                                 <label class="form-label fw-bold">STOCK *</label>

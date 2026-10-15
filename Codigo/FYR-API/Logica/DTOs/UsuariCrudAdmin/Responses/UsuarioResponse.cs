@@ -8,4 +8,6 @@ public class UsuarioResponse
     public bool Activo { get; set; }
     public string? Telefono { get; set; }
     public string? IdiomaPreferido { get; set; }
+
+    public int? SucursalId { get; set; }
 }

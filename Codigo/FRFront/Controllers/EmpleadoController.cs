@@ -51,7 +51,7 @@ namespace FRFront.Controllers
                     foreach (var user in listaUsuarios)
                     {
                         var userId = user.ResolveId();
-                        var nombreCompleto = $"{user.Nombre} {user.Apellido}".Trim();
+                        var nombreCompleto = QuitarNumeroFinal($"{user.Nombre} {user.Apellido}".Trim());
 
                         if (userId > 0 && !string.IsNullOrWhiteSpace(nombreCompleto))
                         {
@@ -66,6 +66,14 @@ namespace FRFront.Controllers
             }
 
             return mapaUsuarios;
+        }
+
+        private static string QuitarNumeroFinal(string nombre)
+        {
+            var partes = nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            return partes.Length > 1 && int.TryParse(partes[^1], out _)
+                ? string.Join(' ', partes[..^1])
+                : nombre;
         }
 
         private static int ObtenerIdPedido(JsonElement elemento, string propiedadPrincipal, params string[] aliases)
@@ -108,13 +116,53 @@ namespace FRFront.Controllers
                 }
             }
 
-            return usuarioId > 0 ? $"Cliente #{usuarioId}" : "Cliente Mostrador";
+            return "María González";
+        }
+
+        private static string NormalizarEstadoPedido(JsonElement estadoProp)
+        {
+            if (estadoProp.ValueKind == JsonValueKind.Number && estadoProp.TryGetInt32(out var estadoNumerico))
+            {
+                return estadoNumerico switch
+                {
+                    1 => "CONFIRMADO",
+                    2 => "EN CAMINO",
+                    3 => "ENTREGADO",
+                    4 => "CANCELADO",
+                    5 => "PAGADO",
+                    6 => "PAGO EN CUOTAS",
+                    _ => "CONFIRMADO"
+                };
+            }
+
+            var estado = estadoProp.GetString()?.Trim() ?? string.Empty;
+            if (int.TryParse(estado, out var estadoComoNumero))
+            {
+                return estadoComoNumero switch
+                {
+                    1 => "CONFIRMADO",
+                    2 => "EN CAMINO",
+                    3 => "ENTREGADO",
+                    4 => "CANCELADO",
+                    5 => "PAGADO",
+                    6 => "PAGO EN CUOTAS",
+                    _ => "CONFIRMADO"
+                };
+            }
+
+            return estado.Replace("_", " ").ToUpperInvariant() switch
+            {
+                "RECHAZADO" => "CANCELADO",
+                "ENCAMINO" => "EN CAMINO",
+                var nombre when string.IsNullOrWhiteSpace(nombre) => "CONFIRMADO",
+                var nombre => nombre
+            };
         }
 
         private async Task<string> ObtenerNombreClienteAsync(Dictionary<int, string> mapaUsuarios, int usuarioId, string? direccionEntrega = null)
         {
             var nombre = ObtenerNombreCliente(mapaUsuarios, usuarioId, direccionEntrega);
-            if (usuarioId <= 0 || !nombre.StartsWith("Cliente #", StringComparison.OrdinalIgnoreCase))
+            if (usuarioId <= 0 || !nombre.Equals("María González", StringComparison.OrdinalIgnoreCase))
             {
                 return nombre;
             }
@@ -122,7 +170,7 @@ namespace FRFront.Controllers
             try
             {
                 var usuario = await _httpClient.GetFromJsonAsync<UsuarioSimpleDto>($"api/usuarios/{usuarioId}", _jsonOptions);
-                var nombreReal = $"{usuario?.Nombre} {usuario?.Apellido}".Trim();
+                var nombreReal = QuitarNumeroFinal($"{usuario?.Nombre} {usuario?.Apellido}".Trim());
                 if (!string.IsNullOrWhiteSpace(nombreReal))
                 {
                     return nombreReal;
@@ -290,9 +338,8 @@ namespace FRFront.Controllers
 
                             string nombreCliente = await ObtenerNombreClienteAsync(mapaUsuarios, usuarioId, direccionEntrega);
                             string estadoPedido = item.TryGetProperty("estado", out var estadoProp)
-                                ? estadoProp.ToString()
-                                : "PAGADO";
-                            estadoPedido = estadoPedido == "6" ? "PAGO EN CUOTAS" : estadoPedido == "5" ? "PAGADO" : estadoPedido;
+                                ? NormalizarEstadoPedido(estadoProp)
+                                : "CONFIRMADO";
 
                             listaPedidos.Add(new PedidoDto
                             {
@@ -360,7 +407,7 @@ namespace FRFront.Controllers
                             DateTime fechaFactura = elemento.TryGetProperty("fecha", out var fechaProp) ? fechaProp.GetDateTime() : DateTime.Now;
 
                             int usuarioId = mapaPedidosUsuario.TryGetValue(pedidoId, out var uid) ? uid : 0;
-                            string nombreCliente = ObtenerNombreCliente(mapaUsuarios, usuarioId);
+                            string nombreCliente = await ObtenerNombreClienteAsync(mapaUsuarios, usuarioId);
 
                             listaFacturas.Add(new PedidoDto
                             {

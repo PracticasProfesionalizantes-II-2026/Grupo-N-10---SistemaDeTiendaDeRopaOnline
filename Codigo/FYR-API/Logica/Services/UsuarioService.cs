@@ -22,7 +22,8 @@ public class UsuarioService : IUsuarioService
             TipoUsuario = usuario.Rol.ToString(),
             Activo = usuario.Activo,
             Telefono = usuario.Telefono,
-            IdiomaPreferido = usuario.IdiomaPreferido
+            IdiomaPreferido = usuario.IdiomaPreferido,
+            SucursalId = usuario.SucursalId
         };
     }
 
@@ -59,6 +60,7 @@ public class UsuarioService : IUsuarioService
             FotoPerfil = request.FotoPerfil,
             Activo = request.Activo,
             EmpresaId = request.EmpresaId,
+            SucursalId = request.SucursalId,
 
             FechaRegistro = DateTime.UtcNow
         };
@@ -84,6 +86,7 @@ public class UsuarioService : IUsuarioService
         usuario.FotoPerfil = request.FotoPerfil;
         usuario.Activo = request.Activo;
         usuario.EmpresaId = request.EmpresaId;
+        usuario.SucursalId = request.SucursalId;
 
         await _repository.UpdateAsync(usuario);
 

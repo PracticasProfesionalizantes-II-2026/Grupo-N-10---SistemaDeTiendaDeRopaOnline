@@ -1,0 +1,95 @@
+@model FRFront.Models.SucursalGestionViewModel
+@{
+    Layout = "_LayoutAdministrador";
+    ViewData["Title"] = "Gestión de Sucursales";
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold text-uppercase">Sucursales</h1>
+            <p class="text-muted mb-0">Cree las sucursales y asígnelas a empleados y administradores.</p>
+        </div>
+        <a asp-action="Sucursales" class="btn btn-dark rounded-pill px-4">Nueva sucursal</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card-custom p-4">
+                <h2 class="h5 fw-bold mb-3">@(Model.Formulario.Id > 0 ? "Modificar sucursal" : "Dar de alta")</h2>
+                <form asp-action="GuardarSucursal" method="post">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="Formulario.Id" type="hidden" />
+                    <input asp-for="Formulario.EmpresaId" type="hidden" />
+                    <div class="mb-3">
+                        <label asp-for="Formulario.Nombre" class="form-label">Nombre *</label>
+                        <input asp-for="Formulario.Nombre" class="form-control" />
+                        <span asp-validation-for="Formulario.Nombre" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Formulario.Direccion" class="form-label">Dirección *</label>
+                        <input asp-for="Formulario.Direccion" class="form-control" />
+                        <span asp-validation-for="Formulario.Direccion" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Formulario.Telefono" class="form-label">Teléfono</label>
+                        <input asp-for="Formulario.Telefono" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Formulario.Email" class="form-label">Correo</label>
+                        <input asp-for="Formulario.Email" class="form-control" type="email" />
+                        <span asp-validation-for="Formulario.Email" class="text-danger"></span>
+                    </div>
+                    <button class="btn btn-dark w-100 rounded-pill" type="submit">Guardar</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card-custom p-4">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead><tr><th>Nombre</th><th>Dirección</th><th>Contacto</th><th class="text-end">Acciones</th></tr></thead>
+                        <tbody>
+                        @foreach (var sucursal in Model.Sucursales)
+                        {
+                            <tr>
+                                <td class="fw-bold">@sucursal.Nombre</td>
+                                <td>@sucursal.Direccion</td>
+                                <td>
+                                    <div>@(string.IsNullOrWhiteSpace(sucursal.Email) ? "Sin correo" : sucursal.Email)</div>
+                                    <small class="text-muted">@(string.IsNullOrWhiteSpace(sucursal.Telefono) ? "Sin teléfono" : sucursal.Telefono)</small>
+                                </td>
+                                <td class="text-end text-nowrap">
+                                    <a asp-action="Sucursales" asp-route-id="@sucursal.Id" class="btn btn-sm btn-outline-dark rounded-pill">Editar</a>
+                                    <form asp-action="EliminarSucursal" method="post" class="d-inline" onsubmit="return confirm('¿Eliminar esta sucursal?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@sucursal.Id" />
+                                        <button class="btn btn-sm btn-outline-danger rounded-pill" type="submit">Baja</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                    @if (!Model.Sucursales.Any())
+                    {
+                        <p class="text-muted text-center mb-0">No hay sucursales cargadas.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

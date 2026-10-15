@@ -24,8 +24,10 @@ public class ProveedorRepository : IProveedorRepository
             {
                 Id = p.Id,
                 Nombre = p.Nombre,
+                Apellido = p.Apellido,
                 Telefono = p.Telefono,
                 Correo = p.Correo,
+                Direccion = p.Direccion,
                 EmpresaId = p.EmpresaId
             })
             .ToListAsync();
@@ -39,8 +41,10 @@ public class ProveedorRepository : IProveedorRepository
             {
                 Id = p.Id,
                 Nombre = p.Nombre,
+                Apellido = p.Apellido,
                 Telefono = p.Telefono,
                 Correo = p.Correo,
+                Direccion = p.Direccion,
                 EmpresaId = p.EmpresaId
             })
             .FirstOrDefaultAsync();
@@ -51,8 +55,10 @@ public class ProveedorRepository : IProveedorRepository
         var proveedor = new Proveedor
         {
             Nombre = request.Nombre,
+            Apellido = request.Apellido,
             Telefono = request.Telefono,
             Correo = request.Correo,
+            Direccion = request.Direccion,
             EmpresaId = request.EmpresaId
         };
 
@@ -63,8 +69,10 @@ public class ProveedorRepository : IProveedorRepository
         {
             Id = proveedor.Id,
             Nombre = proveedor.Nombre,
+            Apellido = proveedor.Apellido,
             Telefono = proveedor.Telefono,
             Correo = proveedor.Correo,
+            Direccion = proveedor.Direccion,
             EmpresaId = proveedor.EmpresaId
         };
     }
@@ -77,8 +85,10 @@ public class ProveedorRepository : IProveedorRepository
             return false;
 
         proveedor.Nombre = request.Nombre;
+        proveedor.Apellido = request.Apellido;
         proveedor.Telefono = request.Telefono;
         proveedor.Correo = request.Correo;
+        proveedor.Direccion = request.Direccion;
         proveedor.EmpresaId = request.EmpresaId;
 
         await _context.SaveChangesAsync();

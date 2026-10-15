@@ -8,6 +8,7 @@ public class Proveedor
 
     [Required]
     public string Nombre { get; set; } = string.Empty;
+    public string Apellido { get; set; } = string.Empty;
     public int EmpresaId { get; set; }
 
     public Empresa Empresa { get; set; } = null!;
@@ -15,6 +16,7 @@ public class Proveedor
 
     [EmailAddress]
     public string? Correo { get; set; }
+    public string? Direccion { get; set; }
 
     public ICollection<ProductoProveedor> ProductosProveedor { get; set; }
         = new List<ProductoProveedor>();

@@ -366,6 +366,9 @@ namespace FYR_API.Migrations
                     b.Property<string>("ImagenUrl")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Marca")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -402,6 +405,9 @@ namespace FYR_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("FechaAlta")
                         .HasColumnType("datetime2");
 
@@ -432,7 +438,14 @@ namespace FYR_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Apellido")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Correo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Direccion")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("EmpresaId")
@@ -627,6 +640,9 @@ namespace FYR_API.Migrations
                     b.Property<int>("Rol")
                         .HasColumnType("int");
 
+                    b.Property<int?>("SucursalId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Telefono")
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
@@ -637,6 +653,8 @@ namespace FYR_API.Migrations
                         .IsUnique();
 
                     b.HasIndex("EmpresaId");
+
+                    b.HasIndex("SucursalId");
 
                     b.ToTable("Usuarios");
                 });
@@ -852,7 +870,14 @@ namespace FYR_API.Migrations
                         .HasForeignKey("EmpresaId")
                         .OnDelete(DeleteBehavior.NoAction);
 
+                    b.HasOne("Entidades.Models.Sucursal", "Sucursal")
+                        .WithMany("Usuarios")
+                        .HasForeignKey("SucursalId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.Navigation("Empresa");
+
+                    b.Navigation("Sucursal");
                 });
 
             modelBuilder.Entity("Entidades.Models.Categoria", b =>
@@ -910,6 +935,8 @@ namespace FYR_API.Migrations
             modelBuilder.Entity("Entidades.Models.Sucursal", b =>
                 {
                     b.Navigation("Stocks");
+
+                    b.Navigation("Usuarios");
                 });
 
             modelBuilder.Entity("Entidades.Models.Usuario", b =>

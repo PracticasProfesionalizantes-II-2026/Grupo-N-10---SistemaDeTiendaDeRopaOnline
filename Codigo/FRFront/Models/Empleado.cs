@@ -35,5 +35,8 @@ namespace FRFront.Models
 
         // Propiedad de estado: Activo / Suspendido
         public bool Activo { get; set; } = true;
+
+        [Required(ErrorMessage = "Debe seleccionar una sucursal")]
+        public int? SucursalId { get; set; }
     }
 }

@@ -11,4 +11,5 @@ public class UpdateUsuarioRequest
     public string? FotoPerfil { get; set; }
     public bool Activo { get; set; }
     public int? EmpresaId { get; set; }
+    public int? SucursalId { get; set; }
 }

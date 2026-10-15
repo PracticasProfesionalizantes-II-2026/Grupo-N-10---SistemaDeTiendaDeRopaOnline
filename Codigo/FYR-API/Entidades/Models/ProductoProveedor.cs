@@ -7,6 +7,7 @@ public class ProductoProveedor
     public int Id { get; set; }
 
     public decimal PrecioCompra { get; set; }
+    public int Cantidad { get; set; }
 
     public DateTime FechaAlta { get; set; } = DateTime.UtcNow;
 

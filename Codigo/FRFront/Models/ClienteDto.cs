@@ -15,6 +15,21 @@ namespace FRFront.Models
         public string Estado { get; set; } = "ACTIVO";
 
         public string NumeroCliente => $"CLI-{Id:D3}";
-        public string NombreCompleto => $"{Nombre} {Apellido}".Trim();
+        public string NombreCompleto
+        {
+            get
+            {
+                var partesApellido = Apellido
+                    .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                if (partesApellido.Length > 1 &&
+                    int.TryParse(partesApellido[^1], out _))
+                {
+                    return $"{Nombre} {string.Join(' ', partesApellido[..^1])}".Trim();
+                }
+
+                return $"{Nombre} {Apellido}".Trim();
+            }
+        }
     }
 }

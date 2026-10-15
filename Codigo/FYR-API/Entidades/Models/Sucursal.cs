@@ -25,4 +25,6 @@ public class Sucursal
 
     // Relaciones
     public ICollection<Stock> Stocks { get; set; } = new List<Stock>();
+
+    public ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
 }

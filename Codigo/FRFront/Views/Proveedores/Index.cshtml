@@ -1,0 +1,108 @@
+@model FRFront.Models.ProveedorGestionViewModel
+@{
+    Layout = "_LayoutAdministrador";
+    ViewData["Title"] = "Gestión de Proveedores";
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold text-uppercase">Proveedores</h1>
+            <p class="text-muted mb-0">Administre sus contactos y envíe pedidos por correo o WhatsApp.</p>
+        </div>
+        <a asp-action="Proveedores" class="btn btn-dark rounded-pill px-4">Nuevo proveedor</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card-custom p-4">
+                <h2 class="h5 fw-bold mb-3">@(Model.Formulario.Id > 0 ? "Modificar proveedor" : "Dar de alta")</h2>
+                <form asp-action="GuardarProveedor" method="post">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="Formulario.Id" type="hidden" name="Id" />
+                    <input asp-for="Formulario.EmpresaId" type="hidden" name="EmpresaId" />
+                    <div class="mb-3">
+                        <label asp-for="Formulario.Nombre" class="form-label">Nombre *</label>
+                        <input asp-for="Formulario.Nombre" class="form-control" name="Nombre" />
+                        <span asp-validation-for="Formulario.Nombre" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Formulario.Apellido" class="form-label">Apellido *</label>
+                        <input asp-for="Formulario.Apellido" class="form-control" name="Apellido" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Formulario.Telefono" class="form-label">Teléfono / WhatsApp</label>
+                        <input asp-for="Formulario.Telefono" class="form-control" name="Telefono" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Formulario.Correo" class="form-label">Correo</label>
+                        <input asp-for="Formulario.Correo" class="form-control" type="email" name="Correo" />
+                        <span asp-validation-for="Formulario.Correo" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Formulario.Direccion" class="form-label">Dirección</label>
+                        <input asp-for="Formulario.Direccion" class="form-control" name="Direccion" />
+                    </div>
+                    <button class="btn btn-dark w-100 rounded-pill" type="submit">Guardar</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card-custom p-4">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr><th>Proveedor</th><th>Contacto</th><th class="text-end">Acciones</th></tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var proveedor in Model.Proveedores)
+                        {
+                            <tr>
+                                <td class="fw-bold">@proveedor.Nombre @proveedor.Apellido</td>
+                                <td>
+                                    <div>@(string.IsNullOrWhiteSpace(proveedor.Correo) ? "Sin correo" : proveedor.Correo)</div>
+                                    <small class="text-muted">@(string.IsNullOrWhiteSpace(proveedor.Telefono) ? "Sin teléfono" : proveedor.Telefono)</small>
+                                </td>
+                                <td class="text-end text-nowrap">
+                                    @if (!string.IsNullOrWhiteSpace(proveedor.Correo))
+                                    {
+                                        <a class="btn btn-sm btn-outline-primary rounded-pill" href="mailto:@proveedor.Correo?subject=Pedido%20de%20mercader%C3%ADa">Mail</a>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(proveedor.WhatsAppUrl))
+                                    {
+                                        <a class="btn btn-sm btn-outline-success rounded-pill" href="@proveedor.WhatsAppUrl" target="_blank" rel="noopener">WhatsApp</a>
+                                    }
+                                    <a asp-action="ComprasProveedor" asp-route-id="@proveedor.Id" class="btn btn-sm btn-outline-info rounded-pill">Productos</a>
+                                    <a asp-action="Proveedores" asp-route-id="@proveedor.Id" class="btn btn-sm btn-outline-dark rounded-pill">Editar</a>
+                                    <form asp-action="EliminarProveedor" method="post" class="d-inline" onsubmit="return confirm('¿Eliminar este proveedor?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@proveedor.Id" />
+                                        <button class="btn btn-sm btn-outline-danger rounded-pill" type="submit">Baja</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                    @if (!Model.Proveedores.Any())
+                    {
+                        <p class="text-muted text-center mb-0">No hay proveedores cargados.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

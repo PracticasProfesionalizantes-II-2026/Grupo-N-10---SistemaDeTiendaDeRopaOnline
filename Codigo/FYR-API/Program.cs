@@ -76,7 +76,28 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await CatalogoInicialSeeder.SeedAsync(db);
+    try
+    {
+        await CatalogoInicialSeeder.SeedAsync(db);
+
+        var usuarios = await db.Usuarios.ToListAsync();
+        var usuariosSinHash = usuarios
+            .Where(usuario => !usuario.PasswordHash.StartsWith("$2", StringComparison.Ordinal))
+            .ToList();
+        foreach (var usuario in usuariosSinHash)
+        {
+            usuario.PasswordHash = BCrypt.Net.BCrypt.HashPassword(usuario.PasswordHash);
+        }
+
+        if (usuariosSinHash.Count > 0)
+        {
+            await db.SaveChangesAsync();
+        }
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "La base de datos no está disponible. La API iniciará sin datos persistidos.");
+    }
 }
 
 app.UseCors("AllowFrontend");
@@ -108,6 +129,20 @@ app.MapMedioContactoEndpoints();
 app.MapStockEndpoints();
 
 app.MapGet("/", () => "Bienvenido a la API de FYR");
+app.MapGet("/api/health", async (AppDbContext db) =>
+{
+    try
+    {
+        return await db.Database.CanConnectAsync()
+            ? Results.Ok(new { disponible = true })
+            : Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning(ex, "No se pudo comprobar la disponibilidad de la base de datos.");
+        return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    }
+});
 
 //======================================
 // Endpoints de Pedidos
@@ -191,8 +226,8 @@ app.MapPost("/api/pedidos", async (AppDbContext db, PedidoRequest pedidoDto) =>
             ? $"cliente_{DateTime.Now.Ticks}@fyr.com" 
             : pedidoDto.Email.Trim().ToLower();
 
-        string clienteNombre = string.IsNullOrWhiteSpace(pedidoDto.Cliente) 
-            ? "CLIENTE MOSTRADOR" 
+        string clienteNombre = string.IsNullOrWhiteSpace(pedidoDto.Cliente)
+            ? "María González"
             : pedidoDto.Cliente.Trim();
 
         // Buscar o crear Usuario
@@ -211,7 +246,7 @@ app.MapPost("/api/pedidos", async (AppDbContext db, PedidoRequest pedidoDto) =>
                 Dni = string.IsNullOrWhiteSpace(pedidoDto.Dni) ? null : pedidoDto.Dni.Trim(),
                 Email = emailBuscado,
                 Telefono = string.IsNullOrWhiteSpace(pedidoDto.Telefono) ? "Sin registrar" : pedidoDto.Telefono.Trim(),
-                PasswordHash = "123456",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString("N")),
                 Rol = Rol.Cliente
             };
 

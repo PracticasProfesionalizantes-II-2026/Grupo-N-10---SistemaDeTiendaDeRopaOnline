@@ -1,4 +1,6 @@
 using DTO.Proveedor.Request;
+using Datos;
+using Microsoft.EntityFrameworkCore;
 using Repositorios.Interfaces;
 
 namespace Endpoints;
@@ -47,6 +49,43 @@ public static class ProveedorEndpoints
             return ok
                 ? Results.NoContent()
                 : Results.NotFound();
+        });
+
+        group.MapGet("/{id:int}/compras", async (int id, AppDbContext db) =>
+        {
+            var compras = await db.ProductosProveedor
+                .Where(pp => pp.ProveedorId == id)
+                .OrderBy(pp => pp.Producto.Nombre)
+                .Select(pp => new ProveedorCompraResponse
+                {
+                    ProductoProveedorId = pp.Id,
+                    ProductoId = pp.ProductoId,
+                    NombreProducto = pp.Producto.Nombre,
+                    Marca = pp.Producto.Marca ?? string.Empty,
+                    PrecioCompra = pp.PrecioCompra,
+                    Cantidad = pp.Cantidad
+                })
+                .ToListAsync();
+
+            return Results.Ok(compras);
+        });
+
+        group.MapPut("/{proveedorId:int}/compras/{compraId:int}", async (
+            int proveedorId,
+            int compraId,
+            UpdateCompraProveedorRequest request,
+            AppDbContext db) =>
+        {
+            var compra = await db.ProductosProveedor
+                .FirstOrDefaultAsync(pp => pp.Id == compraId && pp.ProveedorId == proveedorId);
+
+            if (compra is null)
+                return Results.NotFound();
+
+            compra.Cantidad = request.Cantidad;
+            compra.PrecioCompra = request.PrecioCompra;
+            await db.SaveChangesAsync();
+            return Results.NoContent();
         });
     }
 }

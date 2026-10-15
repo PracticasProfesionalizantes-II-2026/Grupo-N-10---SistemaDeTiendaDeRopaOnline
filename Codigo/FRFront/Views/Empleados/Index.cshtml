@@ -44,6 +44,15 @@
             padding: 0 30px 12px 30px;
         }
 
+        .email-column {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        .sucursal-column {
+            white-space: nowrap;
+        }
+
         .btn-black-pill {
             background-color: #000;
             color: #fff;
@@ -158,8 +167,9 @@
             <div class="col-md-2">N° EMPLEADO</div>
             <div class="col-md-2 text-center">ROL</div>
             <div class="col-md-3">NOMBRE</div>
-            <div class="col-md-3">EMAIL</div>
-            <div class="col-md-2 text-end">ACCIONES</div>
+            <div class="col-md-2 email-column">EMAIL</div>
+            <div class="col-md-2 sucursal-column">SUCURSAL</div>
+            <div class="col-md-1 text-end">ACCIONES</div>
         </div>
 
         <!-- FILAS DE EMPLEADOS -->
@@ -186,11 +196,15 @@
                                 @emp.NombreCompleto
                             </div>
 
-                            <div class="col-12 col-md-3 mb-2 mb-md-0 text-muted">
+                            <div class="col-12 col-md-2 mb-2 mb-md-0 text-muted email-column">
                                 @emp.Email
                             </div>
 
-                            <div class="col-12 col-md-2 text-end d-flex justify-content-center justify-content-md-end gap-2 align-items-center">
+                            <div class="col-12 col-md-2 mb-2 mb-md-0 text-muted sucursal-column">
+                                @(string.IsNullOrWhiteSpace(emp.SucursalNombre) ? "Sucursal 1" : emp.SucursalNombre)
+                            </div>
+
+                            <div class="col-12 col-md-1 text-end d-flex justify-content-center justify-content-md-end gap-2 align-items-center">
                                 
                                 <!-- EDITAR -->
                                 <a asp-controller="Administrador" asp-action="DetalleEmpleado" asp-route-id="@emp.Id" class="btn-action-icon" title="Editar empleado">

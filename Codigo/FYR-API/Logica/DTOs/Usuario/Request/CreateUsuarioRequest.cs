@@ -31,5 +31,7 @@ public class CreateUsuarioRequest
 
     public int? EmpresaId { get; set; }
 
+    public int? SucursalId { get; set; }
+
     public bool Activo { get; set; } = true;
 }

@@ -9,6 +9,7 @@ public class Producto
 
     [Required]
     public string Nombre { get; set; } = string.Empty;
+    public string? Marca { get; set; }
 
     public string? Descripcion { get; set; }
 

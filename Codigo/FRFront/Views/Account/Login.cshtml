@@ -29,6 +29,10 @@
       box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
       padding: 50px 60px;
     }
+
+    .login-card .form-control {
+      min-width: 0;
+    }
     
     .custom-input {
       padding: 18px 24px !important;
@@ -65,7 +69,7 @@
 </head>
 <body class="min-vh-100 d-flex align-items-center justify-content-center py-5">
 
-  <div class="login-card">
+  <div class="login-card mx-3">
     
     <!-- Enlace Volver -->
     <div class="mb-4">
@@ -80,7 +84,7 @@
     </div>
 
     <!-- Formulario -->
-    <form asp-controller="Account" asp-action="Login" method="post" class="w-100">
+    <form asp-controller="Account" asp-action="Login" method="post" class="w-100" id="loginForm">
       <div asp-validation-summary="ModelOnly" class="text-danger text-center mb-3"></div>
       
       <div class="mb-4">
@@ -99,7 +103,9 @@
         </a>
       </div>
 
-      <button type="submit" class="btn btn-dark w-100 custom-btn text-uppercase fw-bold text-white mb-4">
+      <div id="loginStatus" class="alert alert-warning text-center d-none" role="alert"></div>
+
+      <button type="submit" class="btn btn-dark w-100 custom-btn text-uppercase fw-bold text-white mb-4" id="loginButton">
         ACCEDER
       </button>
 
@@ -117,5 +123,54 @@
   <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
   <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
   <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+  <script>
+    (() => {
+      const seconds = @((ViewData["LoginLockSeconds"] as int?) ?? 0);
+      const recoveryRequired = @(((ViewData["LoginRecoveryRequired"] as bool?) ?? false).ToString().ToLowerInvariant());
+      const form = document.getElementById("loginForm");
+      const status = document.getElementById("loginStatus");
+      const button = document.getElementById("loginButton");
+      if (recoveryRequired) {
+        document.querySelectorAll("#loginForm input, #loginForm button").forEach(element => element.disabled = true);
+        status.textContent = "Se alcanzó el límite de intentos. Se envió un correo de recuperación de contraseña.";
+        status.classList.remove("d-none");
+      } else if (seconds > 0) {
+        document.querySelectorAll("#loginForm input, #loginForm button").forEach(element => element.disabled = true);
+        let remaining = seconds;
+        status.classList.remove("d-none");
+        const update = () => {
+          status.textContent = `Debe esperar ${remaining} segundos antes de volver a intentarlo.`;
+          if (remaining <= 0) {
+            clearInterval(timer);
+            window.location.reload();
+            return;
+          }
+          remaining--;
+        };
+        update();
+        const timer = setInterval(update, 1000);
+      }
+    })();
+  </script>
+  <style>
+    @@media (max-width: 576px) {
+      .login-card {
+        border-radius: 18px;
+        padding: 28px 20px;
+      }
+      .custom-title {
+        font-size: 1.8rem !important;
+        letter-spacing: 1px;
+      }
+      .custom-input {
+        padding: 14px 16px !important;
+        font-size: 1rem !important;
+      }
+      .custom-btn {
+        padding: 14px !important;
+        font-size: 1rem !important;
+      }
+    }
+  </style>
 </body>
 </html>

@@ -3,6 +3,7 @@ namespace DTO.Producto.Requests;
 public class CreateProductoRequest
 {
     public string Nombre { get; set; } = string.Empty;
+    public string? Marca { get; set; }
 
     public string? Descripcion { get; set; }
 
@@ -25,4 +26,6 @@ public class CreateProductoRequest
     public int? SubcategoriaId { get; set; }
 
     public int Stock { get; set; }
+    public int? ProveedorId { get; set; }
+    public decimal? PrecioCompra { get; set; }
 }

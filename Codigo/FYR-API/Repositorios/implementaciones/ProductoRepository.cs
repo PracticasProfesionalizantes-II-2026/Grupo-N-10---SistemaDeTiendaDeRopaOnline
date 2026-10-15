@@ -26,6 +26,7 @@ public class ProductoRepository : IProductoRepository
             {
                 Id = p.Id,
                 Nombre = p.Nombre,
+                Marca = p.Marca,
                 Descripcion = p.Descripcion,
                 Precio = p.Precio,
                 PrecioAnterior = p.PrecioAnterior,
@@ -41,6 +42,10 @@ public class ProductoRepository : IProductoRepository
                 Subcategoria = p.Subcategoria != null ? p.Subcategoria.Nombre : null,
                 Activo = p.Activo,
                 Stock = p.Stocks.Sum(stock => stock.CantidadDisponible)
+                    ,
+                ProveedorId = p.ProductosProveedor.OrderByDescending(pp => pp.FechaAlta).Select(pp => (int?)pp.ProveedorId).FirstOrDefault(),
+                ProveedorNombre = p.ProductosProveedor.OrderByDescending(pp => pp.FechaAlta).Select(pp => pp.Proveedor.Nombre).FirstOrDefault(),
+                PrecioCompra = p.ProductosProveedor.OrderByDescending(pp => pp.FechaAlta).Select(pp => (decimal?)pp.PrecioCompra).FirstOrDefault()
             })
             .ToListAsync();
     }
@@ -61,6 +66,7 @@ public class ProductoRepository : IProductoRepository
         {
             Id = p.Id,
             Nombre = p.Nombre,
+            Marca = p.Marca,
             Descripcion = p.Descripcion,
             Precio = p.Precio,
             PrecioAnterior = p.PrecioAnterior,
@@ -76,6 +82,10 @@ public class ProductoRepository : IProductoRepository
             Subcategoria = p.Subcategoria?.Nombre,
             Activo = p.Activo,
             Stock = p.Stocks.Sum(stock => stock.CantidadDisponible)
+                ,
+            ProveedorId = p.ProductosProveedor.OrderByDescending(pp => pp.FechaAlta).Select(pp => (int?)pp.ProveedorId).FirstOrDefault(),
+            ProveedorNombre = p.ProductosProveedor.OrderByDescending(pp => pp.FechaAlta).Select(pp => pp.Proveedor.Nombre).FirstOrDefault(),
+            PrecioCompra = p.ProductosProveedor.OrderByDescending(pp => pp.FechaAlta).Select(pp => (decimal?)pp.PrecioCompra).FirstOrDefault()
         };
     }
 
@@ -84,6 +94,7 @@ public class ProductoRepository : IProductoRepository
         var producto = new Producto
         {
             Nombre = request.Nombre,
+            Marca = request.Marca,
             Descripcion = request.Descripcion,
             Precio = request.Precio,
             PrecioAnterior = request.PrecioAnterior,
@@ -101,6 +112,7 @@ public class ProductoRepository : IProductoRepository
         await _context.SaveChangesAsync();
 
         await GuardarStockAsync(producto.Id, request.EmpresaId, request.Stock);
+        await GuardarProveedorAsync(producto.Id, request.ProveedorId, request.PrecioCompra);
 
         return (await GetByIdAsync(producto.Id))!;
     }
@@ -113,6 +125,7 @@ public class ProductoRepository : IProductoRepository
             return false;
 
         producto.Nombre = request.Nombre;
+        producto.Marca = request.Marca;
         producto.Descripcion = request.Descripcion;
         producto.Precio = request.Precio;
         producto.PrecioAnterior = request.PrecioAnterior;
@@ -126,8 +139,42 @@ public class ProductoRepository : IProductoRepository
         await _context.SaveChangesAsync();
 
         await GuardarStockAsync(producto.Id, null, request.Stock);
+        await GuardarProveedorAsync(producto.Id, request.ProveedorId, request.PrecioCompra);
 
         return true;
+    }
+
+    private async Task GuardarProveedorAsync(int productoId, int? proveedorId, decimal? precioCompra)
+    {
+        var relacion = await _context.ProductosProveedor
+            .OrderByDescending(pp => pp.FechaAlta)
+            .FirstOrDefaultAsync(pp => pp.ProductoId == productoId);
+
+        if (!proveedorId.HasValue)
+        {
+            if (relacion is not null)
+            {
+                _context.ProductosProveedor.Remove(relacion);
+                await _context.SaveChangesAsync();
+            }
+
+            return;
+        }
+
+        if (relacion is null)
+        {
+            relacion = new ProductoProveedor { ProductoId = productoId, ProveedorId = proveedorId.Value };
+            _context.ProductosProveedor.Add(relacion);
+        }
+        else
+        {
+            relacion.ProveedorId = proveedorId.Value;
+        }
+
+        if (precioCompra.HasValue)
+            relacion.PrecioCompra = precioCompra.Value;
+
+        await _context.SaveChangesAsync();
     }
 
     private async Task GuardarStockAsync(int productoId, int? empresaId, int cantidad)

@@ -45,7 +45,9 @@ public class ClienteService : IClienteService
             Nombre = request.Nombre,
             Apellido = request.Apellido,
             Email = request.Email,
-            PasswordHash = request.PasswordHash,
+            PasswordHash = request.PasswordHash.StartsWith("$2", StringComparison.Ordinal)
+                ? request.PasswordHash
+                : BCrypt.Net.BCrypt.HashPassword(request.PasswordHash),
             Telefono = request.Telefono,
             IdiomaPreferido = request.IdiomaPreferido,
             Rol = Rol.Cliente

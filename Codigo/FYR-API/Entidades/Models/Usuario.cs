@@ -51,6 +51,10 @@ public class Usuario
 
     public Empresa? Empresa { get; set; }
 
+    public int? SucursalId { get; set; }
+
+    public Sucursal? Sucursal { get; set; }
+
     // Relaciones
 
     public ICollection<Pedido> Pedidos { get; set; } = new List<Pedido>();

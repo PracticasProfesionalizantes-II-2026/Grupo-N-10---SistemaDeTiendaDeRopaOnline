@@ -1,4 +1,6 @@
 using DTO.Sucursal.Request;
+using Datos;
+using Microsoft.EntityFrameworkCore;
 using Repositorios.Interfaces;
 
 namespace Endpoints;
@@ -40,8 +42,14 @@ public static class SucursalEndpoints
                 : Results.NotFound();
         });
 
-        group.MapDelete("/{id:int}", async (int id, ISucursalRepository repo) =>
+        group.MapDelete("/{id:int}", async (int id, ISucursalRepository repo, AppDbContext db) =>
         {
+            var tieneUsuarios = await db.Usuarios.AnyAsync(u => u.SucursalId == id);
+            if (tieneUsuarios)
+            {
+                return Results.Conflict("No se puede eliminar una sucursal con empleados o administradores asignados.");
+            }
+
             var eliminado = await repo.DeleteAsync(id);
 
             return eliminado

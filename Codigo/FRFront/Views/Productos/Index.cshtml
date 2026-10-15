@@ -221,12 +221,12 @@
         <div class="row table-header-custom d-none d-md-flex align-items-center">
             <div class="col-md-1 text-center">SELEC.</div>
             <div class="col-md-1 text-center">IMAGEN</div>
-            <div class="col-md-3">NOMBRE</div>
-            <div class="col-md-2 text-center">PRECIO</div>
-            <div class="col-md-1 text-center">TALLE</div>
-            <div class="col-md-2 text-center">COLOR</div>
+            <div class="col-md-2">PRODUCTO / MARCA</div>
+            <div class="col-md-2 text-center">PROVEEDOR</div>
+            <div class="col-md-1 text-center">COMPRA</div>
+            <div class="col-md-1 text-center">VENTA</div>
             <div class="col-md-1 text-center">STOCK</div>
-            <div class="col-md-1 text-end">ACCIONES</div>
+            <div class="col-md-2 text-end">ACCIONES</div>
         </div>
 
         <!-- LISTA DINÁMICA DE PRODUCTOS -->
@@ -243,25 +243,26 @@
                             <div class="col-12 col-md-1 mb-2 mb-md-0 text-center">
                                 <img src="@(string.IsNullOrEmpty(prod.ImagenUrl) ? "/images/logo-fr.png" : prod.ImagenUrl)" alt="@prod.Nombre" class="product-img" />
                             </div>
-                            <div class="col-12 col-md-3 mb-2 mb-md-0">
+                            <div class="col-12 col-md-2 mb-2 mb-md-0">
                                 <h6 class="fw-bold text-uppercase mb-0" style="letter-spacing: 0.5px;">@prod.Nombre</h6>
+                                <small class="text-muted">@(!string.IsNullOrWhiteSpace(prod.Marca) ? prod.Marca : "Sin marca")</small>
                                 <small class="text-muted fw-semibold">Cod: #PROD-@prod.Id.ToString("D3")</small>
                             </div>
                             <div class="col-12 col-md-2 mb-2 mb-md-0 text-center">
-                                <span class="fw-bold text-dark fs-6">$@prod.Precio.ToString("N2")</span>
+                                <span class="small fw-bold">@(!string.IsNullOrWhiteSpace(prod.ProveedorNombre) ? prod.ProveedorNombre : "Sin proveedor")</span>
                             </div>
                             <div class="col-12 col-md-1 mb-2 mb-md-0 text-center">
-                                <span class="badge badge-talle">@prod.Talles</span>
+                                <span class="small">$@(prod.PrecioCompra?.ToString("N2") ?? "-")</span>
                             </div>
-                            <div class="col-12 col-md-2 mb-2 mb-md-0 text-center">
-                                <span class="small fw-bold text-uppercase">@prod.Color</span>
+                            <div class="col-12 col-md-1 mb-2 mb-md-0 text-center">
+                                <span class="fw-bold text-dark">$@prod.Precio.ToString("N2")</span>
                             </div>
                             <div class="col-12 col-md-1 mb-2 mb-md-0 text-center">
                                 <span class="badge @(prod.Stock > 0 ? "bg-success bg-opacity-10 text-success" : "bg-danger bg-opacity-10 text-danger") fw-bold px-3 py-2 rounded-pill">
                                     @prod.Stock u.
                                 </span>
                             </div>
-                            <div class="col-12 col-md-1 text-end d-flex justify-content-center justify-content-md-end gap-1">
+                            <div class="col-12 col-md-2 text-end d-flex justify-content-center justify-content-md-end gap-1">
                                 <!-- MODIFICAR -->
                                 <a asp-controller="Producto" asp-action="Modificar" asp-route-id="@prod.Id" class="action-btn" title="Modificar">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
