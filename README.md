@@ -57,8 +57,4 @@ Listado de ventas realizadas en un período de tiempo determinado.
 
 [Documentación de Endpoints de API](https://docs.google.com/document/d/1nY_3ClcNVSr5X0UoFQVAcXR8z_F3VfA1OR9ROWO5bpo/edit?usp=sharing)
 
-[Casos de uso actuales](https://docs.google.com/document/d/1oSaZe2MVYAlG6VoCUN5fXyPUHIPqRb6cpinY7BU99hs/edit?usp=sharing)
 
-[Presentación ](https://canva.link/4nv72aypuw79w9f)
-
-[Resumen Del Codigo Del Proyecto ](https://docs.google.com/document/d/1oDc-SoVl3Vh6Rrkfb815UwGDxtJxBeuJPj8jTNrbzu8/edit?usp=sharing)
