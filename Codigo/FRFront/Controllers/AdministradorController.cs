@@ -360,7 +360,8 @@ namespace FRFront.Controllers
                                 Fecha = fechaPedido,
                                 Total = totalPedido,
                                 Estado = "CONFIRMADO",
-                                TipoEntrega = metodoPago
+                                TipoEntrega = metodoPago,
+                                MetodoPago = metodoPago
                             });
                         }
                     }
@@ -379,6 +380,7 @@ namespace FRFront.Controllers
                     Cliente = p.Cliente,
                     Fecha = p.Fecha,
                     TipoEntrega = p.TipoEntrega,
+                    MetodoPago = p.MetodoPago,
                     Estado = p.Estado,
                     Total = p.Total
                 })
@@ -390,6 +392,16 @@ namespace FRFront.Controllers
                 .Select(g => new { Fecha = g.Key, Total = g.Sum(x => x.Total) })
                 .ToList();
 
+            var comprasPorMetodoPago = ventasFiltradas
+                .GroupBy(v => string.IsNullOrWhiteSpace(v.MetodoPago) ? "No informado" : v.MetodoPago)
+                .Select(g => new EstadisticaMetodoPago
+                {
+                    MetodoPago = g.Key,
+                    CantidadCompras = g.Count()
+                })
+                .OrderByDescending(g => g.CantidadCompras)
+                .ToList();
+
             var reporteVentas = new ReporteVentasDto
             {
                 FechaDesde = fechaInicio,
@@ -397,6 +409,7 @@ namespace FRFront.Controllers
                 TotalVentas = ventasFiltradas.Sum(v => v.Total),
                 TotalPedidos = ventasFiltradas.Count,
                 ListadoVentas = ventasFiltradas,
+                ComprasPorMetodoPago = comprasPorMetodoPago,
                 FechasGrafico = datosGrafico.Select(g => g.Fecha).ToList(),
                 TotalesGrafico = datosGrafico.Select(g => g.Total).ToList()
             };
@@ -624,6 +637,24 @@ namespace FRFront.Controllers
                                 Estado = estadoPedido,
                                 TipoEntrega = metodo
                             };
+
+                            var detalles = await _httpClient.GetFromJsonAsync<List<DetallePedidoDto>>(
+                                $"api/pedidos/{idItem}/detalles",
+                                _jsonOptions) ?? new List<DetallePedidoDto>();
+                            var productos = await _httpClient.GetFromJsonAsync<List<ProductoDto>>(
+                                "api/productos",
+                                _jsonOptions) ?? new List<ProductoDto>();
+                            var productosPorId = productos
+                                .Where(producto => producto.Id > 0)
+                                .GroupBy(producto => producto.Id)
+                                .ToDictionary(grupo => grupo.Key, grupo => grupo.First());
+
+                            pedido.Detalle = detalles.Select(detalle =>
+                            {
+                                productosPorId.TryGetValue(detalle.ProductoId, out var producto);
+                                detalle.ProductoNombre = producto?.Nombre ?? $"Producto #{detalle.ProductoId}";
+                                return detalle;
+                            }).ToList();
                         }
                     }
                 }

@@ -18,6 +18,12 @@ public class Usuario
     [MaxLength(20)]
     public string? Dni { get; set; }
 
+    [MaxLength(200)]
+    public string? Domicilio { get; set; }
+
+    [MaxLength(100)]
+    public string? Localidad { get; set; }
+
     [Required]
     [EmailAddress]
     [MaxLength(150)]

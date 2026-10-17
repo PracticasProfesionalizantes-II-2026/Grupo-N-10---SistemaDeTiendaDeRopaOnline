@@ -15,6 +15,8 @@ public class ClienteService : IClienteService
         {
             IdUsuario = usuario.Id,
             Dni = usuario.Dni,
+            Domicilio = usuario.Domicilio,
+            Localidad = usuario.Localidad,
             Nombre = usuario.Nombre,
             Apellido = usuario.Apellido,
             Email = usuario.Email,
@@ -42,6 +44,8 @@ public class ClienteService : IClienteService
         var cliente = new Usuario
         {
             Dni = request.Dni,
+            Domicilio = request.Domicilio,
+            Localidad = request.Localidad,
             Nombre = request.Nombre,
             Apellido = request.Apellido,
             Email = request.Email,
@@ -65,6 +69,11 @@ public class ClienteService : IClienteService
         if (cliente == null)
             return null;
 
+        cliente.Dni = request.Dni;
+        if (!string.IsNullOrWhiteSpace(request.Nombre))
+            cliente.Nombre = request.Nombre;
+        cliente.Domicilio = request.Domicilio;
+        cliente.Localidad = request.Localidad;
         cliente.Telefono = request.Telefono;
         cliente.IdiomaPreferido = request.IdiomaPreferido;
         cliente.Activo = request.Activo;

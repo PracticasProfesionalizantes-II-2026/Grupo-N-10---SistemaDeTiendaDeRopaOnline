@@ -32,7 +32,10 @@ public class AuthService : IAuthService
             Email = email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
             Rol = Rol.Cliente,
+            Dni = request.Dni,
             Telefono = request.Telefono,
+            Domicilio = request.Domicilio,
+            Localidad = request.Localidad,
             IdiomaPreferido = request.IdiomaPreferido
         };
 

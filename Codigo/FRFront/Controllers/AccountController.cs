@@ -247,9 +247,13 @@ namespace FRFront.Controllers
                 var response = await _httpClient.PostAsJsonAsync("api/auth/register", new
                 {
                     Nombre = model.Nombre,
-                    Apellido = model.Nombre,
+                    Apellido = string.Empty,
                     Email = model.Email.Trim(),
-                    Password = model.Password
+                    Password = model.Password,
+                    Dni = model.Dni.Trim(),
+                    Telefono = model.Telefono.Trim(),
+                    Domicilio = model.Domicilio.Trim(),
+                    Localidad = model.Localidad.Trim()
                 });
 
                 if (response.StatusCode == System.Net.HttpStatusCode.Conflict)

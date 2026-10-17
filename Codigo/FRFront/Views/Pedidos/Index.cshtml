@@ -124,7 +124,7 @@
         <div class="row table-header-custom d-none d-md-flex align-items-center">
             <div class="col-md-2">N° PEDIDO</div>
             <div class="col-md-2">CLIENTE</div>
-            <div class="col-md-2 text-center">FECHA</div>
+            <div class="col-md-2 text-center">FECHA Y HORA</div>
             <div class="col-md-2 text-center">TOTAL</div>
             <div class="col-md-2 text-center">ESTADO</div>
             <div class="col-md-2 text-end">ACCIONES</div>
@@ -155,7 +155,7 @@
                                 @item.Cliente
                             </div>
                             <div class="col-12 col-md-2 mb-2 mb-md-0 text-center text-muted fw-semibold">
-                                @item.Fecha.ToString("dd/MM/yy")
+                                @item.Fecha.ToString("dd/MM/yy HH:mm")
                             </div>
                             <div class="col-12 col-md-2 mb-2 mb-md-0 text-center fw-bold text-dark">
                                 $ @item.Total.ToString("N2")

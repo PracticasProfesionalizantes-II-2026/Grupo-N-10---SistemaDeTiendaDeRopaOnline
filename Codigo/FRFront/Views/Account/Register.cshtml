@@ -90,6 +90,28 @@
         <span asp-validation-for="Email" class="text-danger small text-center d-block mt-1"></span>
       </div>
 
+      <div class="row">
+        <div class="col-md-6 mb-4">
+          <input asp-for="Dni" type="text" class="form-control custom-input text-center" placeholder="DNI*" required />
+          <span asp-validation-for="Dni" class="text-danger small text-center d-block mt-1"></span>
+        </div>
+        <div class="col-md-6 mb-4">
+          <input asp-for="Telefono" type="tel" class="form-control custom-input text-center" placeholder="Teléfono*" required />
+          <span asp-validation-for="Telefono" class="text-danger small text-center d-block mt-1"></span>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-4">
+          <input asp-for="Domicilio" type="text" class="form-control custom-input text-center" placeholder="Domicilio*" required />
+          <span asp-validation-for="Domicilio" class="text-danger small text-center d-block mt-1"></span>
+        </div>
+        <div class="col-md-6 mb-4">
+          <input asp-for="Localidad" type="text" class="form-control custom-input text-center" placeholder="Localidad*" required />
+          <span asp-validation-for="Localidad" class="text-danger small text-center d-block mt-1"></span>
+        </div>
+      </div>
+
       <div class="mb-4">
         <input asp-for="Password" type="password" class="form-control custom-input text-center" placeholder="Contraseña*" required />
         <span asp-validation-for="Password" class="text-danger small text-center d-block mt-1"></span>

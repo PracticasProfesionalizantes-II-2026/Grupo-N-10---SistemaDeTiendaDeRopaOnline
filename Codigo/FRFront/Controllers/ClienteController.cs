@@ -70,46 +70,86 @@ namespace FRFront.Controllers
         }
 
         // 3. Vista del Perfil de Usuario
-        public IActionResult MiPerfil()
+        public async Task<IActionResult> MiPerfil()
         {
             if (!EsClienteAutenticado())
             {
                 return RedirectToAction("Index", "Home");
             }
 
-            var usuarioLogueado = HttpContext.Session.GetString("UsuarioSesion")!;
-            ViewData["EmailUsuario"] = usuarioLogueado;
-            return View();
+            var perfil = await ObtenerPerfilAsync();
+            return perfil == null ? RedirectToAction("Index", "Home") : View(perfil);
         }
 
         // 4. Muestra la vista para Editar el Perfil
-        public IActionResult EditarPerfil()
+        public async Task<IActionResult> EditarPerfil()
         {
             if (!EsClienteAutenticado())
             {
                 return RedirectToAction("Index", "Home");
             }
 
-            var usuarioLogueado = HttpContext.Session.GetString("UsuarioSesion")!;
-            ViewData["EmailUsuario"] = usuarioLogueado;
-            return View();
+            var perfil = await ObtenerPerfilAsync();
+            return perfil == null ? RedirectToAction("Index", "Home") : View(perfil);
         }
 
         // 5. Procesa la actualización de los datos del perfil
         [HttpPost]
-        public IActionResult GuardarPerfil(string nombre, string dni, string domicilio, string telefono)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GuardarPerfil(ClientePerfilViewModel model)
         {
             if (!EsClienteAutenticado())
             {
                 return RedirectToAction("Index", "Home");
             }
 
-            // Aquí puedes guardar los datos en tu sesión o base de datos si lo deseas
+            if (!ModelState.IsValid)
+                return View("EditarPerfil", model);
 
-            // Guardamos un mensaje de éxito temporal
+            if (!int.TryParse(HttpContext.Session.GetString("UsuarioApiId"), out var usuarioId))
+                return RedirectToAction("Index", "Home");
+
+            try
+            {
+                using var response = await _httpClient.PutAsJsonAsync($"api/clientes/{usuarioId}", new
+                {
+                    model.Nombre,
+                    model.Dni,
+                    model.Domicilio,
+                    model.Localidad,
+                    model.Telefono,
+                    Activo = true
+                });
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    ModelState.AddModelError(string.Empty, "No se pudieron guardar los datos del perfil.");
+                    return View("EditarPerfil", model);
+                }
+            }
+            catch (HttpRequestException)
+            {
+                ModelState.AddModelError(string.Empty, "No se pudo conectar con el servidor.");
+                return View("EditarPerfil", model);
+            }
+
             TempData["MensajeExito"] = "¡Los cambios se han guardado con éxito!";
-
             return RedirectToAction("MiPerfil");
+        }
+
+        private async Task<ClientePerfilViewModel?> ObtenerPerfilAsync()
+        {
+            if (!int.TryParse(HttpContext.Session.GetString("UsuarioApiId"), out var usuarioId))
+                return null;
+
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<ClientePerfilViewModel>($"api/clientes/{usuarioId}");
+            }
+            catch (HttpRequestException)
+            {
+                return null;
+            }
         }
 
         // 6. Vista de Notificaciones del cliente

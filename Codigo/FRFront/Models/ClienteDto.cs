@@ -19,16 +19,25 @@ namespace FRFront.Models
         {
             get
             {
+                var nombre = Nombre.Trim();
+                var apellido = Apellido.Trim();
+
+                if (!string.IsNullOrWhiteSpace(nombre) &&
+                    nombre.Equals(apellido, StringComparison.OrdinalIgnoreCase))
+                {
+                    return nombre;
+                }
+
                 var partesApellido = Apellido
                     .Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
                 if (partesApellido.Length > 1 &&
                     int.TryParse(partesApellido[^1], out _))
                 {
-                    return $"{Nombre} {string.Join(' ', partesApellido[..^1])}".Trim();
+                    return $"{nombre} {string.Join(' ', partesApellido[..^1])}".Trim();
                 }
 
-                return $"{Nombre} {Apellido}".Trim();
+                return $"{nombre} {apellido}".Trim();
             }
         }
     }

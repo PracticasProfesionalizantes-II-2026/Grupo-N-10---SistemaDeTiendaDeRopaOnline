@@ -168,8 +168,8 @@
 
                     <!-- FECHA -->
                     <div class="col-12 col-md-6">
-                        <label class="label-custom mb-1">FECHA:</label>
-                        <input type="text" class="form-control rounded-pill px-3 fw-bold bg-light" value="@Model.Fecha.ToString("dd/MM/yy")" readonly />
+                        <label class="label-custom mb-1">FECHA Y HORA:</label>
+                        <input type="text" class="form-control rounded-pill px-3 fw-bold bg-light" value="@Model.Fecha.ToString("dd/MM/yy HH:mm")" readonly />
                     </div>
 
                     <!-- TIPO DE ENTREGA -->
@@ -190,8 +190,18 @@
                             foreach (var prod in Model.Detalle)
                             {
                                 <div class="product-box d-flex justify-content-between align-items-center">
-                                    <span class="fw-bold text-uppercase">@prod.ProductoNombre</span>
-                                    <span class="badge bg-dark rounded-pill px-3 py-2 fw-bold">CANTIDAD: @prod.Cantidad</span>
+                                    <div>
+                                        <div class="fw-bold text-uppercase">@prod.ProductoNombre</div>
+                                        <div class="text-muted small">
+                                            Precio unitario: $ @prod.PrecioUnitario.ToString("N2")
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="badge bg-dark rounded-pill px-3 py-2 fw-bold">
+                                            CANTIDAD: @prod.Cantidad
+                                        </div>
+                                        <div class="fw-bold mt-1">$ @prod.Subtotal.ToString("N2")</div>
+                                    </div>
                                 </div>
                             }
                         }

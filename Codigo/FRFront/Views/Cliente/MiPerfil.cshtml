@@ -1,8 +1,14 @@
+@model FRFront.Models.ClientePerfilViewModel
+
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Perfil de Usuario";
-    string emailUser = ViewData["EmailUsuario"]?.ToString() ?? "usuario@fyr.com";
-    string nombreBase = emailUser.Split('@')[0];
+    string nombre = Model.Nombre.Trim();
+    string apellido = Model.Apellido.Trim();
+    string nombreCompleto = string.Equals(nombre, apellido, StringComparison.OrdinalIgnoreCase)
+        ? nombre
+        : $"{nombre} {apellido}".Trim();
+    string inicial = string.IsNullOrWhiteSpace(Model.Nombre) ? "U" : Model.Nombre[..1].ToUpperInvariant();
 }
 
 <div class="container my-5" style="max-width: 750px;">
@@ -31,10 +37,10 @@
         <!-- Cabecera del Perfil -->
         <div class="d-flex align-items-center mb-4 pb-4 border-bottom gap-3">
             <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-3" style="width: 65px; height: 65px;">
-                @nombreBase.Substring(0, 1).ToUpper()
+                @inicial
             </div>
             <div>
-                <h3 class="fw-bold text-uppercase m-0" style="letter-spacing: 1px; font-size: 1.3rem;">@nombreBase</h3>
+                <h3 class="fw-bold text-uppercase m-0" style="letter-spacing: 1px; font-size: 1.3rem;">@nombreCompleto</h3>
                 <span class="text-muted small">Cliente F&R Online</span>
             </div>
         </div>
@@ -45,9 +51,9 @@
             <div class="p-3 border rounded-4 bg-light">
                 <h6 class="fw-bold text-uppercase text-primary small mb-3" style="letter-spacing: 1px;">Información Personal</h6>
                 <div class="row g-2 text-secondary small">
-                    <div class="col-sm-6"><strong>Usuario:</strong> <span class="text-dark">@nombreBase</span></div>
-                    <div class="col-sm-6"><strong>Nombre y Apellido:</strong> <span class="text-dark text-capitalize">@nombreBase</span></div>
-                    <div class="col-sm-6 mt-2"><strong>DNI:</strong> <span class="text-dark">45666782</span></div>
+                    <div class="col-sm-6"><strong>Usuario:</strong> <span class="text-dark">@Model.Email</span></div>
+                    <div class="col-sm-6"><strong>Nombre y Apellido:</strong> <span class="text-dark text-capitalize">@nombreCompleto</span></div>
+                    <div class="col-sm-6 mt-2"><strong>DNI:</strong> <span class="text-dark">@Model.Dni</span></div>
                 </div>
             </div>
 
@@ -56,7 +62,8 @@
                 <h6 class="fw-bold text-uppercase text-primary small mb-3" style="letter-spacing: 1px;">Datos Fiscales</h6>
                 <div class="row g-2 text-secondary small">
                     <div class="col-sm-6"><strong>Condición Fiscal:</strong> <span class="text-dark">Consumidor Final</span></div>
-                    <div class="col-sm-6"><strong>Domicilio:</strong> <span class="text-dark">Mitre 443</span></div>
+                    <div class="col-sm-6"><strong>Domicilio:</strong> <span class="text-dark">@Model.Domicilio</span></div>
+                    <div class="col-sm-6 mt-2"><strong>Localidad:</strong> <span class="text-dark">@Model.Localidad</span></div>
                 </div>
             </div>
 
@@ -64,8 +71,8 @@
             <div class="p-3 border rounded-4 bg-light">
                 <h6 class="fw-bold text-uppercase text-primary small mb-3" style="letter-spacing: 1px;">Datos de la Cuenta</h6>
                 <div class="row g-2 text-secondary small">
-                    <div class="col-sm-6"><strong>Gmail:</strong> <span class="text-dark">@emailUser</span></div>
-                    <div class="col-sm-6"><strong>Teléfono:</strong> <span class="text-dark">+54 3493 665467</span></div>
+                    <div class="col-sm-6"><strong>Correo:</strong> <span class="text-dark">@Model.Email</span></div>
+                    <div class="col-sm-6"><strong>Teléfono:</strong> <span class="text-dark">@Model.Telefono</span></div>
                 </div>
             </div>
 

@@ -8,6 +8,7 @@ namespace FRFront.Models
         public int TotalPedidos { get; set; }
         public decimal TicketPromedio => TotalPedidos > 0 ? TotalVentas / TotalPedidos : 0;
         public List<VentaDetalleReporte> ListadoVentas { get; set; } = new List<VentaDetalleReporte>();
+        public List<EstadisticaMetodoPago> ComprasPorMetodoPago { get; set; } = new List<EstadisticaMetodoPago>();
         
         // Propiedades agrupadas para el gráfico
         public List<string> FechasGrafico { get; set; } = new List<string>();
@@ -20,7 +21,14 @@ namespace FRFront.Models
         public string Cliente { get; set; } = string.Empty;
         public DateTime Fecha { get; set; }
         public string TipoEntrega { get; set; } = string.Empty;
+        public string MetodoPago { get; set; } = string.Empty;
         public string Estado { get; set; } = string.Empty;
         public decimal Total { get; set; }
+    }
+
+    public class EstadisticaMetodoPago
+    {
+        public string MetodoPago { get; set; } = string.Empty;
+        public int CantidadCompras { get; set; }
     }
 }

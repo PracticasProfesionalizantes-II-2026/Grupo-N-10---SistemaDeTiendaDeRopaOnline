@@ -159,20 +159,26 @@ namespace FRFront.Controllers
                 var total = subtotal + ajustePago + costoEnvio;
                 var tipoEnvio = HttpContext.Session.GetString(UserSessionKeys.ForUser(HttpContext.Session, "TipoEnvioSeleccionado"));
                 var esRetiroLocal = string.Equals(tipoEnvio, "RetiroLocal", StringComparison.OrdinalIgnoreCase);
+                var cuotasSeleccionadas = metodoPago.Equals("Credito", StringComparison.OrdinalIgnoreCase)
+                    ? Math.Max(cuotas.GetValueOrDefault(1), 1)
+                    : 1;
+                var metodoPagoRegistrado = metodoPago.Equals("Credito", StringComparison.OrdinalIgnoreCase)
+                    ? $"Tarjeta de crédito - {cuotasSeleccionadas} cuota{(cuotasSeleccionadas == 1 ? string.Empty : "s")}"
+                    : metodoPago.Equals("Debito", StringComparison.OrdinalIgnoreCase)
+                        ? "Tarjeta de débito"
+                        : metodoPago.Equals("Transferencia", StringComparison.OrdinalIgnoreCase)
+                            ? "Transferencia"
+                            : "Efectivo";
                 HttpContext.Session.SetString(UserSessionKeys.ForUser(HttpContext.Session, "UltimoTotalCompra"), total.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                HttpContext.Session.SetString(UserSessionKeys.ForUser(HttpContext.Session, "UltimoMetodoPago"), metodoPagoRegistrado);
+                HttpContext.Session.SetString(UserSessionKeys.ForUser(HttpContext.Session, "UltimasCuotas"), cuotasSeleccionadas.ToString(System.Globalization.CultureInfo.InvariantCulture));
 
                 var pedidoRequest = new
                 {
                     DireccionEntrega = esRetiroLocal
                         ? "RETIRO_LOCAL"
                         : HttpContext.Session.GetString(UserSessionKeys.ForUser(HttpContext.Session, "CodigoPostalEnvio")) ?? "",
-                    MetodoPago = metodoPago.Equals("Credito", StringComparison.OrdinalIgnoreCase)
-                        ? $"Tarjeta de crédito - {cuotas.GetValueOrDefault(1)} cuota{(cuotas.GetValueOrDefault(1) == 1 ? string.Empty : "s")}"
-                        : metodoPago.Equals("Debito", StringComparison.OrdinalIgnoreCase)
-                            ? "Tarjeta de débito"
-                            : metodoPago.Equals("Transferencia", StringComparison.OrdinalIgnoreCase)
-                                ? "Transferencia"
-                                : "Efectivo",
+                    MetodoPago = metodoPagoRegistrado,
                     Total = total,
                     UsuarioId = usuarioApi.ResolveId(),
                     Estado = esRetiroLocal ? "Confirmado" : "EnCamino"
@@ -294,6 +300,8 @@ namespace FRFront.Controllers
                 Estado = "En Camino",
                 DetalleFecha = detalleFecha,
                 Total = decimal.TryParse(HttpContext.Session.GetString(UserSessionKeys.ForUser(HttpContext.Session, "UltimoTotalCompra")), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var totalCompra) ? totalCompra : carrito.Sum(x => x.Total),
+                MetodoPago = HttpContext.Session.GetString(UserSessionKeys.ForUser(HttpContext.Session, "UltimoMetodoPago")) ?? "No informado",
+                Cuotas = int.TryParse(HttpContext.Session.GetString(UserSessionKeys.ForUser(HttpContext.Session, "UltimasCuotas")), out var cuotasCompra) && cuotasCompra > 0 ? cuotasCompra : 1,
                 EsRetiroLocal = tipoEnvio == "RetiroLocal",
                 TotalProductos = carrito.Sum(x => x.Cantidad),
                 ImagenProducto = carrito.FirstOrDefault()?.Imagen ?? "~/images/logo-fr.png",
