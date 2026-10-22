@@ -19,6 +19,8 @@ public class CreateProductoRequest
 
     public string? Colores { get; set; }
 
+    public string? Genero { get; set; }
+
     public int EmpresaId { get; set; }
 
     public int CategoriaId { get; set; }

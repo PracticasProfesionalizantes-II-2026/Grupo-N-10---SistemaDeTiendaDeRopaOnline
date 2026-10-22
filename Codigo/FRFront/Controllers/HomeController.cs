@@ -234,7 +234,7 @@ namespace FRFront.Controllers
                             ? Array.Empty<string>()
                             : producto.Talles.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
                         Color = string.IsNullOrWhiteSpace(producto.Colores) ? producto.Color : producto.Colores,
-                        Genero = DeterminarGenero(producto),
+                        Genero = string.IsNullOrWhiteSpace(producto.Genero) ? DeterminarGenero(producto) : producto.Genero,
                         EsOferta = producto.EsOferta,
                         Stock = producto.Stock,
                         SinStock = producto.Stock <= 0,

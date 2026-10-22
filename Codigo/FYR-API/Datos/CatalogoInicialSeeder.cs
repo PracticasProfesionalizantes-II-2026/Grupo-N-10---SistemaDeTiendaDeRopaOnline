@@ -116,6 +116,7 @@ public static class CatalogoInicialSeeder
                 ImagenUrl = imagenUrl,
                 Talles = "S,M,L,XL",
                 Colores = productoInicial.Color,
+                Genero = productoInicial.Genero,
                 EmpresaId = empresa.Id,
                 CategoriaId = categoria.Id,
                 Activo = true

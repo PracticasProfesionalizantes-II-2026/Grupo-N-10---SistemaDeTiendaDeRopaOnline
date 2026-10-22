@@ -25,6 +25,8 @@ public class Producto
 
     public string? Colores { get; set; }
 
+    public string? Genero { get; set; }
+
     // FK Empresa
     public int EmpresaId { get; set; }
 

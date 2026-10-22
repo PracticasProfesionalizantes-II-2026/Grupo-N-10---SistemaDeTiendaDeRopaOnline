@@ -22,6 +22,8 @@ public class ProductoRepository : IProductoRepository
             .Include(p => p.Empresa)
             .Include(p => p.Categoria)
             .Include(p => p.Subcategoria)
+            .Include(p => p.ProductosProveedor)
+                .ThenInclude(pp => pp.Proveedor)
             .Select(p => new ProductoResponse
             {
                 Id = p.Id,
@@ -34,6 +36,7 @@ public class ProductoRepository : IProductoRepository
                 ImagenUrl = p.ImagenUrl,
                 Talles = p.Talles,
                 Colores = p.Colores,
+                Genero = p.Genero,
                 Empresa = p.Empresa.NombreComercial,
                 EmpresaId = p.EmpresaId,
                 Categoria = p.Categoria.Nombre,
@@ -57,6 +60,8 @@ public class ProductoRepository : IProductoRepository
             .Include(x => x.Categoria)
             .Include(x => x.Subcategoria)
             .Include(x => x.Stocks)
+            .Include(x => x.ProductosProveedor)
+                .ThenInclude(pp => pp.Proveedor)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (p == null)
@@ -74,6 +79,7 @@ public class ProductoRepository : IProductoRepository
             ImagenUrl = p.ImagenUrl,
             Talles = p.Talles,
             Colores = p.Colores,
+            Genero = p.Genero,
             Empresa = p.Empresa.NombreComercial,
             EmpresaId = p.EmpresaId,
             Categoria = p.Categoria.Nombre,
@@ -102,6 +108,7 @@ public class ProductoRepository : IProductoRepository
             ImagenUrl = request.ImagenUrl,
             Talles = request.Talles,
             Colores = request.Colores,
+            Genero = request.Genero,
             EmpresaId = request.EmpresaId,
             CategoriaId = request.CategoriaId,
             SubcategoriaId = request.SubcategoriaId
@@ -133,6 +140,7 @@ public class ProductoRepository : IProductoRepository
         producto.ImagenUrl = request.ImagenUrl;
         producto.Talles = request.Talles;
         producto.Colores = request.Colores;
+        producto.Genero = request.Genero;
         producto.CategoriaId = request.CategoriaId;
         producto.SubcategoriaId = request.SubcategoriaId;
 

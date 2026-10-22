@@ -19,6 +19,8 @@ public class UpdateProductoRequest
 
     public string? Colores { get; set; }
 
+    public string? Genero { get; set; }
+
     public int CategoriaId { get; set; }
 
     public int? SubcategoriaId { get; set; }

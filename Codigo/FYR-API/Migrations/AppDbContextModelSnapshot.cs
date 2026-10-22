@@ -363,6 +363,9 @@ namespace FYR_API.Migrations
                     b.Property<bool>("EsOferta")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Genero")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ImagenUrl")
                         .HasColumnType("nvarchar(max)");
 

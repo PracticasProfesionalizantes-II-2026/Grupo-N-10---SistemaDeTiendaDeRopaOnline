@@ -169,6 +169,15 @@
                             <label asp-for="Marca" class="form-label fw-bold">MARCA</label>
                             <input asp-for="Marca" class="form-control form-control-custom" />
                         </div>
+                        <div class="mb-3">
+                            <label asp-for="Genero" class="form-label fw-bold">SECCIÓN *</label>
+                            <select asp-for="Genero" class="form-select form-control-custom" required>
+                                <option value="">Seleccioná una sección</option>
+                                <option value="Mujer">Mujer</option>
+                                <option value="Hombre">Hombre</option>
+                            </select>
+                            <div class="form-text">Define si el producto aparece en la sección de mujer o de hombre.</div>
+                        </div>
 
                         <div class="row g-3 mb-3">
                             <div class="col-6">
