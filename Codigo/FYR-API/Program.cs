@@ -68,6 +68,12 @@ builder.Services.AddScoped<IFacturaRepository, FacturaRepository>();
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<IMedioContactoRepository, MedioContactoRepository>();
 builder.Services.AddScoped<IStockRepository, StockRepository>();
+builder.Services.AddHttpClient("Gemini", client =>
+{
+    client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+builder.Services.AddScoped<IGeminiCatalogoService, GeminiCatalogoService>();
 
 builder.Services.AddOpenApi();
 
@@ -127,6 +133,7 @@ app.MapFacturaEndpoints();
 app.MapProductoEndpoints();
 app.MapMedioContactoEndpoints();
 app.MapStockEndpoints();
+app.MapIaCatalogoEndpoints();
 
 app.MapGet("/", () => "Bienvenido a la API de FYR");
 app.MapGet("/api/health", async (AppDbContext db) =>

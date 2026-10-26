@@ -9,6 +9,8 @@ public interface IProductoRepository
 
     Task<ProductoResponse?> GetByIdAsync(int id);
 
+    Task<BuscarProductoResponse> SearchAsync(BuscarProductoRequest request);
+
     Task<ProductoResponse> CreateAsync(CreateProductoRequest request);
 
     Task<bool> UpdateAsync(int id, UpdateProductoRequest request);

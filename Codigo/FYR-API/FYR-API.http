@@ -4,3 +4,27 @@ GET {{FYR_API_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+### Búsqueda avanzada del catálogo
+GET {{FYR_API_HostAddress}}/api/productos/buscar?texto=remera&genero=mujer&color=negro&precioMaximo=50000&soloDisponibles=true&pagina=1&tamanoPagina=10
+Accept: application/json
+
+###
+
+### Búsqueda con lenguaje natural mediante Gemini
+POST {{FYR_API_HostAddress}}/api/ia/catalogo/buscar
+Content-Type: application/json
+
+{
+  "consulta": "Busco una campera negra de mujer, talle M, menor a 150000 pesos y con stock"
+}
+
+### Recomendación de outfit mediante Gemini
+POST {{FYR_API_HostAddress}}/api/ia/catalogo/outfit
+Content-Type: application/json
+
+{
+  "preferencias": "Quiero un outfit casual de mujer para una salida de tarde, en tonos neutros y hasta 200000 pesos"
+}
+
+###

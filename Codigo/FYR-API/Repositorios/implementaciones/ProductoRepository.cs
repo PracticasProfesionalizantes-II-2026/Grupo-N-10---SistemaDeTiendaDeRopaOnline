@@ -95,6 +95,102 @@ public class ProductoRepository : IProductoRepository
         };
     }
 
+    public async Task<BuscarProductoResponse> SearchAsync(BuscarProductoRequest request)
+    {
+        var query = _context.Productos
+            .AsNoTracking()
+            .Where(producto => request.IncluirInactivos || producto.Activo);
+
+        if (!string.IsNullOrWhiteSpace(request.Texto))
+        {
+            var texto = request.Texto.Trim();
+            query = query.Where(producto =>
+                EF.Functions.Like(producto.Nombre, $"%{texto}%") ||
+                (producto.Marca != null && EF.Functions.Like(producto.Marca, $"%{texto}%")) ||
+                (producto.Descripcion != null && EF.Functions.Like(producto.Descripcion, $"%{texto}%")) ||
+                (producto.Colores != null && EF.Functions.Like(producto.Colores, $"%{texto}%")) ||
+                (producto.Talles != null && EF.Functions.Like(producto.Talles, $"%{texto}%")) ||
+                (producto.Genero != null && EF.Functions.Like(producto.Genero, $"%{texto}%")));
+        }
+
+        if (request.CategoriaId.HasValue)
+            query = query.Where(producto => producto.CategoriaId == request.CategoriaId.Value);
+
+        if (request.SubcategoriaId.HasValue)
+            query = query.Where(producto => producto.SubcategoriaId == request.SubcategoriaId.Value);
+
+        if (!string.IsNullOrWhiteSpace(request.Genero))
+            query = query.Where(producto => producto.Genero != null &&
+                EF.Functions.Like(producto.Genero, $"%{request.Genero.Trim()}%"));
+
+        if (!string.IsNullOrWhiteSpace(request.Color))
+            query = query.Where(producto => producto.Colores != null &&
+                EF.Functions.Like(producto.Colores, $"%{request.Color.Trim()}%"));
+
+        if (!string.IsNullOrWhiteSpace(request.Talle))
+            query = query.Where(producto => producto.Talles != null &&
+                EF.Functions.Like(producto.Talles, $"%{request.Talle.Trim()}%"));
+
+        if (request.PrecioMinimo.HasValue)
+            query = query.Where(producto => producto.Precio >= request.PrecioMinimo.Value);
+
+        if (request.PrecioMaximo.HasValue)
+            query = query.Where(producto => producto.Precio <= request.PrecioMaximo.Value);
+
+        if (request.SoloOfertas == true)
+            query = query.Where(producto => producto.EsOferta);
+
+        if (request.SoloDisponibles == true)
+            query = query.Where(producto => producto.Stocks.Sum(stock => stock.CantidadDisponible) > 0);
+
+        var total = await query.CountAsync();
+        var productos = await query
+            .OrderBy(producto => producto.Nombre)
+            .ThenBy(producto => producto.Id)
+            .Skip((request.Pagina - 1) * request.TamanoPagina)
+            .Take(request.TamanoPagina)
+            .Select(p => new ProductoResponse
+            {
+                Id = p.Id,
+                Nombre = p.Nombre,
+                Marca = p.Marca,
+                Descripcion = p.Descripcion,
+                Precio = p.Precio,
+                PrecioAnterior = p.PrecioAnterior,
+                EsOferta = p.EsOferta,
+                ImagenUrl = p.ImagenUrl,
+                Talles = p.Talles,
+                Colores = p.Colores,
+                Genero = p.Genero,
+                Empresa = p.Empresa.NombreComercial,
+                EmpresaId = p.EmpresaId,
+                Categoria = p.Categoria.Nombre,
+                CategoriaId = p.CategoriaId,
+                SubcategoriaId = p.SubcategoriaId,
+                Subcategoria = p.Subcategoria != null ? p.Subcategoria.Nombre : null,
+                Activo = p.Activo,
+                Stock = p.Stocks.Sum(stock => stock.CantidadDisponible),
+                ProveedorId = p.ProductosProveedor.OrderByDescending(pp => pp.FechaAlta)
+                    .Select(pp => (int?)pp.ProveedorId).FirstOrDefault(),
+                ProveedorNombre = p.ProductosProveedor.OrderByDescending(pp => pp.FechaAlta)
+                    .Select(pp => pp.Proveedor.Nombre).FirstOrDefault(),
+                PrecioCompra = p.ProductosProveedor.OrderByDescending(pp => pp.FechaAlta)
+                    .Select(pp => (decimal?)pp.PrecioCompra).FirstOrDefault()
+            })
+            .ToListAsync();
+
+        return new BuscarProductoResponse
+        {
+            Productos = productos,
+            Total = total,
+            Pagina = request.Pagina,
+            TamanoPagina = request.TamanoPagina,
+            TotalPaginas = total == 0
+                ? 0
+                : (int)Math.Ceiling(total / (double)request.TamanoPagina)
+        };
+    }
+
     public async Task<ProductoResponse> CreateAsync(CreateProductoRequest request)
     {
         var producto = new Producto

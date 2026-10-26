@@ -15,6 +15,26 @@ public static class ProductoEndpoints
             return Results.Ok(await repository.GetAllAsync());
         });
 
+        group.MapGet("/buscar", async (BuscarProductoRequest request,
+                                        IProductoRepository repository) =>
+        {
+            if (request.Pagina < 1)
+                return Results.BadRequest(new { mensaje = "La página debe ser mayor o igual a 1." });
+
+            if (request.TamanoPagina is < 1 or > 100)
+                return Results.BadRequest(new { mensaje = "El tamaño de página debe estar entre 1 y 100." });
+
+            if (request.PrecioMinimo < 0 || request.PrecioMaximo < 0)
+                return Results.BadRequest(new { mensaje = "Los precios no pueden ser negativos." });
+
+            if (request.PrecioMinimo > request.PrecioMaximo)
+                return Results.BadRequest(new { mensaje = "El precio mínimo no puede superar al precio máximo." });
+
+            return Results.Ok(await repository.SearchAsync(request));
+        })
+        .WithName("BuscarProductos")
+        .WithSummary("Busca productos del catálogo con filtros opcionales.");
+
         group.MapGet("/{id:int}", async (int id, IProductoRepository repository) =>
         {
             var producto = await repository.GetByIdAsync(id);

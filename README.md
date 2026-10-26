@@ -53,3 +53,7 @@ El sistema permite gestionar de manera integral una tienda de ropa mediante una 
 [Documentación de Endpoints de API](https://docs.google.com/document/d/1nY_3ClcNVSr5X0UoFQVAcXR8z_F3VfA1OR9ROWO5bpo/edit?usp=sharing)
 
 [Codigo 2026 (APIS) Visual Code](https://github.com/PracticasProfesionalizantes-II-2026/Grupo-N-10---SistemaDeTiendaDeRopaOnline/tree/Rama-Prueba/Codigo)
+
+[Entrega: Agente Desarrollador FYR y Skill de Catálogo](docs/agente-skill-catalogo-fyr.md)
+
+La entrega también incorpora integración con Gemini para búsquedas en lenguaje natural y recomendaciones de outfits: [documentación de IA del catálogo](docs/agente-skill-catalogo-fyr.md#incorporacion-de-ia-con-gemini).

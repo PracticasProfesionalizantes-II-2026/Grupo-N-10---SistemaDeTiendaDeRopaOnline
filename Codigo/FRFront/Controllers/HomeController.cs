@@ -180,6 +180,71 @@ namespace FRFront.Controllers
             return View(filtrados);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> BuscarConIA(string consulta)
+        {
+            if (string.IsNullOrWhiteSpace(consulta))
+                return RedirectToAction(nameof(Catalogo));
+
+            try
+            {
+                using var response = await _httpClient.PostAsJsonAsync(
+                    "api/ia/catalogo/buscar",
+                    new { consulta });
+                if (!response.IsSuccessStatusCode)
+                {
+                    TempData["ErrorIA"] = "No pudimos interpretar la búsqueda en este momento.";
+                    return RedirectToAction(nameof(Catalogo));
+                }
+
+                var resultado = await response.Content.ReadFromJsonAsync<CatalogoIaDto>();
+                var productos = await ObtenerProductosAsync();
+                var ids = resultado?.Productos.Select(producto => producto.Id).ToHashSet() ?? [];
+                ViewData["Busqueda"] = consulta;
+                ViewData["MensajeIA"] = resultado?.Mensaje;
+                return View("Catalogo", productos.Where(producto => ids.Contains(producto.Id)).ToList());
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogWarning(ex, "No se pudo consultar la búsqueda con Gemini.");
+                TempData["ErrorIA"] = "El asistente de búsqueda no está disponible.";
+                return RedirectToAction(nameof(Catalogo));
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RecomendarOutfit(string preferencias)
+        {
+            if (string.IsNullOrWhiteSpace(preferencias))
+                return RedirectToAction(nameof(Catalogo));
+
+            try
+            {
+                using var response = await _httpClient.PostAsJsonAsync(
+                    "api/ia/catalogo/outfit",
+                    new { preferencias });
+                if (!response.IsSuccessStatusCode)
+                {
+                    TempData["ErrorIA"] = "No pudimos generar el outfit en este momento.";
+                    return RedirectToAction(nameof(Catalogo));
+                }
+
+                var resultado = await response.Content.ReadFromJsonAsync<OutfitIaDto>();
+                var productos = await ObtenerProductosAsync();
+                var ids = resultado?.Prendas.Select(producto => producto.Id).ToHashSet() ?? [];
+                ViewData["PreferenciasIA"] = preferencias;
+                ViewData["MensajeIA"] = resultado?.Explicacion;
+                ViewData["TituloIA"] = "Outfit recomendado para vos";
+                return View("Catalogo", productos.Where(producto => ids.Contains(producto.Id)).ToList());
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogWarning(ex, "No se pudo consultar la recomendación de outfit con Gemini.");
+                TempData["ErrorIA"] = "El asistente de outfits no está disponible.";
+                return RedirectToAction(nameof(Catalogo));
+            }
+        }
+
         // Acción dinámica para el Detalle de un Producto
         public async Task<IActionResult> DetalleProducto(int id)
         {

@@ -9,6 +9,37 @@
         <h1 class="fw-bold text-uppercase fs-3 m-0">CATÁLOGO GENERAL</h1>
     </div>
 </div>
+@if (TempData["ErrorIA"] is string errorIA)
+{
+    <div class="alert alert-warning mx-4">@errorIA</div>
+}
+<div class="row g-3 mx-2 mb-4">
+    <div class="col-lg-6">
+        <form asp-controller="Home" asp-action="BuscarConIA" method="post" class="border rounded-3 p-3 bg-light h-100">
+            <label class="form-label fw-bold">Buscá con lenguaje natural</label>
+            <div class="input-group">
+                <input name="consulta" class="form-control" maxlength="500" placeholder="Ej: campera negra de mujer, talle M, hasta $150.000" required />
+                <button class="btn btn-dark" type="submit">Buscar con IA</button>
+            </div>
+        </form>
+    </div>
+    <div class="col-lg-6">
+        <form asp-controller="Home" asp-action="RecomendarOutfit" method="post" class="border rounded-3 p-3 bg-light h-100">
+            <label class="form-label fw-bold">Armá tu outfit con IA</label>
+            <div class="input-group">
+                <input name="preferencias" class="form-control" maxlength="500" placeholder="Ej: outfit casual para una salida de tarde" required />
+                <button class="btn btn-outline-dark" type="submit">Recomendar outfit</button>
+            </div>
+        </form>
+    </div>
+</div>
+@if (!string.IsNullOrWhiteSpace(ViewData["MensajeIA"]?.ToString()))
+{
+    <div class="alert alert-info mx-4">
+        <strong>@(ViewData["TituloIA"] ?? "Búsqueda interpretada"):</strong>
+        @ViewData["MensajeIA"]
+    </div>
+}
 @if (!string.IsNullOrWhiteSpace(ViewData["Busqueda"]?.ToString()))
 {
     <p class="text-muted mx-4 mt-4">Resultados para: <strong>@ViewData["Busqueda"]</strong></p>
